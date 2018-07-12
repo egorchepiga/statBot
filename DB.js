@@ -1,6 +1,7 @@
 const MYSQL = require('mysql'),
     CONFIG = require('./config'),
-    EXPIRES = CONFIG.expires, OPTIONS = {
+    EXPIRES = CONFIG.expires,
+    OPTIONS = {
     host: CONFIG.db.clients.host,
     port: CONFIG.db.clients.port,
     user: CONFIG.db.clients.user,
@@ -16,6 +17,7 @@ const MYSQL = require('mysql'),
  * @pablic
  */
 function query(sql, params) {
+
     return new Promise(resolve => {
         POOL.getConnection((error, connection) => {
             (error) ? resolve({error: error}) :
@@ -38,14 +40,18 @@ function transaction(sql, params) {
                     for (let i = 0; i < queries.length-1; i++) {
                         fromCount += paramsCount;
                         paramsCount = queries[i].split('?').length-1;           //узнаём кол-во параметров в запросе
-                        let _params = params.slice(fromCount, fromCount + paramsCount);
+                        let _params = [];
+                        try {
+                            _params = params.slice(fromCount, fromCount + paramsCount);
+                        } catch (e) {}
                         connection.query(queries[i], _params, (error, results, fields) => {
-                            if (error) return connection.rollback(() => { resolve({error: error}); });
+                            if (error) resolve({error, results});
                         });
                     }
                     connection.commit(function (error) {
-                        if (error) return connection.rollback(() => { resolve({error: error}); });
-                        resolve({error : null, rows : 'TRANSACTION COMPLITED', result : true});
+                        connection.release();
+                        if (error) resolve({error: error});
+                        else resolve({error : null, rows : 'TRANSACTION COMPLITED', result : true});
                     });
                 })
         })
@@ -57,3 +63,4 @@ module.exports = {
     query : query,
     transaction : transaction
 }
+

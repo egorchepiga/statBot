@@ -1,12 +1,30 @@
-const express = require('express'),
-    path = require('path'),
+let express = require('express'),
     bodyParser = require('body-parser'),
-    app = express(),
-    log = require('./logger').log;
+    app = express();
 
+const BOT = require('./bot').Bot,
+    AGENT = require('socks5-https-client/lib/Agent'),
+    CONFIG = require('./config'),
+    TOKEN = CONFIG.bot.TOKEN,
+    OPTIONS = {
+    webHook: {
+        endpoint: '/chat',
+        port: CONFIG.bot.port,
+        key: CONFIG.bot.privkey, // Path to file with PEM private key
+        cert: CONFIG.bot.cert // Path to file with PEM certificate
+    },
+    request: {
+        agentClass: AGENT,
+        agentOptions: {
+            socksHost: CONFIG.SOCKS5.socksHost,
+            socksPort: CONFIG.SOCKS5.socksPort,
+            socksUsername: CONFIG.SOCKS5.socksUsername,
+            socksPassword: CONFIG.SOCKS5.socksPassword
+        }
+    }
+};
 
-const Bot = require('./bot').Bot;
-let bot = new Bot();
+let bot = new BOT(TOKEN,OPTIONS);
 
 bot.setWebHook('https://egorchepiga.ru/chat/');
 bot.watch();
@@ -16,7 +34,7 @@ app.get(`/`, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     bot.analyze().then(botRes => {
         if (botRes.error){
-            console.log(botRes);
+            console.log(botRes.error);
             res.sendStatus(404);
         }
         res.send(JSON.stringify(botRes));

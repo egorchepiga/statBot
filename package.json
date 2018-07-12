@@ -1,0 +1,20 @@
+{
+  "name": "statbot",
+  "version": "1.0.0",
+  "description": "Bot for analyzing messages and creating statistic logs.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "node-telegram-bot-api": "^0.30.0",
+    "path": "^0.12.7",
+    "request": "^2.87.0",
+    "socks5-https-client": "^1.2.1",
+    "winston": "^3.0.0"
+  }
+}

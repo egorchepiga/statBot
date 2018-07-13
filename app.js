@@ -30,7 +30,6 @@ let bot = new BOT(TOKEN,OPTIONS);
 
 bot.setWebHook('https://egorchepiga.ru/chat/');
 bot.watch();
-//bot.createStatToken('egorchepiga').then(res => console.log(res));
 
 app.use(bodyParser.json());
 app.get(`/`, (req, res) => {

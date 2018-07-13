@@ -4,7 +4,7 @@ class Bot {
 
     constructor(TOKEN, OPTIONS) {
         const TelegramBot = require('./telegram-bot/src/telegram');
-        this.SHA512 = require('js-sha256');
+        this.SHA512 = require('js-sha512');
         this.DB = require('./DB');
         this.fromTime = '';
         this.toTime = '';
@@ -22,21 +22,31 @@ class Bot {
         this.telegramBot.on('text', msg => {
             if (msg.from.id === msg.chat.id ) {
                 if (msg.text === 'отчёт')
-                    this.getStatToken(msg.from.username)
+                    this.getStatToken(msg.from)
                         .then(res => {
                             if (res.error) console.log(res.error);
                             else this.telegramBot.sendMessage( msg.chat.id,
-                                'egorchepiga.ru/chat/local?username=' + msg.from.username + '&token=' + res.result
+                                'egorchepiga.ru/chat/local?username=' + msg.from + '&token=' + res.result
                             );
                         });
                 if (msg.text === 'токен' || msg.text === 'token')
-                    this.createStatToken(msg.from.username)
+                    this.createStatToken(msg.from)
                         .then(res => {
+                            console.log(res);
                             this.telegramBot.sendMessage(msg.chat.id, res);
                         });
             } else {
+                if (msg.text === '/ownReport') {
+                    return this.switchBaseByUsername(msg.from)
+                        .then(res => {
+                            if (res.error) return {error : res.error, res: null};
+                            return this.createChat(msg)
+                        }).then(res => {
+                            if (res.error) return {error : res.error, res: null};
+                            return this.createUser(msg);
+                        });
+                }
                 let words = msg.text.split(' ');
-                console.log(words);
                 this.updateUsersWords(msg, words).then(res => {
                 });
             }
@@ -68,9 +78,10 @@ class Bot {
         
 
         this.telegramBot.on('message', msg => {
+            console.log(msg);
             try {
-                if(msg.new_chat_participant.username === 'egorchepiga_bot') {
-                    return this.switchBaseByUsername(msg.from.username)
+                if(msg.new_chat_participant === 'egorchepiga_bot') {
+                    return this.switchBaseByUsername(msg.from)
                         .then(res => {
                             if (res.error) return {error : res.error, res: null};
                             return this.createChat(msg)
@@ -151,17 +162,17 @@ class Bot {
         sql +=
             'USE ' + this.mainBase + ' ;' +
             'INSERT INTO `ROOMS` (`chat_id`, `database_name`) VALUE (?, ?);';
-        return this.DB.transaction(sql,[msg.chat.id, msg.from.username])
+        return this.DB.transaction(sql,[msg.chat.id, msg.from])
             .then(res => {
 
                 if (res.error) return {error : res.error, res: null};
-                return this.switchBaseByChat(msg.chat.id, msg.from.username)                     //!!!!!!!!!!!!!!!!!1
+                return this.switchBaseByChat(msg.chat.id, msg.from)                     //!!!!!!!!!!!!!!!!!1
             })
     }
 
     createUser(msg){
         let sql =
-            'CREATE TABLE `' + msg.from.username + '#' + msg.chat.id + '` ' +
+            'CREATE TABLE `' + msg.from + '#' + msg.chat.id + '` ' +
             '(word varchar(120) NOT NULL,' +
             'summary int (10) NOT NULL,' +
             'PRIMARY KEY (word));';
@@ -170,7 +181,7 @@ class Bot {
             '(`id`,`username`,`summary`) ' +
             'VALUES (?, ?, 0);';
 
-        return this.DB.transaction(sql, [ msg.from.id, msg.from.username + '#' + msg.chat.id]);
+        return this.DB.transaction(sql, [ msg.from.id, msg.from + '#' + msg.chat.id]);
     }
 
     updateAllWords(msg, words) {
@@ -200,14 +211,14 @@ class Bot {
 
     updateChatWords(msg, words) {
         let words_buff = words.slice(' '),
-            table = ' `'+ msg.from.username + '#' + msg.chat.id + '` ',
+            table = ' `'+ msg.from + '#' + msg.chat.id + '` ',
             sql = 'INSERT INTO ' + table + ' (`word`, `summary`) VALUES ( ? , \'1\')';
         words_buff.unshift('Messages count');
         for (let i = 0; i < words_buff.length-1; i++)
             sql += ', ( ? , \'1\')';
         sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
         sql += 'INSERT INTO `' + msg.chat.id + '#log` ' + 'VALUE (?, ?, NOW() );';
-        words_buff.push(msg.message_id, msg.from.username);
+        words_buff.push(msg.message_id, msg.from);
         return this.DB.transaction(sql, words_buff)
     }
 
@@ -221,16 +232,16 @@ class Bot {
                 if (res.error) return {error : res.error, res: null };
                     else {
                             let sql = 'SELECT summary ' +
-                                'FROM `' + res.rows[0].username + '` ' +
+                                'FROM `' + res.rows[0] + '` ' +
                                 'WHERE word = \'Messages count\'';
-                            arrUserTables = [{ username : res.rows[0].username }]
+                            arrUserTables = [{ username : res.rows[0] }]
                         if (res.rows.length > 1) {
                             sql = `(${sql})`;
                             for (let i = 1; i < res.rows.length; i++){
-                                arrUserTables.push( { username : res.rows[i].username });
+                                arrUserTables.push( { username : res.rows[i] });
                                 sql += ' UNION ' +
                                     '(SELECT summary ' +
-                                    'FROM `' + res.rows[i].username + '` ' +
+                                    'FROM `' + res.rows[i] + '` ' +
                                     'WHERE word = \'Messages count\')';
                             }
                         }
@@ -247,7 +258,7 @@ class Bot {
                             'SET summary = ? ' +
                             'WHERE username = ? ;';
                         arrSQLPlaceholder.push(arrUserTables[i].summary);
-                        arrSQLPlaceholder.push(arrUserTables[i].username);
+                        arrSQLPlaceholder.push(arrUserTables[i]);
                     }
                     return this.DB.transaction(sql, arrSQLPlaceholder)
                 }
@@ -262,7 +273,7 @@ class Bot {
                     let arr = [];
                     for (let i = 0; i < res.rows.length; i++) {
                         arr.push({
-                            username: res.rows[i].username,
+                            username: res.rows[i],
                             summary: res.rows[i].summary,
                             id: res.rows[i].id
                         });
@@ -285,7 +296,7 @@ class Bot {
                     for (let i = 0; i < res.rows.length; i++) {
                         arr.push({
                             id: res.rows[i].id,
-                            username: res.rows[i].username,
+                            username: res.rows[i],
                             time: res.rows[i].time
                         })
                     }

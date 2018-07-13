@@ -1,12 +1,17 @@
 class Bot {
 
-    constructor(TOKEN, OPTIONS){
+    //sql += 'USE `' + username + '`;' ;
+
+    constructor(TOKEN, OPTIONS) {
         const TelegramBot = require('./telegram-bot/src/telegram');
+        this.SHA512 = require('js-sha256');
         this.DB = require('./DB');
         this.fromTime = '';
         this.toTime = '';
+        this.SECRET = OPTIONS.secret;
         this.TOKEN = TOKEN;
-        this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS)
+        this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
+        this.mainBase = '`' + OPTIONS.mainBase + '`';
     }
 
     setWebHook(url) {
@@ -15,11 +20,26 @@ class Bot {
 
     watch() {
         this.telegramBot.on('text', msg => {
-            if (msg.from.id === msg.chat.id) {
-                return {result: null, error: ''};
+            if (msg.from.id === msg.chat.id ) {
+                if (msg.text === 'отчёт')
+                    this.getStatToken(msg.from.username)
+                        .then(res => {
+                            if (res.error) console.log(res.error);
+                            else this.telegramBot.sendMessage( msg.chat.id,
+                                'egorchepiga.ru/chat/local?username=' + msg.from.username + '&token=' + res.result
+                            );
+                        });
+                if (msg.text === 'токен' || msg.text === 'token')
+                    this.createStatToken(msg.from.username)
+                        .then(res => {
+                            this.telegramBot.sendMessage(msg.chat.id, res);
+                        });
+            } else {
+                let words = msg.text.split(' ');
+                this.updateUserWords(msg, words).then(res => {
+                    //console.log(res)
+                });
             }
-            let words = msg.text.split(' ');
-            this.updateUserWords(msg, words);
         });
 
         //download sticker with
@@ -45,23 +65,57 @@ class Bot {
                     this.updateUserWords(msg, [res.file_path]);
                 });
         });
+        
 
         this.telegramBot.on('message', msg => {
-            console.log(msg);
+            try {
+                if(msg.new_chat_participant.username === 'egorchepiga_bot') {
+                    //console.log(msg);
+                    return this.switchBaseByUsername(msg.from.username)
+                        .then(res => {
+                            if (res.error) return {error : res.error, res: null};
+                            return this.createChat(msg)
+                        }).then(res => {
+                            if (res.error) return {error : res.error, res: null};
+                            return this.createUser(msg);
+                        }).then(res => {
+                            //console.log(res)
+                        });
+                    }
+                } catch (e) {
+                
+            }
         })
+    }
+
+    stopWatch() {
+        this.telegramBot.on('text', msg => {});
+        this.telegramBot.on('sticker', msg => {});
+        this.telegramBot.on('photo', msg => {});
+        this.telegramBot.on('message', msg => {});
     }
 
     //Получаем список чатов, апдейтим, считаем активность, выплёвываем
 
-    analyze(chatId) {
-        return (chatId) ?
-            this.refreshInfo(chatId)
-            : this.getChats().then(res => {
-                let chatPromises = [];
-                for (let i = 0; i < res.length; i++) {
-                    chatPromises.push(this.refreshInfo(res[i]));
-                }
-                return Promise.all(chatPromises)
+    analyze(username, token, chatId) {
+        return this.authorization(username, token)
+            .then(res => {
+                if (!res.result || token === 0 ) return {error: `cant authorize ${username} with ${token}`, result: null};
+                return this.switchBaseByUsername(username).then(res => {
+                    //console.log(res);
+                    if (res.error) return {error : res.error, res: null};
+                    if (chatId) return this.refreshInfo(chatId);
+                    return this.getChatsTables(res.baseName)
+                        .then(res => {
+                            //console.log(res);
+                            if (res.error) return {error : res.error, res: null};
+                            let chatPromises = [];
+                            for (let i = 0; i < res.length; i++) {
+                                chatPromises.push(this.refreshInfo(res[i]));
+                            }
+                            return Promise.all(chatPromises)
+                        });
+                });
             });
     }
 
@@ -98,7 +152,14 @@ class Bot {
             'username varchar(120) NOT NULL,' +
             'summary int (10),' +
             'PRIMARY KEY (username));';
-        return this.DB.transaction(sql);
+        sql +=
+            'USE ' + this.mainBase + ' ;' +
+            'INSERT INTO `ROOMS` VALUE (?, ?);';
+        return this.DB.transaction(sql,[msg.chat.id, msg.from.username])
+            .then(res => {
+                if (res.error) return {error : res.error, res: null};
+                return this.switchBaseByChat(msg.chat.id)
+            })
     }
 
     createUser(msg){
@@ -111,36 +172,25 @@ class Bot {
             'INSERT INTO `' + msg.chat.id + '` ' +
             '(`id`,`username`,`summary`) ' +
             'VALUES (?, ?, 0);';
+
         return this.DB.transaction(sql, [ msg.from.id, msg.from.username + '#' + msg.chat.id]);
     }
 
-    updateUserWords(msg, words, secondTry) {
-        secondTry = secondTry || false;
-        let table = ' `'+ msg.from.username + '#' + msg.chat.id + '` ',
-            words_buff = words.slice(' '),
-            sql = 'INSERT INTO'+ table +'(`word`, `summary`) VALUES ( ? , \'1\')';
-        words_buff.unshift('Messages count');
-        for (let i = 0; i < words_buff.length-1; i++)
-            sql += ', ( ? , \'1\')';
-        sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
-        sql += 'INSERT INTO `' + msg.chat.id + '#log` ' + 'VALUE (?, ?, NOW() );';
-        words_buff.push(msg.message_id, msg.from.username);
-        return this.DB.transaction(sql, words_buff)
+    updateUserWords(msg, words) {
+        return this.switchBaseByChat(msg.chat.id)
             .then(res => {
-                return (secondTry || !res.error) ?
-                    {error: res.error, res: true}
-                    : this.createChat(msg)
-                        .then(res => {
-                            return this.createUser(msg);
-                        }).then(res => {
-                            return (res.error) ?
-                                {error : res.error, res: null}
-                                : this.updateUserWords(msg, words, true)
-                        }).then(res => {
-                            return (res.error) ?
-                                {error : res.error, res: null}
-                                : {error: null, res: true};
-                        });
+                //console.log(res);
+                if (res.error) return {error : res.error, res: null}
+                let words_buff = words.slice(' '),
+                    table = ' `'+ msg.from.username + '#' + msg.chat.id + '` ',
+                    sql = 'INSERT INTO ' + table + ' (`word`, `summary`) VALUES ( ? , \'1\')';
+                words_buff.unshift('Messages count');
+                for (let i = 0; i < words_buff.length-1; i++)
+                    sql += ', ( ? , \'1\')';
+                sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
+                sql += 'INSERT INTO `' + msg.chat.id + '#log` ' + 'VALUE (?, ?, NOW() );';
+                words_buff.push(msg.message_id, msg.from.username);
+                return this.DB.transaction(sql, words_buff)
             });
     }
 
@@ -148,14 +198,12 @@ class Bot {
     //юзерских таблиц. Сливаем всё в таблицу чата.
 
     updateChatStats(chatId) {
-        let sql ='',
-            arrUserTables = [];
+        let arrUserTables = [];
         return this.DB.query('SELECT * FROM  `' + chatId + '`;')
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                     else {
-                            let chatStats = {},
-                            sql = 'SELECT summary ' +
+                            let sql = 'SELECT summary ' +
                                 'FROM `' + res.rows[0].username + '` ' +
                                 'WHERE word = \'Messages count\'';
                             arrUserTables = [{ username : res.rows[0].username }]
@@ -174,8 +222,8 @@ class Bot {
             }).then(res => {
                 if (res.error) return {error : res.error, res: null}
                 else {
-                    sql = '';
-                    let arrSQLPlaceholder = [];
+                    let sql = '',
+                        arrSQLPlaceholder = [];
                     for (let i = 0; i < res.rows.length; i++) {
                         arrUserTables[i].summary = res.rows[i].summary;
                         sql += 'UPDATE `' + chatId + '` ' +
@@ -229,10 +277,9 @@ class Bot {
             });
     }
 
-
-    getChats(baseName) {
-        baseName = baseName || 'stats';                                         //перспектива на масштабирование
-        return this.DB.query('SHOW TABLES FROM ' + baseName)
+    getChatsTables(baseName) {                                              //перспектива на масштабирование
+        //console.log(baseName)
+        return this.DB.query('SHOW TABLES FROM `' + baseName +'`')
             .then(res => {
                 if (res.error) return {error : res.error, res: null};
                 else {
@@ -245,12 +292,79 @@ class Bot {
                 }
             });
     }
+
+    switchBaseByChat(chatId) {
+        let sql = 'USE ' + this.mainBase;
+        return this.DB.query(sql)
+            .then(res => {
+                if (res.error) return {error: res.error, result: null};
+                if (res.rows.length < 1) return {error: 'DATABASE NOT FOUND. CREATE TOKEN!', result: null}
+                sql =
+                    'SELECT database_name ' +
+                    'FROM ROOMS ' +
+                    'WHERE chat_id = ? ;';
+                return this.DB.query(sql, [chatId])
+            }).then(res => {
+                return this.switchBaseByUsername(res.rows[0].database_name);
+            })
+    }
+
+    switchBaseByUsername(username) {
+        return this.DB.query('USE `' + username + '#telegram`;')
+            .then(res => {
+                if (res.error) return {error: res.error, result: null};
+                return {error: null, baseName: username + '#telegram'};
+            })
+    }
+
+    createStatToken (username) {
+        let botToken = this.SHA512(new Date() + this.SHA512(username) + this.SECRET).substring(17, 37);
+        let sql =
+            'INSERT INTO `DATABASES` ' +
+            '(`database_name`,`token`) ' +
+            'VALUES (?, ?)' +
+            'ON DUPLICATE KEY UPDATE token = ?;';
+        return this.DB.query(sql, [username, botToken, botToken])
+            .then(res => {
+                return (res.error) ? {error : res.error, res: null}
+                    : this.DB.query('CREATE DATABASE `' + username + '#telegram`');
+            }).then(res => {
+                return botToken;
+            });
+    }
+
+
+    authorization(username, token) {
+        return this.DB.query('USE ' + this.mainBase + ' ;')
+            .then(res => {
+                if (res.error) return {error: res.error, result: null}
+                return this.DB.query('SELECT * FROM `DATABASES` WHERE database_name = ? AND token = ?',[username, token])
+            }).then(res => {
+                if (res.error) return {error: res.error, result: null}
+                return {error: null, result: (res.rows.length > 0) }
+            })
+    }
+
+    getStatToken(username) {
+        return this.DB.query('USE ' + this.mainBase + ' ;')
+            .then(res => {
+                if (res.error) return {error: res.error, result: null}
+                return this.DB.query('SELECT * FROM `DATABASES` WHERE database_name = ?',[username])
+            }).then(res => {
+                console.log(res);
+                if (res.error) return {error: res.error, result: null};
+                if (res.rows.length < 1) return {error: 'CREATE TOKEN!', result: null};
+                return {error: null, result: res.rows[0].token }
+            })
+    }
+
 }
 
 module.exports = {
     Bot: Bot
 };
 
-process.on('uncaughtException', function(err) {
+/*process.on('uncaughtException', function(err) {
     console.log(err);
-});
+});*/
+

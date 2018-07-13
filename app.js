@@ -11,7 +11,7 @@ const BOT = require('./bot').Bot,
         endpoint: '/chat',
         port: CONFIG.bot.port,
         key: CONFIG.bot.privkey, // Path to file with PEM private key
-        cert: CONFIG.bot.cert // Path to file with PEM certificate
+        cert: CONFIG.bot.cert, // Path to file with PEM certificate
     },
     request: {
         agentClass: AGENT,
@@ -21,23 +21,28 @@ const BOT = require('./bot').Bot,
             socksUsername: CONFIG.SOCKS5.socksUsername,
             socksPassword: CONFIG.SOCKS5.socksPassword
         }
-    }
+    },
+    secret : CONFIG.secret,
+    mainBase: CONFIG.bot.mainBase
 };
 
 let bot = new BOT(TOKEN,OPTIONS);
 
 bot.setWebHook('https://egorchepiga.ru/chat/');
 bot.watch();
+//bot.createStatToken('egorchepiga').then(res => console.log(res));
 
 app.use(bodyParser.json());
 app.get(`/`, (req, res) => {
+    let username = req.param('username') || 0;
+    let token = req.param('token') || 0;
     res.setHeader('Content-Type', 'application/json');
-    bot.analyze().then(botRes => {
+    bot.analyze(username, token)
+        .then(botRes => {
         if (botRes.error){
-            console.log(botRes.error);
-            res.sendStatus(404);
-        }
-        res.send(JSON.stringify(botRes));
+            console.log(botRes);
+            res.sendStatus(401);
+        } else res.send(JSON.stringify(botRes));
     });
 
 });

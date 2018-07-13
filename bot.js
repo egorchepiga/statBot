@@ -66,6 +66,7 @@ class Bot {
     }
 
     refreshInfo(chatId) {
+        let chatStats = {};
         return this.updateChatStats(chatId)
             .then(res => {
                 return (res.error) ?
@@ -147,15 +148,17 @@ class Bot {
     //юзерских таблиц. Сливаем всё в таблицу чата.
 
     updateChatStats(chatId) {
+        let sql ='',
+            arrUserTables = [];
         return this.DB.query('SELECT * FROM  `' + chatId + '`;')
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                     else {
-                        let arrUserTables = [{ username : res.rows[0].username }],
-                            chatStats = {},
+                            let chatStats = {},
                             sql = 'SELECT summary ' +
                                 'FROM `' + res.rows[0].username + '` ' +
                                 'WHERE word = \'Messages count\'';
+                            arrUserTables = [{ username : res.rows[0].username }]
                         if (res.rows.length > 1) {
                             sql = `(${sql})`;
                             for (let i = 1; i < res.rows.length; i++){

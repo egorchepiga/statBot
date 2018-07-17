@@ -33,10 +33,10 @@ bot.watch();
 
 app.use(bodyParser.json());
 app.get(`/`, (req, res) => {
-    let username = req.param('username') || 0;
+    let user_id = req.param('user_id') || 0;
     let token = req.param('token') || 0;
     res.setHeader('Content-Type', 'application/json');
-    bot.analyze(username, token)
+    bot.analyze(user_id, token)
         .then(botRes => {
         if (botRes.error){
             console.log(botRes);

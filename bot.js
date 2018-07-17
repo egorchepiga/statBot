@@ -56,7 +56,7 @@ class Bot {
         this.telegramBot.on('message', msg => {
             let botName = '';
             try {
-                botName = msg.new_chat_participant.user_id;
+                botName = msg.new_chat_participant.username;
             } catch (e) {}
             if(botName === 'egorchepiga_bot') {
                 this.createChat(msg)
@@ -154,10 +154,9 @@ class Bot {
             'PRIMARY KEY (id));';
         sql +=
             'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
-            '(id int (10) NOT NULL,' +
-            'user_id varchar(120) NOT NULL,' +
+            '(id varchar(120) NOT NULL,' +
             'summary int (10),' +
-            'PRIMARY KEY (user_id));';
+            'PRIMARY KEY (id));';
         sql +=
             'USE ' + this.mainBase + ' ;' +
             'INSERT INTO `ROOMS` (`id`, `chat_id`, `database_name`) VALUE (?, ?, ?);';
@@ -172,10 +171,10 @@ class Bot {
             'PRIMARY KEY (word));';
         sql +=
             'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
-            '(`id`,`user_id`,`summary`) ' +
-            'VALUES (?, ?, 0);';
-
-        return this.DB.transaction(sql, [ msg.from.id, msg.from.id + '#' + msg.chat.id]);
+            '(`id`,`summary`) ' +
+            'VALUES (?, 0);';
+//msg.from.id + '#' + msg.chat.id
+        return this.DB.transaction(sql, [ msg.from.id ]);
     }
 
     updateUsersWords(msg, words) {
@@ -204,7 +203,8 @@ class Bot {
     updateChatWords(msg, words, db) {
         let words_buff = words.slice(0),
             table = db +'.`'+ msg.from.id + '#' + msg.chat.id + '` ',
-            sql = 'INSERT INTO ' + table + ' (`word`, `summary`) VALUES ( ? , \'1\')';
+            sql = 'INSERT INTO ' + table +
+                ' (`word`, `summary`) VALUES ( ? , \'1\')';
         words_buff.unshift('Messages count');
         for (let i = 0; i < words_buff.length-1; i++)
             sql += ', ( ? , \'1\')';
@@ -225,11 +225,11 @@ class Bot {
                 let sql = 'SELECT summary ' +
                     'FROM ' + db + '.`' + res.rows[0].id + '#' + chatId + '` ' +
                     'WHERE word = \'Messages count\'';
-                arrUserTables = [{ user_id : res.rows[0].id }];
+                arrUserTables = [{ id : res.rows[0].id }];
                 if (res.rows.length > 1) {
                     sql = `(${sql})`;
                     for (let i = 1; i < res.rows.length; i++){
-                        arrUserTables.push( { user_id : res.rows[i].id });
+                        arrUserTables.push( { id : res.rows[i].id });
                         sql += ' UNION ' +
                             '(SELECT summary ' +
                             'FROM  ' + db + '.`'  + res.rows[i].id + '#' + chatId + '` ' +
@@ -247,7 +247,7 @@ class Bot {
                         'SET summary = ? ' +
                         'WHERE id = ? ;';
                     arrSQLPlaceholder.push(arrUserTables[i].summary);
-                    arrSQLPlaceholder.push(arrUserTables[i].user_id);
+                    arrSQLPlaceholder.push(arrUserTables[i].id);
                 }
                 return this.DB.transaction(sql, arrSQLPlaceholder)
             });

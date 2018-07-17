@@ -160,8 +160,8 @@ class Bot {
             'PRIMARY KEY (user_id));';
         sql +=
             'USE ' + this.mainBase + ' ;' +
-            'INSERT INTO `ROOMS` (`chat_id`, `database_name`) VALUE (?, ?);';
-        return this.DB.transaction(sql,[msg.chat.id, msg.from.id]);
+            'INSERT INTO `ROOMS` (`id`, `chat_id`, `database_name`) VALUE (?, ?, ?);';
+        return this.DB.transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id]);
     }
 
     createUser(msg, db){
@@ -245,9 +245,9 @@ class Bot {
                     arrUserTables[i].summary = res.rows[i].summary;
                     sql += 'UPDATE  ' + db + '.`'  + chatId + '` ' +
                         'SET summary = ? ' +
-                        'WHERE user_id = ? ;';
+                        'WHERE id = ? ;';
                     arrSQLPlaceholder.push(arrUserTables[i].summary);
-                    arrSQLPlaceholder.push(arrUserTables[i].id);
+                    arrSQLPlaceholder.push(arrUserTables[i].user_id);
                 }
                 return this.DB.transaction(sql, arrSQLPlaceholder)
             });
@@ -342,7 +342,7 @@ class Bot {
                 for (let i = 0; i < res.rows.length; i++)
                     arr.push({
                         id: res.rows[i].id,
-                        user_id: res.rows[i].id,
+                        user_id: res.rows[i].user_id,
                         time: res.rows[i].time
                     })
                 return arr;

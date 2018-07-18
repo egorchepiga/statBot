@@ -14,8 +14,8 @@ class Bot {
         this.mainBase = '`' + OPTIONS.mainBase + '`';
     }
 
-    dbName(chatId) {
-        return ' `' + chatId + '#telegram`';
+    dbName(user_id) {
+        return ' `' + user_id + '#telegram`';
     }
 
     setWebHook(url) {
@@ -140,6 +140,11 @@ class Bot {
                 chatStats.time = res;
                 return (res.error) ?
                     {error : res.error, res: null}
+                    : this.getUsersWithChat(chatId)
+            }).then(res => {
+                chatStats.name = res.rows[0].chat_name;
+                return (res.error) ?
+                    {error : res.error, res: null}
                     : chatStats;
             });
     }
@@ -150,31 +155,31 @@ class Bot {
             'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
             '(id int (10) NOT NULL,' +
             'user_id varchar(120) NOT NULL,' +
+            'username varchar(120) NOT NULL,' +
             'time DATETIME (6),' +
             'PRIMARY KEY (id));';
         sql +=
             'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
             '(id varchar(120) NOT NULL,' +
-            'summary int (10),' +
+            'summary int (10) DEFAULT 0,' +
+            'username varchar(120),' +
             'PRIMARY KEY (id));';
         sql +=
-            'USE ' + this.mainBase + ' ;' +
-            'INSERT INTO `ROOMS` (`id`, `chat_id`, `database_name`) VALUE (?, ?, ?);';
-        return this.DB.transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id]);
+            'INSERT INTO '+ this.mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
+        return this.DB.transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title]);
     }
 
     createUser(msg, db){
         let sql =
             'CREATE TABLE ' + db + '.`' + msg.from.id + '#' + msg.chat.id + '` ' +
             '(word varchar(120) NOT NULL,' +
-            'summary int (10) NOT NULL,' +
+            'summary int (10) DEFAULT 1 NOT NULL,' +
             'PRIMARY KEY (word));';
         sql +=
             'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
-            '(`id`,`summary`) ' +
-            'VALUES (?, 0);';
-//msg.from.id + '#' + msg.chat.id
-        return this.DB.transaction(sql, [ msg.from.id ]);
+            '(`id`,`username`) ' +
+            'VALUES (?, ?);';
+        return this.DB.transaction(sql, [ msg.from.id, msg.from.username ]);
     }
 
     updateUsersWords(msg, words) {
@@ -204,13 +209,13 @@ class Bot {
         let words_buff = words.slice(0),
             table = db +'.`'+ msg.from.id + '#' + msg.chat.id + '` ',
             sql = 'INSERT INTO ' + table +
-                ' (`word`, `summary`) VALUES ( ? , \'1\')';
+                ' (`word`) VALUES (?)';
         words_buff.unshift('Messages count');
         for (let i = 0; i < words_buff.length-1; i++)
-            sql += ', ( ? , \'1\')';
+            sql += ', (?)';
         sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
-        sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, NOW() );';
-        words_buff.push(msg.message_id, msg.from.id);
+        sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, ?, NOW() );';
+        words_buff.push(msg.message_id, msg.from.id, msg.from.username);
         return this.DB.transaction(sql, words_buff)
     }
 
@@ -300,7 +305,7 @@ class Bot {
 
     getUsersWithChat(chatId) {
         let sql =
-            'SELECT database_name ' +
+            'SELECT database_name, chat_name ' +
             'FROM '+ this.mainBase +'.`ROOMS` ' +
             'WHERE chat_id = ? ;';
         return this.DB.query(sql, [chatId])
@@ -316,15 +321,15 @@ class Bot {
     }
 
     getChatStats(chatId, db) {
-        return this.DB.query('SELECT * FROM   ' + db + '.`' + chatId + '`;')
+        return this.DB.query('SELECT * FROM   ' + db + '.`' + chatId + '`' +
+            ';')
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                 let arr = [];
                 for (let i = 0; i < res.rows.length; i++)
                     arr.push({
-                        user_id: res.rows[i].id,
+                        user: res.rows[i].username,
                         summary: res.rows[i].summary,
-                        id: res.rows[i].id
                     });
                 return arr;
             })
@@ -341,13 +346,27 @@ class Bot {
                 let arr = [];
                 for (let i = 0; i < res.rows.length; i++)
                     arr.push({
-                        id: res.rows[i].id,
                         user_id: res.rows[i].user_id,
+                        user: res.rows[i].username,
                         time: res.rows[i].time
                     })
                 return arr;
             });
     }
+
+    getTopWords(n, user_id, chat_id, db) {
+        let sql =
+            'SELECT * ' +
+            'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+            'GROUP BY summary DESC , word ' +
+            'LIMIT ?';
+        return this.DB.query(sql, [n++])
+            .then(res => {
+                if (res.error) return {error : res.error, res: null };
+                return res.rows.slice(1);
+            })
+    }
+
 
 }
 

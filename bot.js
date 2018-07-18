@@ -12,6 +12,7 @@ class Bot {
         this.TOKEN = TOKEN;
         this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
         this.mainBase = '`' + OPTIONS.mainBase + '`';
+        this.topSize = OPTIONS.topSize || 5;
     }
 
     dbName(user_id) {
@@ -130,9 +131,9 @@ class Bot {
             .then(res => {
                 return (res.error) ?
                     {error : res.error, res: null}
-                    : this.getChatStats(chatId, db)
+                    : this.getUsersWithChat(chatId)
             }).then(res => {
-                chatStats.users = res;
+                chatStats.name = res.rows[0].chat_name;
                 return (res.error) ?
                     {error : res.error, res: null}
                     : this.getChatActivity(chatId, db, this.fromTime, this.toTime)
@@ -140,9 +141,9 @@ class Bot {
                 chatStats.time = res;
                 return (res.error) ?
                     {error : res.error, res: null}
-                    : this.getUsersWithChat(chatId)
+                    : this.getChatStats(chatId, db)
             }).then(res => {
-                chatStats.name = res.rows[0].chat_name;
+                chatStats.users = res;
                 return (res.error) ?
                     {error : res.error, res: null}
                     : chatStats;
@@ -163,6 +164,7 @@ class Bot {
             '(id varchar(120) NOT NULL,' +
             'summary int (10) DEFAULT 0,' +
             'username varchar(120),' +
+            'top_words varchar(250) NULL,' +
             'PRIMARY KEY (id));';
         sql +=
             'INSERT INTO '+ this.mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
@@ -223,7 +225,8 @@ class Bot {
     //юзерских таблиц. Сливаем всё в таблицу чата.
 
     updateChatStats(chatId, db) {
-        let arrUserTables = [];
+        let arrUserTables = [],
+            arrPromises = [];
         return this.DB.query('SELECT * FROM  ' + db + '.`' + chatId + '`;')
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
@@ -231,6 +234,7 @@ class Bot {
                     'FROM ' + db + '.`' + res.rows[0].id + '#' + chatId + '` ' +
                     'WHERE word = \'Messages count\'';
                 arrUserTables = [{ id : res.rows[0].id }];
+                arrPromises.push(this.getTopWords(this.topSize, res.rows[0].id, chatId, db))
                 if (res.rows.length > 1) {
                     sql = `(${sql})`;
                     for (let i = 1; i < res.rows.length; i++){
@@ -239,19 +243,24 @@ class Bot {
                             '(SELECT summary ' +
                             'FROM  ' + db + '.`'  + res.rows[i].id + '#' + chatId + '` ' +
                             'WHERE word = \'Messages count\')';
+                        arrPromises.push(this.getTopWords(this.topSize, arrUserTables[i].id, chatId, db))
                     }
                 }
-                return this.DB.query(sql)
+                arrPromises.push(this.DB.query(sql));
+                return Promise.all(arrPromises)
             }).then(res => {
-                if (res.error) return {error : res.error, res: null}
+                let last = res.length-1;
+                if (res[last].error) return {error : res[last].error, res: null}
                 let sql = '',
                     arrSQLPlaceholder = [];
-                for (let i = 0; i < res.rows.length; i++) {
-                    arrUserTables[i].summary = res.rows[i].summary;
-                    sql += 'UPDATE  ' + db + '.`'  + chatId + '` ' +
-                        'SET summary = ? ' +
+                for (let i = 0; i < res[last].rows.length; i++) {
+                    arrUserTables[i].summary = res[last].rows[i].summary;
+                    sql +=
+                        'UPDATE ' + db + '.`'  + chatId + '` ' +
+                        'SET summary = ? , top_words = ?' +
                         'WHERE id = ? ;';
                     arrSQLPlaceholder.push(arrUserTables[i].summary);
+                    arrSQLPlaceholder.push(JSON.stringify(res[i]));
                     arrSQLPlaceholder.push(arrUserTables[i].id);
                 }
                 return this.DB.transaction(sql, arrSQLPlaceholder)
@@ -330,6 +339,7 @@ class Bot {
                     arr.push({
                         user: res.rows[i].username,
                         summary: res.rows[i].summary,
+                        top_words: JSON.parse(res.rows[i].top_words)
                     });
                 return arr;
             })
@@ -358,15 +368,18 @@ class Bot {
         let sql =
             'SELECT * ' +
             'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+            'WHERE word != \'Messages count\'' +
             'GROUP BY summary DESC , word ' +
             'LIMIT ?';
-        return this.DB.query(sql, [n++])
+        return this.DB.query(sql, [n])
             .then(res => {
+                let obj = {};
                 if (res.error) return {error : res.error, res: null };
-                return res.rows.slice(1);
+                for (let i = 0; i < res.rows.length; i++)
+                    obj[res.rows[i].word] = res.rows[i].summary;
+                return obj;
             })
     }
-
 
 }
 

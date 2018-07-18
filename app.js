@@ -23,7 +23,8 @@ const BOT = require('./bot').Bot,
         }
     },
     secret : CONFIG.secret,
-    mainBase: CONFIG.bot.mainBase
+    mainBase: CONFIG.bot.mainBase,
+    topSize : CONFIG.bot.topSize
 };
 
 let bot = new BOT(TOKEN,OPTIONS);

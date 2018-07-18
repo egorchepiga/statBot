@@ -31,6 +31,7 @@ function query(sql, params) {
 
 function transaction(sql, params) {
     return new Promise(resolve => {
+        let resArray = [];
         POOL.getConnection((error, connection) => {
             (error) ? resolve({error: error}) :
                 connection.beginTransaction(res => {
@@ -46,12 +47,13 @@ function transaction(sql, params) {
                         } catch (e) {}
                         connection.query(queries[i], _params, (error, results, fields) => {
                             if (error) resolve({error, results});
+                            resArray.push(results);
                         });
                     }
                     connection.commit(function (error) {
                         connection.release();
                         if (error) resolve({error: error});
-                        else resolve({error : null, rows : 'TRANSACTION COMPLITED', result : true});
+                        else resolve({error : null, rows : resArray, result : true});
                     });
                 })
         })

@@ -1,7 +1,5 @@
 class Bot {
 
-    //sql += 'USE `' + user_id + '`;' ;
-
     constructor(TOKEN, OPTIONS) {
         const TelegramBot = require('./telegram-bot/src/telegram');
         this.SHA512 = require('js-sha512');
@@ -12,7 +10,7 @@ class Bot {
         this.TOKEN = TOKEN;
         this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
         this.mainBase = '`' + OPTIONS.mainBase + '`';
-        this.topSize = OPTIONS.topSize || 5;
+        this.topSize = parseInt(OPTIONS.topSize) || 5;
     }
 
     dbName(user_id) {
@@ -100,7 +98,7 @@ class Bot {
         this.telegramBot.on('message', msg => {});
     }
 
-    //Получаем список чатов, апдейтим, считаем активность, выплёвываем
+    //Получаем список чатов, апдейтим, считаем активность
 
     analyze(user_id, token, chatId) {
         return this.authorization(user_id, token)
@@ -118,7 +116,7 @@ class Bot {
     }
 
     authorization(user_id, token) {
-        return this.DB.query('SELECT * FROM ' + this.mainBase +'.`DATABASES` WHERE database_name = ? AND token = ?',[user_id, token])
+        return this.DB.authorize(user_id, token, this.mainBase)
             .then(res => {
                 if (res.error) return {error: res.error, result: null}
                 return {error: null, result: (res.rows.length > 0) }
@@ -136,14 +134,14 @@ class Bot {
                 chatStats.name = res.rows[0].chat_name;
                 return (res.error) ?
                     {error : res.error, res: null}
-                    : this.getChatActivity(chatId, db, this.fromTime, this.toTime)
-            }).then(res => {
-                chatStats.time = res;
-                return (res.error) ?
-                    {error : res.error, res: null}
                     : this.getChatStats(chatId, db)
             }).then(res => {
                 chatStats.users = res;
+                return (res.error) ?
+                    {error : res.error, res: null}
+                    : this.getChatActivity(chatId, db, this.fromTime, this.toTime)
+            }).then(res => {
+                chatStats.time = res;
                 return (res.error) ?
                     {error : res.error, res: null}
                     : chatStats;
@@ -152,36 +150,11 @@ class Bot {
 
     createChat(msg) {
         let db = this.dbName(msg.from.id);
-        let sql =
-            'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
-            '(id int (10) NOT NULL,' +
-            'user_id varchar(120) NOT NULL,' +
-            'username varchar(120) NOT NULL,' +
-            'time DATETIME (6),' +
-            'PRIMARY KEY (id));';
-        sql +=
-            'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
-            '(id varchar(120) NOT NULL,' +
-            'summary int (10) DEFAULT 0,' +
-            'username varchar(120),' +
-            'top_words varchar(250) NULL,' +
-            'PRIMARY KEY (id));';
-        sql +=
-            'INSERT INTO '+ this.mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
-        return this.DB.transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title]);
+        return this.DB.createChat(msg, db, this.mainBase );
     }
 
     createUser(msg, db){
-        let sql =
-            'CREATE TABLE ' + db + '.`' + msg.from.id + '#' + msg.chat.id + '` ' +
-            '(word varchar(120) NOT NULL,' +
-            'summary int (10) DEFAULT 1 NOT NULL,' +
-            'PRIMARY KEY (word));';
-        sql +=
-            'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
-            '(`id`,`username`) ' +
-            'VALUES (?, ?);';
-        return this.DB.transaction(sql, [ msg.from.id, msg.from.username ]);
+        return this.DB.createUser(msg, db);
     }
 
     updateUsersWords(msg, words) {
@@ -208,17 +181,7 @@ class Bot {
     }
 
     updateChatWords(msg, words, db) {
-        let words_buff = words.slice(0),
-            table = db +'.`'+ msg.from.id + '#' + msg.chat.id + '` ',
-            sql = 'INSERT INTO ' + table +
-                ' (`word`) VALUES (?)';
-        words_buff.unshift('Messages count');
-        for (let i = 0; i < words_buff.length-1; i++)
-            sql += ', (?)';
-        sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
-        sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, ?, NOW() );';
-        words_buff.push(msg.message_id, msg.from.id, msg.from.username);
-        return this.DB.transaction(sql, words_buff)
+        return this.DB.updateChatWords(msg, words, db);
     }
 
     //Гененируем запросы для получения инфы об сообщениях из всех
@@ -227,7 +190,7 @@ class Bot {
     updateChatStats(chatId, db) {
         let arrUserTables = [],
             arrPromises = [];
-        return this.DB.query('SELECT * FROM  ' + db + '.`' + chatId + '`;')
+        return this.DB.getUsersFromChat(chatId, db)
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                 let sql = 'SELECT summary ' +
@@ -269,25 +232,17 @@ class Bot {
 
     createStatToken (user_id) {
         let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
-        let sql =
-            'INSERT INTO '+ this.mainBase +'.`DATABASES` ' +
-            '(`database_name`,`token`) ' +
-            'VALUES (?, ?)' +
-            'ON DUPLICATE KEY UPDATE token = ?;';
-        return this.DB.query(sql, [user_id, botToken, botToken])
+        return this.DB.createStatToken(user_id, botToken, this.mainBase)
             .then(res => {
                 if (res.error) return {error : res.error, res: null}
-                return this.DB.query(
-                    'CREATE DATABASE `' + user_id + '#telegram`' +
-                    'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-                );
+                return this.DB.createDB(user_id)
             }).then(res => {
                 return botToken;
             });
     }
 
     getStatToken(user_id) {
-        return this.DB.query('SELECT * FROM ' + this.mainBase + '.`DATABASES` WHERE database_name = ?',[user_id])
+        return this.DB.getStatToken(user_id, this.mainBase)
             .then(res => {
                 if (res.error) return {error: res.error, result: null};
                 let length = 0;
@@ -299,8 +254,8 @@ class Bot {
             })
     }
 
-    getUserChats(baseName) {                                              //перспектива на масштабирование
-        return this.DB.query('SHOW TABLES FROM ' + baseName)
+    getUserChats(baseName) {
+        return this.DB.getUserTables(baseName)
             .then(res => {
                 if (res.error) return {error : res.error, res: null};
                 let chats = [];
@@ -313,11 +268,7 @@ class Bot {
     }
 
     getUsersWithChat(chatId) {
-        let sql =
-            'SELECT database_name, chat_name ' +
-            'FROM '+ this.mainBase +'.`ROOMS` ' +
-            'WHERE chat_id = ? ;';
-        return this.DB.query(sql, [chatId])
+        return this.DB.getUsersWithChat(chatId, this.mainBase)
             .then(res => {
                 if(res.error) return {error: res.error, result: null}
                 let length = 0;
@@ -330,8 +281,7 @@ class Bot {
     }
 
     getChatStats(chatId, db) {
-        return this.DB.query('SELECT * FROM   ' + db + '.`' + chatId + '`' +
-            ';')
+        return this.DB.getChatStats(chatId, db)
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                 let arr = [];
@@ -346,11 +296,7 @@ class Bot {
     }
 
     getChatActivity(chatId, db, from, to) {
-        let sql =
-            'SELECT * ' +
-            'FROM   ' + db + '.`'  + chatId + '#log` ';
-        sql += (from && to) ? `WHERE time > ${from}  AND time < ${to}` : '';
-        return this.DB.query(sql)
+        return this.DB.getChatActivity(chatId, db, from, to)
             .then(res => {
                 if (res.error) return {error : res.error, res: null };
                 let arr = [];
@@ -365,13 +311,7 @@ class Bot {
     }
 
     getTopWords(n, user_id, chat_id, db) {
-        let sql =
-            'SELECT * ' +
-            'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
-            'WHERE word != \'Messages count\'' +
-            'GROUP BY summary DESC , word ' +
-            'LIMIT ?';
-        return this.DB.query(sql, [n])
+        return this.DB.getTopWords(n, user_id, chat_id, db)
             .then(res => {
                 let obj = {};
                 if (res.error) return {error : res.error, res: null };

@@ -60,32 +60,59 @@ function transaction(sql, params) {
     });
 }
 
+function setChatPrivacy(chat_id, privacy, mainBase) {
+    let sql = 'UPDATE '+ mainBase + '.`ROOMS` ' +
+        'SET private = ? ' +
+        'WHERE chat_id = ? ';
+    return query(sql, [privacy, chat_id])
+}
+
+function isChatPrivate(chat_id, mainBase) {
+    let sql = 'SELECT private FROM '+ mainBase + '.`ROOMS` ' +
+        'WHERE chat_id = ? ' +
+        'LIMIT 1';
+    return query(sql, [chat_id])
+        .then(res => {
+            if (res.error) return {error : res.error, res: null };
+            return res.rows[0].private;
+        })
+
+}
+
 function createChat(msg, db, mainBase){
-    let sql =
-        'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
-        '(id int (10) NOT NULL,' +
-        'user_id varchar(120) NOT NULL,' +
-        'username varchar(120) NOT NULL,' +
-        'time DATETIME (6),' +
-        'PRIMARY KEY (id));';
-    sql +=
-        'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
-        '(id varchar(120) NOT NULL,' +
-        'summary int (10) DEFAULT 0,' +
-        'username varchar(120),' +
-        'top_words varchar(250) NULL,' +
-        'PRIMARY KEY (id));';
-    sql +=
-        'INSERT INTO '+ mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
-    return transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title]);
+    return isChatPrivate(msg.chat.id, mainBase)
+        .then(res => {
+            if (res) return {error : 'chat is private!', res: null };
+            let sql =
+                'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
+                '(id int (10) NOT NULL,' +
+                'user_id varchar(120) NOT NULL,' +
+                'username varchar(120) NOT NULL,' +
+                'time DATETIME (6),' +
+                'PRIMARY KEY (id));';
+            sql +=
+                'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
+                '(id varchar(120) NOT NULL,' +
+                'summary int (10) DEFAULT 0,' +
+                'username varchar(120),' +
+                'top_words varchar(250) NULL,' +
+                'PRIMARY KEY (id));';
+            sql +=
+                'INSERT INTO '+ mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
+            return transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title]);
+        });
 }
 
 function createUser(msg, db){
+    let table = db + '.`' + msg.from.id + '#' + msg.chat.id + '`';
     let sql =
-        'CREATE TABLE ' + db + '.`' + msg.from.id + '#' + msg.chat.id + '` ' +
-        '(word varchar(120) NOT NULL,' +
+        'CREATE TABLE ' + table +
+        ' (word varchar(120) NOT NULL,' +
         'summary int (10) DEFAULT 1 NOT NULL,' +
-        'PRIMARY KEY (word));';
+        'PRIMARY KEY (word)); ';
+    sql +=
+        'CREATE UNIQUE INDEX ' + table +
+        ' ON ' + table + ' (word(8));';
     sql +=
         'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
         '(`id`,`username`) ' +
@@ -232,6 +259,16 @@ function getUsersFromChat(chatId, db) {
     return query('SELECT * FROM  ' + db + '.`' + chatId + '`;')
 }
 
+function clearBase(base, mainbase) {
+    let sql = 'DROP DATABASE `' + base +'#telegram`;'
+    sql += 'DELETE FROM ' + mainbase + '.`ROOMS` ' +
+        'WHERE database_name = ?;';
+    sql += 'DELETE FROM ' + mainbase + '.`DATABASES` ' +
+        'WHERE database_name = ?;';
+    console.log(sql);
+    return transaction(sql, [ base, base ]);
+}
+
 module.exports = {
     createChat : createChat,
     createUser : createUser,
@@ -244,6 +281,9 @@ module.exports = {
     getUsersWithChat : getUsersWithChat,
     getChatStats : getChatStats,
     getChatActivity : getChatActivity,
-    updateChatStats : updateChatStats
+    updateChatStats : updateChatStats,
+    clearBase: clearBase,
+    setChatPrivacy: setChatPrivacy,
+    isChatPrivate : isChatPrivate
 }
 

@@ -37,6 +37,7 @@ app.get(`/`, (req, res) => {
     let user_id = req.param('user_id') || 0;
     let token = req.param('token') || 0;
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     bot.analyze(user_id, token)
         .then(botRes => {
         if (botRes.error){

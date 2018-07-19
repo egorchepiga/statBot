@@ -111,6 +111,62 @@ function updateChatWords(msg, words, db) {
     return transaction(sql, words_buff)
 }
 
+function getSummaryForUsers(arrUserID, chat_id, db) {
+    let arrPromises = [],
+        arrUserTables = [{ id : arrUserID[0].id }];
+    let sql = 'SELECT summary ' +
+        'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
+        'WHERE word = \'Messages count\'';
+    arrPromises.push(getTopWords(5, arrUserID[0].id, chat_id, db))
+    if (arrUserID.length > 1) {
+        sql = `(${sql})`;
+        for (let i = 1; i < arrUserID.length; i++){
+            arrUserTables.push( { id : arrUserID[i].id });
+            sql += ' UNION ' +
+                '(SELECT summary ' +
+                'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
+                'WHERE word = \'Messages count\')';
+            arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db))        //topSize
+        }
+    }
+    arrPromises.push(query(sql));
+    return Promise.all(arrPromises)
+}
+
+function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
+    let last = promisesAnswers.length-1;
+    if (promisesAnswers[last].error) return {error : promisesAnswers[last].error, res: null}
+    let sql = '',
+        arrSQLPlaceholder = [];
+    for (let i = 0; i < promisesAnswers[last].rows.length; i++) {
+        arrUserTables[i].summary = promisesAnswers[last].rows[i].summary;
+        sql +=
+            'UPDATE ' + db + '.`'  + chat_id + '` ' +
+            'SET summary = ? , top_words = ?' +
+            'WHERE id = ? ;';
+        arrSQLPlaceholder.push(arrUserTables[i].summary);
+        arrSQLPlaceholder.push(JSON.stringify(promisesAnswers[i]));
+        arrSQLPlaceholder.push(arrUserTables[i].id);
+    }
+    return transaction(sql, arrSQLPlaceholder)
+
+}
+
+function updateChatStats(chat_id, db) {
+    let arrUserTables = [];
+    return getUsersFromChat(chat_id, db)
+        .then(res => {
+            if (res.error) return {error : res.error, res: null };
+            for (let i = 0; i < res.rows.length; i++)
+                arrUserTables.push({ id : res.rows[i].id });
+            return getSummaryForUsers(res.rows, chat_id, db )
+        }).then(res => {
+            let last = res.length-1;
+            if (res[last].error) return {error : res[last].error, res: null}
+            return updateChatTable(res, arrUserTables, chat_id, db)
+        });
+}
+
 function createStatToken(user_id, botToken, mainBase) {
     let sql =
         'INSERT INTO '+ mainBase +'.`DATABASES` ' +
@@ -163,6 +219,13 @@ function getTopWords(n, user_id, chat_id, db) {
         'GROUP BY summary DESC , word ' +
         'LIMIT ?';
     return query(sql, [n])
+        .then(res => {
+            let obj = {};
+            if (res.error) return {error : res.error, res: null };
+            for (let i = 0; i < res.rows.length; i++)
+                obj[res.rows[i].word] = res.rows[i].summary;
+            return obj;
+        })
 }
 
 function getUsersFromChat(chatId, db) {
@@ -170,8 +233,6 @@ function getUsersFromChat(chatId, db) {
 }
 
 module.exports = {
-    query : query,
-    transaction : transaction,
     createChat : createChat,
     createUser : createUser,
     authorize : authorize,
@@ -183,7 +244,6 @@ module.exports = {
     getUsersWithChat : getUsersWithChat,
     getChatStats : getChatStats,
     getChatActivity : getChatActivity,
-    getTopWords : getTopWords,
-    getUsersFromChat : getUsersFromChat
+    updateChatStats : updateChatStats
 }
 

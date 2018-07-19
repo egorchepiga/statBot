@@ -45,7 +45,10 @@ class Bot {
                             return this.createUser(msg, this.dbName(msg.from.id));
                         });
                 }
-                let words = msg.text.split(' ');
+                let words = msg.text.split(/[^a-zA-Zа-яА-Я]/)
+                    .filter(word => {
+                        return (word !== '')
+                    });
                 this.updateUsersWords(msg, words).then(res => {
                 });
             }
@@ -100,7 +103,7 @@ class Bot {
 
     //Получаем список чатов, апдейтим, считаем активность
 
-    analyze(user_id, token, chatId) {
+    analyze(user_id, token) {
         return this.authorization(user_id, token)
             .then(res => {
                 if (!res.result || token === 0 ) return {error: `cant authorize ${user_id} with ${token}`, result: null};
@@ -187,47 +190,8 @@ class Bot {
     //Гененируем запросы для получения инфы об сообщениях из всех
     //юзерских таблиц. Сливаем всё в таблицу чата.
 
-    updateChatStats(chatId, db) {
-        let arrUserTables = [],
-            arrPromises = [];
-        return this.DB.getUsersFromChat(chatId, db)
-            .then(res => {
-                if (res.error) return {error : res.error, res: null };
-                let sql = 'SELECT summary ' +
-                    'FROM ' + db + '.`' + res.rows[0].id + '#' + chatId + '` ' +
-                    'WHERE word = \'Messages count\'';
-                arrUserTables = [{ id : res.rows[0].id }];
-                arrPromises.push(this.getTopWords(this.topSize, res.rows[0].id, chatId, db))
-                if (res.rows.length > 1) {
-                    sql = `(${sql})`;
-                    for (let i = 1; i < res.rows.length; i++){
-                        arrUserTables.push( { id : res.rows[i].id });
-                        sql += ' UNION ' +
-                            '(SELECT summary ' +
-                            'FROM  ' + db + '.`'  + res.rows[i].id + '#' + chatId + '` ' +
-                            'WHERE word = \'Messages count\')';
-                        arrPromises.push(this.getTopWords(this.topSize, arrUserTables[i].id, chatId, db))
-                    }
-                }
-                arrPromises.push(this.DB.query(sql));
-                return Promise.all(arrPromises)
-            }).then(res => {
-                let last = res.length-1;
-                if (res[last].error) return {error : res[last].error, res: null}
-                let sql = '',
-                    arrSQLPlaceholder = [];
-                for (let i = 0; i < res[last].rows.length; i++) {
-                    arrUserTables[i].summary = res[last].rows[i].summary;
-                    sql +=
-                        'UPDATE ' + db + '.`'  + chatId + '` ' +
-                        'SET summary = ? , top_words = ?' +
-                        'WHERE id = ? ;';
-                    arrSQLPlaceholder.push(arrUserTables[i].summary);
-                    arrSQLPlaceholder.push(JSON.stringify(res[i]));
-                    arrSQLPlaceholder.push(arrUserTables[i].id);
-                }
-                return this.DB.transaction(sql, arrSQLPlaceholder)
-            });
+    updateChatStats(chat_id, db) {
+        return this.DB.updateChatStats(chat_id, db)
     }
 
     createStatToken (user_id) {
@@ -308,17 +272,6 @@ class Bot {
                     })
                 return arr;
             });
-    }
-
-    getTopWords(n, user_id, chat_id, db) {
-        return this.DB.getTopWords(n, user_id, chat_id, db)
-            .then(res => {
-                let obj = {};
-                if (res.error) return {error : res.error, res: null };
-                for (let i = 0; i < res.rows.length; i++)
-                    obj[res.rows[i].word] = res.rows[i].summary;
-                return obj;
-            })
     }
 
 }

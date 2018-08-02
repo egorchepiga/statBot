@@ -24,7 +24,8 @@ const BOT = require('./bot').Bot,
     },
     secret : CONFIG.secret,
     mainBase: CONFIG.bot.mainBase,
-    topSize : CONFIG.bot.topSize
+    topSize : CONFIG.bot.topSize,
+    bannedWords : CONFIG.bot.bannedWords
 };
 
 let bot = new BOT(TOKEN,OPTIONS);
@@ -53,7 +54,7 @@ app.listen(port, () => {
     console.log(`Express server is listening on ${port}`);
 });
 
-module.exports = app
+module.exports = app;
 
 process.on('uncaughtException', function(err) {
     console.log(err);

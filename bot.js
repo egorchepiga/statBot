@@ -21,8 +21,6 @@ class Bot {
         return this.telegramBot.setWebHook(url);
     }
 
-
-
     watch() {
         let self = this;
 
@@ -120,7 +118,9 @@ class Bot {
             } else {
                 let words = msg.text.split(/[^a-zA-Zа-яА-Я]/)
                     .filter(word => {
-                        return (word !== '')
+                        return (word !== '' && word.length > 1)
+                    }).map(word => {
+                        return word.toLowerCase();
                     });
                 this.updateUsersWords(msg, words).then(res => {
                 });
@@ -174,7 +174,6 @@ class Bot {
         this.telegramBot.on('message', msg => {});
     }
 
-    //Получаем список чатов, апдейтим, считаем активность
     analyze(user_id, token) {
         return this.authorization(user_id, token)
             .then(res => {
@@ -202,24 +201,20 @@ class Bot {
         let chatStats = {};
         return this.updateChatStats(chat_id, db)
             .then(res => {
-                return (res.error) ?
-                    {error : res.error, result: null}
-                    : this.getUsersWithChat(chat_id)
+                if (res.error) return {error : res.error, result: null};
+                return this.getUsersWithChat(chat_id)
             }).then(res => {
+                if (res.error) return {error : res.error, result: null};
                 chatStats.name = res.rows[0].chat_name;
-                return (res.error) ?
-                    {error : res.error, result: null}
-                    : this.getChatStats(chat_id, db)
+                return this.getChatStats(chat_id, db)
             }).then(res => {
+                if (res.error) return {error : res.error, result: null};
                 chatStats.users = res;
-                return (res.error) ?
-                    {error : res.error, result: null}
-                    : this.getChatActivity(chat_id, db, this.fromTime, this.toTime)
+                return this.getChatActivity(chat_id, db, this.fromTime, this.toTime)
             }).then(res => {
+                if (res.error) return {error : res.error, result: null};
                 chatStats.time = res;
-                return (res.error) ?
-                    {error : res.error, result: null}
-                    : chatStats;
+                return chatStats;
             });
     }
 
@@ -243,13 +238,24 @@ class Bot {
         return this.DB.createUser(msg, db);
     }
 
+    createStatToken (user_id) {
+        let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
+        return this.DB.createStatToken(user_id, botToken, this.mainBase)
+            .then(res => {
+                if (res.error) return {error : res.error, result: null}
+                return this.DB.createDB(user_id)
+            }).then(res => {
+                return botToken;
+            });
+    }
+
     updateUsersWords(msg, words) {
         return this.getUsersWithChat(msg.chat.id)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
                 let chatPromises = [];
                 for (let i = 0; i < res.rows.length; i++) {
-                    let db = this.dbName(res.rows[i].database_name);
+                    let db = this.dbName(res.rows[i].database_name);;
                     chatPromises.push(
                          this.updateChatWords(msg, words, db)
                         .then(res => {
@@ -270,22 +276,8 @@ class Bot {
         return this.DB.updateChatWords(msg, words, db);
     }
 
-    //Гененируем запросы для получения инфы об сообщениях из всех
-    //юзерских таблиц. Сливаем всё в таблицу чата.
-
     updateChatStats(chat_id, db) {
-        return this.DB.updateChatStats(chat_id, db)
-    }
-
-    createStatToken (user_id) {
-        let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
-        return this.DB.createStatToken(user_id, botToken, this.mainBase)
-            .then(res => {
-                if (res.error) return {error : res.error, result: null}
-                return this.DB.createDB(user_id)
-            }).then(res => {
-                return botToken;
-            });
+        return this.DB.updateChatStats(chat_id, db, this.mainBase)
     }
 
     getStatToken(user_id) {

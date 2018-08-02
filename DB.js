@@ -9,15 +9,8 @@ const MYSQL = require('mysql'),
     database: CONFIG.db.clients.database
 },
     POOL = MYSQL.createPool(OPTIONS);
-/**
- *
- * @param  sql - sql запрос. В местах подстановке параметров пишется ? (знак "вопрос");
- * @param  params - вставляемый параметр в запрос (массив [ ] параметров по порядку);
- * @return возвращает ответ от БД;
- * @pablic
- */
-function query(sql, params) {
 
+function query(sql, params) {
     return new Promise(resolve => {
         POOL.getConnection((error, connection) => {
             (error) ? resolve({error: error}) :
@@ -74,6 +67,7 @@ function isChatPrivate(chat_id, mainBase) {
     return query(sql, [chat_id])
         .then(res => {
             if (res.error) return {error : res.error, res: null };
+            if (res.rows.length === 0) return false;
             return res.rows[0].private;
         })
 
@@ -110,14 +104,49 @@ function createUser(msg, db){
         ' (word varchar(120) NOT NULL,' +
         'summary int (10) DEFAULT 1 NOT NULL,' +
         'PRIMARY KEY (word)); ';
-    sql +=
+   /* sql +=
         'CREATE UNIQUE INDEX ' + table +
-        ' ON ' + table + ' (word(8));';
+        ' ON ' + table + ' (word(1));';*/
     sql +=
         'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
         '(`id`,`username`) ' +
         'VALUES (?, ?);';
     return transaction(sql, [ msg.from.id, msg.from.username ]);
+}
+
+function createStatToken(user_id, botToken, mainBase) {
+    let sql =
+        'INSERT INTO '+ mainBase +'.`DATABASES` ' +
+        '(`database_name`,`token`) ' +
+        'VALUES (?, ?)' +
+        'ON DUPLICATE KEY UPDATE token = ?;';
+    return query(sql, [user_id, botToken, botToken])
+}
+
+function createDB(user_id) {
+    return query(
+        'CREATE DATABASE `' + user_id + '#telegram`' +
+        'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+    );
+}
+
+function clearBase(base, mainbase) {
+    let sql = 'DROP DATABASE `' + base +'#telegram`;';
+    sql += 'DELETE FROM ' + mainbase + '.`ROOMS` ' +
+        'WHERE database_name = ?;';
+    sql += 'DELETE FROM ' + mainbase + '.`DATABASES` ' +
+        'WHERE database_name = ?;';
+    console.log(sql);
+    return transaction(sql, [ base, base ]);
+}
+
+function clearBannedWords(user_id, chat_id, db, bannedWords) {                //Добавить функционал по редактированию конфига на лету
+    let sql = 'DELETE FROM ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+        'WHERE word IN ( ?';
+    for (let i = 0; i < bannedWords.length - 1; i++)
+        sql += ', ?'
+    sql += ')';
+    return query(sql, bannedWords)
 }
 
 function authorize(user_id, token, mainBase) {
@@ -136,28 +165,6 @@ function updateChatWords(msg, words, db) {
     sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, ?, NOW() );';
     words_buff.push(msg.message_id, msg.from.id, msg.from.username);
     return transaction(sql, words_buff)
-}
-
-function getSummaryForUsers(arrUserID, chat_id, db) {
-    let arrPromises = [],
-        arrUserTables = [{ id : arrUserID[0].id }];
-    let sql = 'SELECT summary ' +
-        'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
-        'WHERE word = \'Messages count\'';
-    arrPromises.push(getTopWords(5, arrUserID[0].id, chat_id, db))
-    if (arrUserID.length > 1) {
-        sql = `(${sql})`;
-        for (let i = 1; i < arrUserID.length; i++){
-            arrUserTables.push( { id : arrUserID[i].id });
-            sql += ' UNION ' +
-                '(SELECT summary ' +
-                'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
-                'WHERE word = \'Messages count\')';
-            arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db))        //topSize
-        }
-    }
-    arrPromises.push(query(sql));
-    return Promise.all(arrPromises)
 }
 
 function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
@@ -179,14 +186,14 @@ function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
 
 }
 
-function updateChatStats(chat_id, db) {
+function updateChatStats(chat_id, db, mainbase) {
     let arrUserTables = [];
     return getUsersFromChat(chat_id, db)
         .then(res => {
             if (res.error) return {error : res.error, res: null };
             for (let i = 0; i < res.rows.length; i++)
                 arrUserTables.push({ id : res.rows[i].id });
-            return getSummaryForUsers(res.rows, chat_id, db )
+            return getSummaryForUsers(res.rows, chat_id, db, mainbase )
         }).then(res => {
             let last = res.length-1;
             if (res[last].error) return {error : res[last].error, res: null}
@@ -194,20 +201,30 @@ function updateChatStats(chat_id, db) {
         });
 }
 
-function createStatToken(user_id, botToken, mainBase) {
-    let sql =
-        'INSERT INTO '+ mainBase +'.`DATABASES` ' +
-        '(`database_name`,`token`) ' +
-        'VALUES (?, ?)' +
-        'ON DUPLICATE KEY UPDATE token = ?;';
-    return query(sql, [user_id, botToken, botToken])
-}
-
-function createDB(user_id) {
-    return query(
-        'CREATE DATABASE `' + user_id + '#telegram`' +
-        'CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-    );
+function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
+    return getUsersWithChat(chat_id, mainbase)
+        .then(res => {
+            let bannedWords = JSON.parse(res.rows[0].banned_words),
+                arrPromises = [],
+                arrUserTables = [{ id : arrUserID[0].id }],
+                sql = 'SELECT summary ' +
+                    'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
+                    'WHERE word = \'Messages count\'';
+            arrPromises.push(getTopWords(5, arrUserID[0].id, chat_id, db, bannedWords));                   //до
+            if (arrUserID.length > 1) {
+                sql = `(${sql})`;
+                for (let i = 1; i < arrUserID.length; i++){
+                    arrUserTables.push( { id : arrUserID[i].id });
+                    sql += ' UNION ' +
+                        '(SELECT summary ' +
+                        'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
+                        'WHERE word = \'Messages count\')';
+                    arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db, bannedWords))        //topSize
+                }
+            }
+            arrPromises.push(query(sql));
+            return Promise.all(arrPromises)
+        });
 }
 
 function getStatToken(user_id, mainBase){
@@ -220,7 +237,7 @@ function getUserTables(baseName){
 
 function getUsersWithChat(chatId, mainBase ) {
     let sql =
-        'SELECT database_name, chat_name ' +
+        'SELECT database_name, chat_name, banned_words ' +
         'FROM '+ mainBase +'.`ROOMS` ' +
         'WHERE chat_id = ? ;';
     return query(sql, [chatId])
@@ -238,17 +255,20 @@ function getChatActivity(chatId, db, from, to) {
     return query(sql)
 }
 
-function getTopWords(n, user_id, chat_id, db) {
-    let sql =
-        'SELECT * ' +
-        'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
-        'WHERE word != \'Messages count\'' +
-        'GROUP BY summary DESC , word ' +
-        'LIMIT ?';
-    return query(sql, [n])
+function getTopWords(n, user_id, chat_id, db, bannedWords) {
+    return clearBannedWords(user_id, chat_id, db, bannedWords)
         .then(res => {
-            let obj = {};
             if (res.error) return {error : res.error, res: null };
+            let sql =
+                'SELECT * ' +
+                'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+                'WHERE word != \'Messages count\'' +
+                'GROUP BY summary DESC , word ' +
+                'LIMIT ?';
+            return query(sql, [n])
+        }).then(res => {
+            if (res.error) return {error : res.error, res: null };
+            let obj = {};
             for (let i = 0; i < res.rows.length; i++)
                 obj[res.rows[i].word] = res.rows[i].summary;
             return obj;
@@ -257,16 +277,6 @@ function getTopWords(n, user_id, chat_id, db) {
 
 function getUsersFromChat(chatId, db) {
     return query('SELECT * FROM  ' + db + '.`' + chatId + '`;')
-}
-
-function clearBase(base, mainbase) {
-    let sql = 'DROP DATABASE `' + base +'#telegram`;'
-    sql += 'DELETE FROM ' + mainbase + '.`ROOMS` ' +
-        'WHERE database_name = ?;';
-    sql += 'DELETE FROM ' + mainbase + '.`DATABASES` ' +
-        'WHERE database_name = ?;';
-    console.log(sql);
-    return transaction(sql, [ base, base ]);
 }
 
 module.exports = {
@@ -284,6 +294,6 @@ module.exports = {
     updateChatStats : updateChatStats,
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
-    isChatPrivate : isChatPrivate
-}
+    isChatPrivate : isChatPrivate,
+};
 

@@ -1,5 +1,5 @@
 const MYSQL = require('mysql'),
-    CONFIG = require('./config'),
+    CONFIG = require('../config'),
     EXPIRES = CONFIG.expires,
     OPTIONS = {
     host: CONFIG.db.clients.host,
@@ -149,8 +149,8 @@ function clearBannedWords(user_id, chat_id, db, bannedWords) {                //
     return query(sql, bannedWords)
 }
 
-function authorize(user_id, token, mainBase) {
-    return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE database_name = ? AND token = ?',[user_id, token]);
+function authorize(token, mainBase) {
+    return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE token = ?',[token]);
 }
 
 function updateChatWords(msg, words, db) {

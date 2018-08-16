@@ -1,0 +1,1 @@
+export const SET_SECOND_ALL = 'SET_SECOND_ALL';

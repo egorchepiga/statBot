@@ -1,7 +1,7 @@
 class Bot {
 
     constructor(TOKEN, OPTIONS) {
-        const TelegramBot = require('./telegram-bot/src/telegram');
+        const TelegramBot = require('../telegram-bot/src/telegram');
         this.SHA512 = require('js-sha512');
         this.DB = require('./DB');
         this.fromTime = '';
@@ -26,10 +26,10 @@ class Bot {
 
         this.telegramBot.on('callback_query', function (msg) {
             if (msg.data === 'отчёт')
-            self.getStatToken(msg.from.id)
+            self.createStatToken(msg.from.id)
                 .then(res => {
                     if (res.error) console.log(res.error);
-                    let link = 'https://egorchepiga.ru/chat/local?user_id=' + msg.from.id + '&token=' + res.result;
+                    let link = 'https://egorchepiga.ru/chat/local?token=' + res;
                     this.answerCallbackQuery(msg.id, link, true);
                     this.sendMessage( msg.message.chat.id, link);
                 });
@@ -37,7 +37,7 @@ class Bot {
                 self.renewBase(msg.from.id)
                     .then(res => {
                         if (res.error) return({error : res.error, result: null});
-                        let link = 'https://egorchepiga.ru/chat/local?user_id=' + msg.from.id + '&token=' + res;
+                        let link = 'https://egorchepiga.ru/chat/local?token=' + res;
                         this.answerCallbackQuery(msg.id, link, false);
                         this.sendMessage(  msg.message.chat.id, 'Для наблюдения за группой повторите добавление' +
                             'в неё бота, или прикажите /report в нужной группе.')
@@ -174,26 +174,27 @@ class Bot {
         this.telegramBot.on('message', msg => {});
     }
 
-    analyze(user_id, token) {
-        return this.authorization(user_id, token)
+    analyze(token) {
+        return this.authorization(token)
             .then(res => {
-                if (!res.result || token === 0 ) return {error: `cant authorize ${user_id} with ${token}`, result: null};
-                    return this.getUserChats(this.dbName(user_id))
-                        .then(res => {
-                            if (res.error) return {error : res.error, result: null};
-                            let chatPromises = [];
-                            for (let i = 0; i < res.length; i++)
-                                chatPromises.push(this.refreshInfo(res[i], this.dbName(user_id)));
-                            return Promise.all(chatPromises)
-                        });
+                if (!res.result || token === 0 ) return {error: `cant authorize with ${token}`, result: null};
+                let user_id = res.result[0].database_name ;
+                return this.getUserChats(this.dbName(user_id))
+                    .then(res => {
+                        if (res.error) return {error : res.error, result: null};
+                        let chatPromises = [];
+                        for (let i = 0; i < res.length; i++)
+                            chatPromises.push(this.refreshInfo(res[i], this.dbName(user_id)));
+                        return Promise.all(chatPromises)
+                    });
             });
     }
 
-    authorization(user_id, token) {
-        return this.DB.authorize(user_id, token, this.mainBase)
+    authorization(token) {
+        return this.DB.authorize(token, this.mainBase)
             .then(res => {
-                if (res.error) return {error: res.error, result: null}
-                return {error: null, result: (res.rows.length > 0) }
+                if (res.error || res.rows.length === 0) return {error: res.error, result: null};
+                return {error: null, result: res.rows }
             })
     }
 

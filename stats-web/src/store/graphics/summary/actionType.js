@@ -1,0 +1,2 @@
+export const SET_FIRST_DATA = 'SET_FIRST_DATA';
+export const SET_FIRST_OPTIONS = 'SET_FIRST_OPTIONS';

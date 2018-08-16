@@ -2,7 +2,7 @@ let express = require('express'),
     bodyParser = require('body-parser'),
     app = express();
 
-const BOT = require('./bot').Bot,
+const BOT = require('./src/bot').Bot,
     AGENT = require('socks5-https-client/lib/Agent'),
     CONFIG = require('./config'),
     TOKEN = CONFIG.bot.TOKEN,
@@ -35,11 +35,10 @@ bot.watch();
 
 app.use(bodyParser.json());
 app.get(`/`, (req, res) => {
-    let user_id = req.param('user_id') || 0;
     let token = req.param('token') || 0;
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    bot.analyze(user_id, token)
+    bot.analyze(token)
         .then(botRes => {
         if (botRes.error){
             console.log(botRes);

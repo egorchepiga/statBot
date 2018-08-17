@@ -5,34 +5,34 @@ moment.locale('ru');
 
 
 Date.prototype.addDays = function(days) {
-    this.setDate(new Date(this.valueOf()).getDate() + days);
+    this.setDate(this.getDate() + days);
 };
 
-Date.prototype.monthAlignment = function() {
+Date.prototype.monthAlignment = function() {                                //1-е число месяца
     this.setDate(1);
 };
 
 Date.prototype.weekAlignment = function() {
-    this.setDate(new Date(this.valueOf()).getDate() - this.getDay() + 1);
+    this.setDate(this.getDate() - this.getDay() + 1);                       //Ближайший понедельник
 };
 
 export const createTimeMessage = (timeArray, scale = 0, brutal = false) =>
     dispatch => {
-        let times = prepareTime(timeArray, scale);
-        let time = [];
-        for (let t in times) {
-            time.push({t: t, y: times[t]});
+        let preparedTimeArray = prepareTime(timeArray, scale),
+            timeGraphicData = [];
+        for (let time in preparedTimeArray) {
+            timeGraphicData.push({t: time, y: preparedTimeArray[time]});    //наносим метки на Ox и Oy
         }
 
         let cfg = {
-            timeReady: timeArray,
+            RAWTime: timeArray,
             scale : scale,
             brutal : brutal,
             data: {
-                labels: Object.keys(times),
+                labels: Object.keys(preparedTimeArray),
                 datasets: [{
                     label: 'Количество сообщений по дням',
-                    data: time,
+                    data: timeGraphicData,
                     pointRadius: 4,
                     fill: false,
                     borderWidth: 2,
@@ -64,13 +64,10 @@ export const createTimeMessage = (timeArray, scale = 0, brutal = false) =>
 
 function prepareTime(arr, scale) {
     let times = [],
-        daysToShow = new Date(
-            Date.UTC(
-                new Date().getUTCFullYear(),
-                new Date().getUTCMonth(),
-                new Date().getUTCDate(),
-                0,0,0)
-        );
+        daysToShow = new Date();
+        daysToShow.setHours(0);
+        daysToShow.setMinutes(0);
+        daysToShow.setSeconds(0);                                             //Сегодня 00:00:00
     switch (scale) {
         case '1':
             times = scaleTimeGraphic(arr, hours, daysToShow);
@@ -101,39 +98,45 @@ function prepareTime(arr, scale) {
     return times;
 }
 
+//Функция масштабирования массива времени.
+// arr - массив времени
+// func - функция шаблон
+// daysToShow - последняя дата для чтения с конца.
+
 function scaleTimeGraphic(arr, func, daysToShow) {
     let tmpDate = daysToShow,
         placeholder = {},
-        date = new Date(
-            Date.UTC(
-                new Date().getUTCFullYear(),
-                new Date().getUTCMonth(),
-                new Date().getUTCDate() + 1,            //ближайший следующий день
-                0,0,0)
-        );
-    while (tmpDate < date) {
-        tmpDate = new Date(tmpDate.setUTCHours(tmpDate.getUTCHours() + 1));
-        placeholder[func.call(new Date(tmpDate))] = 0;
-    }
+        date = new Date();
+    date.setHours(0);
+    date.setMinutes(0);
+    date.setSeconds(0);
+    date.addDays(1);                                   //Завтра 00:00:00
+    while (tmpDate < date) {                           //Первая запись массива времени < Завтра 00:00:00
+        let hours = tmpDate.getHours() + 1;
+        tmpDate = new Date(tmpDate.setHours(hours));   //Увеличиваем счётчик первой записи на 1 час вперёд
+        placeholder[func.call(tmpDate)] = 0;           //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
+    }                                                  //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
     let times = [];
-    for (let i = arr.length-1; i > -1; i--)
+    for (let i = arr.length-1; i > -1; i--)            //Фильтруем массив времени по дате с конца
         if (arr[i] < daysToShow) break;
         else times.push(arr[i]);
     return times.reduce(function (acc, el) {
-        acc[func.call(el)] = (acc[func.call(el)] || 0) + 1;
-        return acc;
-    }, placeholder);
+        acc[func.call(el)] = acc[func.call(el)] + 1;   //формируем объект с ключами соотвествующими функции шаблону
+        return acc;                                    //при совпадении ключа увеличиваем его значение на 1
+    }, placeholder);                                   //все ключи уже существуют в шаблоне - placeholder
 }
 
+//------------------------------Функции-шаблоны---------------------------------
+
 let hours = function () {
-    let hour = (this.getUTCHours() < 10 ?  "0" : "") + this.getUTCHours().toString();
+    let hour = (this.getHours() < 10 ?  "0" : "") + this.getHours().toString();    // XXXX-XX/XX/XX XX:XX -> XX:00
     return hour + ":00";
 };
 
-let daySixHours = function () {
-    let hour = this.getUTCHours(),
-        month = (this.getUTCMonth() < 10 ?  "0" : "") + this.getUTCMonth().toString(),
-        day = (this.getUTCDate() < 10 ?  "0" : "") + this.getUTCDate().toString();
+let daySixHours = function () {                                                    // XXXX-XX/XX/XX XX:XX -> XX.XX 03:00, 09:00...
+    let hour = this.getHours(),
+        month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
+        day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
     let strHour = '';
     if (hour <= 6) strHour = "03";
     else if (hour <= 12) strHour = "09";
@@ -142,15 +145,15 @@ let daySixHours = function () {
     return day + "." + month + " " + strHour + ":00";
 };
 
-let monthDays = function () {
-    let month = (this.getUTCMonth() < 10 ?  "0" : "") + this.getUTCMonth().toString(),
-        day = (this.getUTCDate() < 10 ?  "0" : "") + this.getUTCDate().toString();
+let monthDays = function () {                                                       // XXXX-XX/XX/XX XX:XX -> XX.XX
+    let month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
+        day = (this.getUTCDate() < 10 ?  "0" : "") + this.getDate().toString();
     return day + "." + month;
 };
 
-let yearMonthDay = function () {
-    let year = this.getUTCFullYear().toString(),
-        month = (this.getUTCMonth() < 10 ?  "0" : "") + this.getUTCMonth().toString(),
-        day = (this.getUTCDate() < 10 ?  "0" : "") + this.getUTCDate().toString();
+let yearMonthDay = function () {                                                    // XXXX-XX/XX/XX XX:XX -> XX.XX.XXX
+    let year = this.getFullYear().toString(),
+        month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
+        day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
     return day + "." + month + "." + year;
 };

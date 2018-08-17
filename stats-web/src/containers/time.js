@@ -6,7 +6,7 @@ import {createTimeMessage} from '../store/graphics/time/action';
 class TimeMessageGraphic extends Component {
 
     setScale = (action) => {
-        this.props.setDataThirdGraphic(this.props.store.timeMessage.timeReady, action.target.id);
+        this.props.setDataThirdGraphic(this.props.store.timeMessage.RAWTime, action.target.id);
     };
 
     render() {

@@ -13,8 +13,8 @@ Date.prototype.monthAlignment = function() {                                //1-
 };
 
 Date.prototype.weekAlignment = function() {
-    let weekday = [6, 0, 1, 2, 3, 4, 5],
-        dayOfWeek = weekday[this.getDay()];
+    let weekDays = [6, 0, 1, 2, 3, 4, 5],
+        dayOfWeek = weekDays[this.getDay()];
     this.setDate(this.getDate() - dayOfWeek);                       //Ближайший понедельник
 };
 

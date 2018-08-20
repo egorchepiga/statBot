@@ -30,7 +30,7 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, scale = 0) => {
+         setDataThirdGraphic: (time, scale) => {
             dispatch(createTimeMessage(time, scale))
         }
     })

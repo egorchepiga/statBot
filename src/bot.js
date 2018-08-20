@@ -29,7 +29,7 @@ class Bot {
             self.createStatToken(msg.from.id)
                 .then(res => {
                     if (res.error) console.log(res.error);
-                    let link = 'https://egorchepiga.ru/chat/local?token=' + res;
+                    let link = 'https://egorchepiga.ru/?token=' + res;
                     this.answerCallbackQuery(msg.id, link, true);
                     this.sendMessage( msg.message.chat.id, link);
                 });
@@ -37,7 +37,7 @@ class Bot {
                 self.renewBase(msg.from.id)
                     .then(res => {
                         if (res.error) return({error : res.error, result: null});
-                        let link = 'https://egorchepiga.ru/chat/local?token=' + res;
+                        let link = 'https://egorchepiga.ru/?token=' + res;
                         this.answerCallbackQuery(msg.id, link, false);
                         this.sendMessage(  msg.message.chat.id, 'Для наблюдения за группой повторите добавление' +
                             'в неё бота, или прикажите /report в нужной группе.')

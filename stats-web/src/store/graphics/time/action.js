@@ -15,18 +15,16 @@ Date.prototype.monthAlignment = function() {                                //1-
 Date.prototype.weekAlignment = function() {
     let weekDays = [6, 0, 1, 2, 3, 4, 5],
         dayOfWeek = weekDays[this.getDay()];
-    this.setDate(this.getDate() - dayOfWeek);                       //Ближайший понедельник
+    this.setDate(this.getDate() - dayOfWeek);                               //Ближайший понедельник
 };
 
 export const createTimeMessage = (timeArray, scale = 0, brutal = false) =>
     dispatch => {
-        let preparedTimeArray = prepareTime(timeArray, scale),
+        let preparedTimeArray = prepareTime(timeArray, scale, brutal),
             timeGraphicData = [];
-        console.log(preparedTimeArray);
-        for (let time in preparedTimeArray) {
+        for (let time in preparedTimeArray)
             timeGraphicData.push({t: time, y: preparedTimeArray[time]});    //наносим метки на Ox и Oy
-        }
-
+        
         let cfg = {
             RAWTime: timeArray,
             scale : scale,
@@ -65,7 +63,7 @@ export const createTimeMessage = (timeArray, scale = 0, brutal = false) =>
         dispatch({type: types.SET_THIRD_ALL, payload: cfg});
     };
 
-function prepareTime(arr, scale) {
+function prepareTime(arr, scale, brutal) {
     let times = [],
         daysToShow = new Date();
         daysToShow.setHours(0);
@@ -73,18 +71,26 @@ function prepareTime(arr, scale) {
         daysToShow.setSeconds(0);                                             //Сегодня 00:00:00
     switch (scale) {
         case '1':                                                             //день
+            if (brutal) {
+                daysToShow.addDays(-1);
+                daysToShow.setHours(new Date().getHours());
+            }
             times = scaleTimeGraphic(arr, hours, daysToShow);
             break;
         case '2':                                                             //3 дня
-            daysToShow.addDays(-3);
+            if (brutal) {
+                daysToShow.addDays(-3);
+                daysToShow.setHours(new Date().getHours());
+            } else
+                daysToShow.addDays(-2);
             times = scaleTimeGraphic(arr, daySixHours , daysToShow);
             break;
         case '3':                                                             //неделя
-            daysToShow.weekAlignment();
+            brutal ? daysToShow.addDays(-7) : daysToShow.weekAlignment();
             times = scaleTimeGraphic(arr, monthDays , daysToShow);
             break;
         case '4':                                                             //месяц
-            daysToShow.monthAlignment();
+            brutal ? daysToShow.addDays(-31) : daysToShow.monthAlignment();
             times = scaleTimeGraphic(arr, yearMonthDay , daysToShow);
             break;
         case '5':                                                             //пользовательская дата
@@ -93,7 +99,7 @@ function prepareTime(arr, scale) {
             let foo,
                 diffDays = Math.ceil(daysToShow - arr[0] / (1000 * 3600 * 24));
             if (diffDays <= 1) foo = hours;                                   //выбор функции-шаблона в зависимости
-            else if (diffDays <= 3) foo = daySixHours;                        //от размера массива времени по дням
+            else if (diffDays <= 3) foo = daySixHours;                        //от размера массива времени в днях
             else if (diffDays <= 7) foo = monthDays;
             else if (diffDays > 7) foo = yearMonthDay;
             times = scaleTimeGraphic(arr, foo, arr[0]);
@@ -107,18 +113,28 @@ function prepareTime(arr, scale) {
 // daysToShow - последняя дата для чтения с конца.
 
 function scaleTimeGraphic(arr, func, daysToShow) {
-    let tmpDate = daysToShow,
-        placeholder = {};
-        let date = new Date();
-    date.setHours(23);                                 //сегодня 23:00:00 (последнее учитываемое время за день)
-    date.setMinutes(0);
+    let tmpDaysToShow = daysToShow,
+        hours = daysToShow.getHours(),
+        placeholder = {},
+        date = new Date();
+    date.setHours(hours === 0 ? 23 : hours);                        //последнее учитываемое время за день
+    date.setMinutes(0);                                             //или не изменяя время для грубого режима
     date.setSeconds(0);
-    let hours = tmpDate.getHours();
-    while (tmpDate < date) {                           //Первая запись массива времени < сегодня 23:00:00
-        tmpDate = new Date(tmpDate.setHours(hours));
-        hours = tmpDate.getHours() + 1;                //Увеличиваем счётчик первой записи на 1 час вперёд
-        placeholder[func.call(new Date(tmpDate))] = 0; //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
-    }                                                  //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
+    while (tmpDaysToShow < date) {                                  //Первая запись массива времени < сегодня
+        tmpDaysToShow.setHours(hours);
+        tmpDaysToShow = new Date(tmpDaysToShow);
+        hours = tmpDaysToShow.getHours() + 1;                       //Увеличиваем счётчик первой записи на 1 час вперёд
+        placeholder[func.call(new Date(tmpDaysToShow))] = 0;        //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
+    }                                                               //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
+
+
+    /*
+    console.log("1",date);              1 Mon Aug 20 2018 23:00:00 GMT+0300 (Москва, стандартное время)
+    console.log("2",tmpDaysToShow);     2 Tue Aug 21 2018 00:00:00 GMT+0300 (Москва, стандартное время)
+    баг появляется редко, при повторном отображении month scaled
+    */
+
+
     let times = [];
     for (let i = arr.length-1; i > -1; i--)            //Фильтруем массив времени по дате с конца
         if (arr[i] < daysToShow) break;
@@ -151,7 +167,6 @@ let daySixHours = function () {                                                 
 let monthDays = function () {                                                      // XXXX-XX/XX/XX XX:XX -> XX.XX
     let month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
         day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
-    console.log(day + "." + month);
     return day + "." + month;
 };
 

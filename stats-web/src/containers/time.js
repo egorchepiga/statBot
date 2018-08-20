@@ -1,27 +1,56 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import LineChart from '../components/line';
+import Button from '../components/button';
+import Checkbox from '../components/checkbox';
 import {createTimeMessage} from '../store/graphics/time/action';
+
+const buttonLabels = [
+    ' all time ',
+    ' today ',
+    ' 3 days ',
+    ' week ',
+    ' month ',
+    ' custom '
+];
 
 class TimeMessageGraphic extends Component {
 
     setScale = (action) => {
-        this.props.setDataThirdGraphic(this.props.store.timeMessage.RAWTime, action.target.id);
+        this.props.setDataThirdGraphic(this.props.store.timeMessage.RAWTime, action.target.id, this.props.store.timeMessage.brutal);
     };
+
+    changeBrutal = () => {
+        this.props.setDataThirdGraphic(
+            this.props.store.timeMessage.RAWTime,
+            this.props.store.timeMessage.scale,
+            !this.props.store.timeMessage.brutal
+        );
+    };
+
+    createButton = (label, index) => (
+        <Button key={index}
+                id={index}
+                label={label}
+                onClick={this.setScale}
+        />
+    );
+
+    createButtons = (buttonLabels) => (
+        buttonLabels.map(this.createButton)
+    );
 
     render() {
         return (
             <div>
-                <button id={0} onClick={this.setScale}> all time  </button>
-                <button id={1} onClick={this.setScale}> today </button>
-                <button id={2} onClick={this.setScale}> 3 days </button>
-                <button id={3} onClick={this.setScale}> week </button>
-                <button id={4} onClick={this.setScale}> month </button>
-                <button id={5} onClick={this.setScale}> custom </button>
-                <button id={5} onClick={this.setScale}> custom </button>
+                {this.createButtons(buttonLabels)}
+                <Checkbox
+                    label={'brutal'}
+                    onChange={this.changeBrutal}/>
                 <LineChart data={this.props.store.timeMessage.data}
                             options={this.props.store.timeMessage.options}/>
-            </div>)
+            </div>
+        );
     }
 }
 
@@ -30,8 +59,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, scale) => {
-            dispatch(createTimeMessage(time, scale))
+         setDataThirdGraphic: (time, scale, brutal) => {
+            dispatch(createTimeMessage(time, scale, brutal))
         }
     })
 )(TimeMessageGraphic)

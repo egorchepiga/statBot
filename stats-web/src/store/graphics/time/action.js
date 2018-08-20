@@ -13,13 +13,16 @@ Date.prototype.monthAlignment = function() {                                //1-
 };
 
 Date.prototype.weekAlignment = function() {
-    this.setDate(this.getDate() - this.getDay() + 1);                       //Ближайший понедельник
+    let weekday = [6, 0, 1, 2, 3, 4, 5],
+        dayOfWeek = weekday[this.getDay()];
+    this.setDate(this.getDate() - dayOfWeek);                       //Ближайший понедельник
 };
 
 export const createTimeMessage = (timeArray, scale = 0, brutal = false) =>
     dispatch => {
         let preparedTimeArray = prepareTime(timeArray, scale),
             timeGraphicData = [];
+        console.log(preparedTimeArray);
         for (let time in preparedTimeArray) {
             timeGraphicData.push({t: time, y: preparedTimeArray[time]});    //наносим метки на Ox и Oy
         }
@@ -69,28 +72,28 @@ function prepareTime(arr, scale) {
         daysToShow.setMinutes(0);
         daysToShow.setSeconds(0);                                             //Сегодня 00:00:00
     switch (scale) {
-        case '1':
+        case '1':                                                             //день
             times = scaleTimeGraphic(arr, hours, daysToShow);
             break;
-        case '2':
+        case '2':                                                             //3 дня
             daysToShow.addDays(-3);
             times = scaleTimeGraphic(arr, daySixHours , daysToShow);
             break;
-        case '3':
+        case '3':                                                             //неделя
             daysToShow.weekAlignment();
             times = scaleTimeGraphic(arr, monthDays , daysToShow);
             break;
-        case '4':
+        case '4':                                                             //месяц
             daysToShow.monthAlignment();
             times = scaleTimeGraphic(arr, yearMonthDay , daysToShow);
             break;
-        case '5':
+        case '5':                                                             //пользовательская дата
             break;
-        default:
+        default:                                                              //всё время
             let foo,
                 diffDays = Math.ceil(daysToShow - arr[0] / (1000 * 3600 * 24));
-            if (diffDays <= 1) foo = hours;
-            else if (diffDays <= 3) foo = daySixHours;
+            if (diffDays <= 1) foo = hours;                                   //выбор функции-шаблона в зависимости
+            else if (diffDays <= 3) foo = daySixHours;                        //от размера массива времени по дням
             else if (diffDays <= 7) foo = monthDays;
             else if (diffDays > 7) foo = yearMonthDay;
             times = scaleTimeGraphic(arr, foo, arr[0]);
@@ -105,23 +108,23 @@ function prepareTime(arr, scale) {
 
 function scaleTimeGraphic(arr, func, daysToShow) {
     let tmpDate = daysToShow,
-        placeholder = {},
-        date = new Date();
-    date.setHours(0);
+        placeholder = {};
+        let date = new Date();
+    date.setHours(23);                                 //сегодня 23:00:00 (последнее учитываемое время за день)
     date.setMinutes(0);
     date.setSeconds(0);
-    date.addDays(1);                                   //Завтра 00:00:00
-    while (tmpDate < date) {                           //Первая запись массива времени < Завтра 00:00:00
-        let hours = tmpDate.getHours() + 1;
-        tmpDate = new Date(tmpDate.setHours(hours));   //Увеличиваем счётчик первой записи на 1 час вперёд
-        placeholder[func.call(tmpDate)] = 0;           //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
+    let hours = tmpDate.getHours();
+    while (tmpDate < date) {                           //Первая запись массива времени < сегодня 23:00:00
+        tmpDate = new Date(tmpDate.setHours(hours));
+        hours = tmpDate.getHours() + 1;                //Увеличиваем счётчик первой записи на 1 час вперёд
+        placeholder[func.call(new Date(tmpDate))] = 0; //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
     }                                                  //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
     let times = [];
     for (let i = arr.length-1; i > -1; i--)            //Фильтруем массив времени по дате с конца
         if (arr[i] < daysToShow) break;
         else times.push(arr[i]);
     return times.reduce(function (acc, el) {
-        acc[func.call(el)] = acc[func.call(el)] + 1;   //формируем объект с ключами соотвествующими функции шаблону
+        acc[func.call(el)]++;                          //формируем значения с ключами соотвествующими функции шаблону
         return acc;                                    //при совпадении ключа увеличиваем его значение на 1
     }, placeholder);                                   //все ключи уже существуют в шаблоне - placeholder
 }
@@ -145,13 +148,14 @@ let daySixHours = function () {                                                 
     return day + "." + month + " " + strHour + ":00";
 };
 
-let monthDays = function () {                                                       // XXXX-XX/XX/XX XX:XX -> XX.XX
+let monthDays = function () {                                                      // XXXX-XX/XX/XX XX:XX -> XX.XX
     let month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
-        day = (this.getUTCDate() < 10 ?  "0" : "") + this.getDate().toString();
+        day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
+    console.log(day + "." + month);
     return day + "." + month;
 };
 
-let yearMonthDay = function () {                                                    // XXXX-XX/XX/XX XX:XX -> XX.XX.XXX
+let yearMonthDay = function () {                                                   // XXXX-XX/XX/XX XX:XX -> XX.XX.XXXX
     let year = this.getFullYear().toString(),
         month = (this.getMonth() < 10 ?  "0" : "") + this.getMonth().toString(),
         day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();

@@ -2,6 +2,11 @@ import React,{Component} from 'react';
 import {Line} from 'react-chartjs-2';
 
 export default class LineChart extends Component {
+
+    shouldComponentUpdate(){
+        return true;
+    }
+
     render() {
         if (this.props.data) return this.renderGraphic();
         return(<div></div>);

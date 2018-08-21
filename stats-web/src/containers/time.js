@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import LineChart from '../components/line';
 import Button from '../components/button';
 import Checkbox from '../components/checkbox';
+import DateRange from '../components/datepicker';
 import {createTimeMessage} from '../store/graphics/time/action';
 
 const buttonLabels = [
@@ -24,7 +25,9 @@ class TimeMessageGraphic extends Component {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.scale,
-            !this.props.store.timeMessage.brutal
+            !this.props.store.timeMessage.brutal,
+            this.props.store.timeMessage.fromTime,
+            this.props.store.timeMessage.toTime
         );
     };
 
@@ -35,6 +38,22 @@ class TimeMessageGraphic extends Component {
                 onClick={this.setScale}
         />
     );
+
+    setDate = (action) => {
+        console.log(action);
+        switch (action.id) {
+            case 0:
+                this.props.setDataThirdGraphic(
+                    this.props.store.timeMessage.RAWTime,
+                    this.props.store.timeMessage.scale,
+                    this.props.store.timeMessage.brutal,
+                    action.toDate()
+                );
+                break;
+            default:
+        }
+    };
+
 
     createButtons = (buttonLabels) => (
         buttonLabels.map(this.createButton)
@@ -47,6 +66,7 @@ class TimeMessageGraphic extends Component {
                 <Checkbox
                     label={'brutal'}
                     onChange={this.changeBrutal}/>
+                <DateRange/>
                 <LineChart data={this.props.store.timeMessage.data}
                             options={this.props.store.timeMessage.options}/>
             </div>
@@ -59,8 +79,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, scale, brutal) => {
-            dispatch(createTimeMessage(time, scale, brutal))
+         setDataThirdGraphic: (time, scale, brutal, fromTime = null, toTime = null) => {
+            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime))
         }
     })
 )(TimeMessageGraphic)

@@ -8,10 +8,12 @@ class RadioButton extends Component {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.scale,
-            this.props.store.timeMessage.brutal,
+            this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
-            action.target.id
+            action.target.id,
+            this.props.store.timeMessage.average,
+            this.props.store.timeMessage.periods
         );
     };
 
@@ -36,8 +38,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, customScale) => {
-            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, customScale))
+        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, customScale, average, periods) => {
+            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, customScale, average, periods))
         }
     })
 )(RadioButton)

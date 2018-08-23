@@ -32,10 +32,12 @@ class DateRange extends Component {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.scale,
-            this.props.store.timeMessage.brutal,
+            this.props.store.timeMessage.imposition,
             startDate.toDate(),
             endDate.toDate(),
-            timeScale
+            timeScale,
+            this.props.store.timeMessage.average,
+            this.props.store.timeMessage.periods
         );
     };
 

@@ -5,12 +5,12 @@ import Button from '../components/button';
 import Checkbox from '../components/checkbox';
 import RadioButton from '../components/radiobutton';
 import DateRange from '../components/datepicker';
+import Input from '../components/input';
 import {createTimeMessage} from '../store/graphics/time/action';
 
 const buttonLabels = [
     ' all time ',
     ' today ',
-    ' 3 days ',
     ' week ',
     ' month ',
     ' custom '
@@ -19,36 +19,69 @@ const buttonLabels = [
 const radioLabels = [
     ' hours ',
     ' days for 6 hours ',
-    ' month with day ',
-    ' year-month-day '
+    ' month with day '
 ];
 
 class TimeMessageGraphic extends Component {
 
     setScale = (event) => {
-        let timeScale = this.props.store.timeMessage.timeScale;
-        if(event.target.id === '0') timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0]);
+        let timeScale = this.props.store.timeMessage.timeScale,
+            average = this.props.store.timeMessage.average;
+        if(event.target.id === '0') {
+            timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0])
+            average = false;
+        }
         else if(event.target.id === '1') timeScale = '0';
-        else if(event.target.id === '2' || event.target.id === '3') timeScale = '1';
-        else if(event.target.id === '4') timeScale = '2';
+        else if(event.target.id === '2' ) timeScale = '1';
+        else if(event.target.id === '3' || event.target.id === '4' ) timeScale = '2';
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             event.target.id,
-            this.props.store.timeMessage.brutal,
+            this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
-            timeScale
+            timeScale,
+            average,
+            this.props.store.timeMessage.periods
             );
     };
 
-    changeBrutal = () => {
+    changeImposition = () => {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.scale,
-            !this.props.store.timeMessage.brutal,
+            !this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
-            this.props.store.timeMessage.timeScale
+            this.props.store.timeMessage.timeScale,
+            this.props.store.timeMessage.average,
+            this.props.store.timeMessage.periods
+        );
+    };
+
+    changeAverage = () => {
+        this.props.setDataThirdGraphic(
+            this.props.store.timeMessage.RAWTime,
+            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.imposition,
+            this.props.store.timeMessage.fromTime,
+            this.props.store.timeMessage.toTime,
+            this.props.store.timeMessage.timeScale,
+            !this.props.store.timeMessage.average,
+            this.props.store.timeMessage.periods
+        );
+    };
+
+    changePeriods = (event) => {
+        this.props.setDataThirdGraphic(
+            this.props.store.timeMessage.RAWTime,
+            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.imposition,
+            this.props.store.timeMessage.fromTime,
+            this.props.store.timeMessage.toTime,
+            this.props.store.timeMessage.timeScale,
+            this.props.store.timeMessage.average,
+            event.target.value > 0 ? event.target.value : 1,
         );
     };
 
@@ -75,32 +108,44 @@ class TimeMessageGraphic extends Component {
         radioLabels.map(this.createRadio)
     );
 
-    createCheckbox = (label, event) => (
+    createCheckbox = (label, event, checked = false) => (
         <Checkbox
             label={label}
-            onChange={event}/>
+            onChange={event}
+            checked={checked}/>
     );
 
-    createDateRange = (label, event) => (
+    createDateRange = () => (
         <DateRange/>
+    );
+
+    createInput = (label, event, value) => (
+        <Input
+            label={label}
+            onChange={event}
+            value={value}/>
     );
 
 
     render() {
         const dayScale = this.props.store.timeMessage.scale;
-        let brutalVisibility, dateRangeVisibility, timeScaleVisibility,
+        let impositionVisibility, dateRangeVisibility, timeScaleVisibility, averageVisibility, periodsVisibility,
             buttonsVisibility = dayScale;
         if (buttonsVisibility) {
-            dateRangeVisibility = dayScale === '5';
-            timeScaleVisibility = dayScale !== '1';
-            brutalVisibility = dayScale !== '0' && dayScale !== '5';
+            averageVisibility = dayScale !== '0';
+            dateRangeVisibility = dayScale === '4';
+            timeScaleVisibility = dayScale !== '1' && dayScale !== '0';
+            periodsVisibility = this.props.store.timeMessage.average && averageVisibility;
+            impositionVisibility = periodsVisibility;
         }
         return (
             <div>
                 <div>
                     {buttonsVisibility && this.createButtons(buttonLabels)}
+                    {averageVisibility && this.createCheckbox('average', this.changeAverage, this.props.store.timeMessage.average)}
+                    {impositionVisibility && this.createCheckbox('imposition', this.changeImposition, this.props.store.timeMessage.imposition)}
+                    {periodsVisibility && this.createInput('periods', this.changePeriods, this.props.store.timeMessage.periods)}
                 </div>
-                    {brutalVisibility && this.createCheckbox('brutal', this.changeBrutal)}
                     {dateRangeVisibility && this.createDateRange()}
                 <div>
                     {timeScaleVisibility && this.createRadios(radioLabels)}
@@ -132,8 +177,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, scale, brutal, fromTime = null, toTime = null, customScale = null) => {
-            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, customScale))
+         setDataThirdGraphic: (time, scale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1) => {
+            dispatch(createTimeMessage(time, scale, imposition, fromTime, toTime, customScale, average, periods))
         }
     })
 )(TimeMessageGraphic)

@@ -11,24 +11,31 @@ class DateRange extends Component {
         super(props);
         this.state = {
             startDate: moment(),
-            endDate: moment()
+            endDate: moment(),
+            wasClicked : false
         }
     }
 
     handleChange = ({startDate, endDate}) => {
         startDate = moment(startDate || this.state.startDate);
         endDate = endDate || this.state.endDate;
-
         if (startDate.isAfter(endDate)) {
             endDate = startDate
         }
-        this.setState({startDate, endDate});
+
+        let timeScale = this.props.store.timeMessage.timeScale;
+        if(!this.state.wasClicked) timeScale = calculateTimeScale(startDate);
+
+        let wasClicked = true;
+
+        this.setState({startDate, endDate, wasClicked});
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.scale,
             this.props.store.timeMessage.brutal,
             startDate.toDate(),
-            endDate.toDate()
+            endDate.toDate(),
+            timeScale
         );
     };
 
@@ -55,7 +62,21 @@ class DateRange extends Component {
                 />
             </div>
         )
-    }
+    };
+}
+
+let calculateTimeScale = (day) => {
+    let timeFromShow = new Date();
+    timeFromShow.setMinutes(0);
+    timeFromShow.setSeconds(0);
+    let timeToShow = new Date(day);
+    let timeScale,
+        diffDays = Math.ceil((timeFromShow - timeToShow) / (1000 * 3600 * 24));
+    if (diffDays <= 1) timeScale = '0';
+    else if (diffDays <= 3) timeScale = '1';
+    else if (diffDays <= 7) timeScale = '2';
+    else if (diffDays > 7) timeScale = '2';
+    return timeScale;
 }
 
 export default connect(
@@ -63,8 +84,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime) => {
-            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime))
+        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, timeScale) => {
+            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, timeScale))
         }
     })
 )(DateRange)

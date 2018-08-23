@@ -8,19 +8,19 @@ Date.prototype.addDays = function(days) {
     this.setDate(this.getDate() + days);
 };
 
-Date.prototype.monthAlignment = function() {                                //1-е число месяца
+Date.prototype.monthAlignment = function() {                                      //1-е число месяца
     this.setDate(1);
 };
 
-Date.prototype.weekAlignment = function() {
+Date.prototype.weekAlignment = function() {                                       //Ближайший понедельник
     let weekDays = [6, 0, 1, 2, 3, 4, 5],
         dayOfWeek = weekDays[this.getDay()];
-    this.setDate(this.getDate() - dayOfWeek);                               //Ближайший понедельник
+    this.setDate(this.getDate() - dayOfWeek);
 };
 
-export const createTimeMessage = (timeArray, scale = 0, brutal = false, fromTime = 0, toTime = 0, customScale = 0) =>
+export const createTimeMessage = (timeArray, dayScale = '0', brutal = false, fromTime = 0, toTime = 0, timeScale = '0') =>
     dispatch => {
-        let preparedTimeArray = prepareTime(timeArray, scale, brutal, fromTime, toTime, customScale),
+        let preparedTimeArray = prepareTime(timeArray, dayScale, brutal, fromTime, toTime, timeScale),
             tmpPreparedTimeArray = {},
             timeGraphicData = [];
 
@@ -28,13 +28,13 @@ export const createTimeMessage = (timeArray, scale = 0, brutal = false, fromTime
             if(!isNaN(preparedTimeArray[key]))
                 tmpPreparedTimeArray[key] = preparedTimeArray[key];
         for (let time in tmpPreparedTimeArray)
-            timeGraphicData.push({t: time, y: tmpPreparedTimeArray[time]});    //наносим метки на Ox и Oy
+            timeGraphicData.push({t: time, y: tmpPreparedTimeArray[time]});       //наносим метки на Ox и Oy
         
         let cfg = {
             RAWTime: timeArray,
-            scale : scale,
+            scale : dayScale,
             brutal : brutal,
-            customScale: customScale,
+            timeScale: timeScale,
             fromTime: fromTime,
             toTime: toTime,
             data: {
@@ -70,50 +70,50 @@ export const createTimeMessage = (timeArray, scale = 0, brutal = false, fromTime
         dispatch({type: types.SET_THIRD_ALL, payload: cfg});
     };
 
-function prepareTime(arr, scale, brutal, fromTime, toTime, customScale) {
+function prepareTime(arr, dayScale, brutal, fromTime, toTime, timeScale) {
     let scaleFoo,
         times = [],
         timeFromShow = new Date();
-        timeFromShow.setHours(0);
-        timeFromShow.setMinutes(0);
-        timeFromShow.setSeconds(0);                                           //Сегодня 00:00:00
-    switch (scale) {
-        case '1':                                                             //день
+    timeFromShow.setHours(0);
+    timeFromShow.setMinutes(0);
+    timeFromShow.setSeconds(0);                                                    //Сегодня 00:00:00
+    if (timeScale === '0' && dayScale === '1') scaleFoo = hours;
+    else if (timeScale === '0') scaleFoo = daysHours;
+    else if (timeScale === '1') scaleFoo = daySixHours;
+    else if (timeScale === '2') scaleFoo = monthDays;
+    else if (timeScale === '3') scaleFoo = yearMonthDay;
+    switch (dayScale) {
+        case '1':                                                                  //день
             if (brutal) {
                 timeFromShow.addDays(-1);
                 timeFromShow.setHours(new Date().getHours());
             }
-            times = scaleTimeGraphic(arr, hours, timeFromShow);
+            times = scaleTimeGraphic(arr, scaleFoo, timeFromShow);
             break;
-        case '2':                                                             //3 дня
+        case '2':                                                                  //3 дня
             if (brutal) {
                 timeFromShow.addDays(-3);
                 timeFromShow.setHours(new Date().getHours());
             } else
                 timeFromShow.addDays(-2);
-            times = scaleTimeGraphic(arr, daySixHours , timeFromShow);
+            times = scaleTimeGraphic(arr, scaleFoo , timeFromShow);
             break;
-        case '3':                                                             //неделя
+        case '3':                                                                  //неделя
             brutal ? timeFromShow.addDays(-7) : timeFromShow.weekAlignment();
-            times = scaleTimeGraphic(arr, monthDays , timeFromShow);
+            times = scaleTimeGraphic(arr, scaleFoo , timeFromShow);
             break;
-        case '4':                                                             //месяц
+        case '4':                                                                  //месяц
             brutal ? timeFromShow.addDays(-31) : timeFromShow.monthAlignment();
-            times = scaleTimeGraphic(arr, yearMonthDay , timeFromShow);
+            times = scaleTimeGraphic(arr, scaleFoo , timeFromShow);
             break;
         case '5':
-            if (customScale === 0) scaleFoo = daysHours;
-            else if (customScale === 1) scaleFoo = daySixHours;
-            else if (customScale === 2) scaleFoo = monthDays;
-            else if (customScale === 3) scaleFoo = yearMonthDay;
-            times = (fromTime < toTime) ? scaleTimeGraphic(arr, scaleFoo , fromTime, toTime ) : times;
+            if (fromTime < toTime || fromTime !== 0) {
+                fromTime.setHours(0);
+                fromTime.setSeconds(0);
+                times = scaleTimeGraphic(arr, scaleFoo, fromTime, toTime)
+            }
             break;
-        default:                                                              //всё время
-            let diffDays = Math.ceil(timeFromShow - arr[0] / (1000 * 3600 * 24));
-            if (diffDays <= 1) scaleFoo = hours;                                   //выбор функции-шаблона в зависимости
-            else if (diffDays <= 3) scaleFoo = daySixHours;                        //от размера массива времени в днях
-            else if (diffDays <= 7) scaleFoo = monthDays;
-            else if (diffDays > 7) scaleFoo = yearMonthDay;
+        default:                                                                   //всё время
             times = scaleTimeGraphic(arr, scaleFoo, arr[0]);
     }
     return times;
@@ -129,14 +129,14 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
         hours = timeFromShow.getHours(),
         placeholder = {},
         date = timeToShow === 0 ? new Date() : new Date(timeToShow);
-    date.setHours(hours === 0 ? 23 : hours);                        //последнее учитываемое время за день
-    date.setMinutes(0);                                             //или не изменяя время для грубого режима
+    date.setHours(hours === 0 ? 23 : hours);                                       //последнее учитываемое время за день
+    date.setMinutes(0);                                                            //или не изменяя время для грубого режима
     date.setSeconds(0);
-    while (tmpTimeFromShow < date) {                                  //Первая запись массива времени < сегодня
+    while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < сегодня
         tmpTimeFromShow.setHours(hours);
-        hours = tmpTimeFromShow.getHours() + 1;                       //Увеличиваем счётчик первой записи на 1 час вперёд
-        placeholder[func.call(tmpTimeFromShow)] = 0;        //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
-    }                                                               //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
+        hours = tmpTimeFromShow.getHours() + 1;                                    //Увеличиваем счётчик первой записи на 1 час вперёд
+        placeholder[func.call(tmpTimeFromShow)] = 0;                               //функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
+    }                                                                              //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
 
     /*
     console.log("1",date);               1 Mon Aug 20 2018 23:00:00 GMT+0300 (Москва, стандартное время)

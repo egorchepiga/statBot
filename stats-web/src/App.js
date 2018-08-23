@@ -20,28 +20,19 @@ class App extends Component {
         let token = new URL(window.location).searchParams.get("token");
         this.props.setToken(token);
         this.getStats(token);
-    }
+    };
 
     getStats = (token) => {
         this.props.get({token: token});
     };
-    usernameClick = (event) => {
-        this.props.setUser({id: event.target.value});
-    };
-    tokenClick = (event) => {
-        this.props.setToken(event.target.value);
-    };
-    fromTimeClick = (event) => {
-        this.props.setFromTime(event.target.value);
-    };
-    toTimeClick = (event) => {
-        this.props.setToTime(event.target.value);
-    };
+
     setChat = (event) => {
         this.props.setChat(event.target.id);
-        this.props.setDataFirstGraphic(this.props.store.stats[event.target.id]);     //создаем первый график
-        this.props.setDataSecondGraphic(this.props.store.stats[event.target.id]);    //создаем второй график
-        this.props.setDataThirdGraphic(this.props.store.stats[event.target.id].timeReady); //создаем третий график
+        this.props.setDataFirstGraphic(this.props.store.stats[event.target.id]);                               //создаем первый график
+        this.props.setDataSecondGraphic(this.props.store.stats[event.target.id]);                              //создаем второй график
+
+        let timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0]);
+        this.props.setDataThirdGraphic(this.props.store.stats[event.target.id].timeReady,'0',0,0,0,timeScale); //создаем третий график
     };
 
     render() {
@@ -61,8 +52,23 @@ class App extends Component {
                 </div>
             </div>
         );
-    }
+    };
 }
+
+let calculateTimeScale = (day) => {
+    let timeFromShow = new Date();
+    timeFromShow.setHours(0);
+    timeFromShow.setMinutes(0);
+    timeFromShow.setSeconds(0);
+    let timeToShow = new Date(day),
+        timeScale,
+        diffDays = Math.ceil((timeFromShow - timeToShow) / (1000 * 3600 * 24));
+    if (diffDays <= 1) timeScale = '0';
+    else if (diffDays <= 3) timeScale = '1';
+    else if (diffDays <= 7) timeScale = '2';
+    else if (diffDays > 7) timeScale = '2';
+    return timeScale;
+};
 
 export default connect(
     state => ({
@@ -81,8 +87,8 @@ export default connect(
         setDataSecondGraphic: (data) => {
             dispatch(createTopWordsForChat(data))
         },
-        setDataThirdGraphic: (time) => {
-            dispatch(createTimeMessage(time))
+        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, customScale) => {
+            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, customScale))
         },
         get: ({id, token, fromTime, toTime}) => {
             dispatch(getAll({id, token, fromTime, toTime}));

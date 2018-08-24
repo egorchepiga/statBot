@@ -110,8 +110,9 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
                         timeArray[i].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
-                        timeToShow = new Date(timeFromShow);
                         timeFromShow.addDays(-1);
+                        timeToShow = new Date(timeFromShow);
+                        timeToShow.setHours(23);
                     }
                 } else {
                     timeFromShow.addDays(-1 * (periods - 1));
@@ -131,8 +132,9 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
                         timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                        timeToShow = new Date(timeFromShow);
                         timeFromShow.addDays(-7);
+                        timeToShow = new Date(timeFromShow);
+                        timeToShow.setHours(23);
                     }
                 } else {
                     timeFromShow.weekAlignment();
@@ -153,8 +155,9 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
                         timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                        timeToShow = new Date(timeFromShow);
                         timeFromShow.addDays(-31);
+                        timeToShow = new Date(timeFromShow);
+                        timeToShow.setHours(23);
                     }
                 } else {
                     timeFromShow.monthAlignment();
@@ -184,8 +187,9 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                         for (let i = 0; i < periods; i++) {
                             timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
                             timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                            timeToShow = new Date(timeFromShow);
                             timeFromShow.addDays(-diffDays);
+                            timeToShow = new Date(timeFromShow);
+                            timeToShow.setHours(23);
                         }
                     else {
                         timeFromShow.addDays((-diffDays) * (periods - 1));
@@ -215,7 +219,7 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
         hours = timeFromShow.getHours(),
         placeholder = {},
         date = timeToShow === 0 ? new Date() : new Date(timeToShow);
-    date.setHours(hours === 0 ? 23 : hours);                                       //последнее учитываемое время за день
+    date.setHours(23);                                       //последнее учитываемое время за день
     date.setMinutes(0);                                                            //или не изменяя время для грубого режима
     date.setSeconds(0);
     while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < последнее учитываемое время за день
@@ -224,6 +228,8 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
         placeholder[func.call(tmpTimeFromShow)] = 0;                               // функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
     }                                                                              //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
     let times = [];
+    date.setMinutes(59);                                                            //или не изменяя время для грубого режима
+    date.setSeconds(59);
     for (let i = arr.length-1; i > -1; i--) {                                      //Фильтруем массив времени по дате с конца
         if (arr[i] < timeFromShow) break;
         else if (arr[i] < date) times.push(new Date(arr[i]));

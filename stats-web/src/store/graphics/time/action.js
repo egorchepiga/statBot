@@ -221,7 +221,7 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
     while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < последнее учитываемое время за день
         tmpTimeFromShow.setHours(hours);
         hours = tmpTimeFromShow.getHours() + 1;                                    //Увеличиваем счётчик первой записи на 1 час вперёд
-        placeholder[func.call(tmpTimeFromShow)] = 0;                                                  // функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
+        placeholder[func.call(tmpTimeFromShow)] = 0;                               // функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
     }                                                                              //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
     let times = [];
     for (let i = arr.length-1; i > -1; i--) {                                      //Фильтруем массив времени по дате с конца

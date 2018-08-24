@@ -11,7 +11,7 @@ import {setToken} from './store/getStats/token/action'
 import SummaryGraphic from './containers/summary';
 import TopGraphic from './containers/top';
 import TimeMessageGraphic from './containers/time';
-
+import {calculateTimeScale} from "./common/timeHelpers";
 
 
 class App extends Component {
@@ -54,21 +54,6 @@ class App extends Component {
         );
     };
 }
-
-let calculateTimeScale = (day) => {
-    let timeFromShow = new Date();
-    timeFromShow.setHours(0);
-    timeFromShow.setMinutes(0);
-    timeFromShow.setSeconds(0);
-    let timeToShow = new Date(day),
-        timeScale,
-        diffDays = Math.ceil((timeFromShow - timeToShow) / (1000 * 3600 * 24));
-    if (diffDays <= 1) timeScale = '0';
-    else if (diffDays <= 3) timeScale = '1';
-    else if (diffDays <= 7) timeScale = '2';
-    else if (diffDays > 7) timeScale = '2';
-    return timeScale;
-};
 
 export default connect(
     state => ({

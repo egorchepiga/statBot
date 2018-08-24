@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import {connect} from 'react-redux';
 import {createTimeMessage} from "../store/graphics/time/action";
+import {calculateTimeScale} from "../common/timeHelpers";
 
 
 class DateRange extends Component {
@@ -15,20 +16,18 @@ class DateRange extends Component {
             wasClicked : false
         }
     }
+    handleChangeStart = (startDate) => this.handleChange({startDate});
+    handleChangeEnd = (endDate) => this.handleChange({endDate});
 
     handleChange = ({startDate, endDate}) => {
         startDate = moment(startDate || this.state.startDate);
         endDate = endDate || this.state.endDate;
-        if (startDate.isAfter(endDate)) {
-            endDate = startDate
-        }
-
-        let timeScale = this.props.store.timeMessage.timeScale;
-        if(!this.state.wasClicked) timeScale = calculateTimeScale(startDate);
-
+        if (startDate.isAfter(endDate))
+            endDate = startDate;
         let wasClicked = true;
-
         this.setState({startDate, endDate, wasClicked});
+
+        let timeScale = !this.state.wasClicked ? calculateTimeScale(startDate) : this.props.store.timeMessage.timeScale;
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.dayScale,
@@ -40,10 +39,6 @@ class DateRange extends Component {
             this.props.store.timeMessage.periods
         );
     };
-
-    handleChangeStart = (startDate) => this.handleChange({startDate})
-
-    handleChangeEnd = (endDate) => this.handleChange({endDate})
 
     render() {
         return (
@@ -65,20 +60,6 @@ class DateRange extends Component {
             </div>
         )
     };
-}
-
-let calculateTimeScale = (day) => {
-    let timeFromShow = new Date();
-    timeFromShow.setMinutes(0);
-    timeFromShow.setSeconds(0);
-    let timeToShow = new Date(day);
-    let timeScale,
-        diffDays = Math.ceil((timeFromShow - timeToShow) / (1000 * 3600 * 24));
-    if (diffDays <= 1) timeScale = '0';
-    else if (diffDays <= 3) timeScale = '1';
-    else if (diffDays <= 7) timeScale = '2';
-    else if (diffDays > 7) timeScale = '2';
-    return timeScale;
 }
 
 export default connect(

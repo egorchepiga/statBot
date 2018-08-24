@@ -4,9 +4,10 @@ import LineChart from '../components/line';
 import Button from '../components/button';
 import Checkbox from '../components/checkbox';
 import RadioButton from '../components/radiobutton';
-import DateRange from '../components/datepicker';
+import DateRange from '../components/daterange';
 import Input from '../components/input';
 import {createTimeMessage} from '../store/graphics/time/action';
+import {calculateTimeScale} from "../common/timeHelpers";
 
 const buttonLabels = [
     ' all time ',
@@ -28,7 +29,7 @@ class TimeMessageGraphic extends Component {
         let timeScale = this.props.store.timeMessage.timeScale,
             average = this.props.store.timeMessage.average;
         if(event.target.id === '0') {
-            timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0])
+            timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0]);
             average = false;
         }
         else if(event.target.id === '1') timeScale = '0';
@@ -85,6 +86,19 @@ class TimeMessageGraphic extends Component {
         );
     };
 
+    changeTimeScale = (event) => {
+        this.props.setDataThirdGraphic(
+            this.props.store.timeMessage.RAWTime,
+            this.props.store.timeMessage.dayScale,
+            this.props.store.timeMessage.imposition,
+            this.props.store.timeMessage.fromTime,
+            this.props.store.timeMessage.toTime,
+            event.target.id,
+            this.props.store.timeMessage.average,
+            this.props.store.timeMessage.periods
+        );
+    };
+
     createButton = (label, index) => (
         <Button key={index}
                 id={index}
@@ -99,8 +113,10 @@ class TimeMessageGraphic extends Component {
 
     createRadio = (label, index) => (
         <RadioButton key={index}
-                     data_id={index.toString()}
+                     data_id={index}
                      label={label}
+                     onChange={this.changeTimeScale}
+                     checked={index.toString() === this.props.store.timeMessage.timeScale}
         />
     );
 
@@ -156,21 +172,6 @@ class TimeMessageGraphic extends Component {
         );
     };
 }
-
-let calculateTimeScale = (day) => {
-    let timeFromShow = new Date();
-    timeFromShow.setHours(0);
-    timeFromShow.setMinutes(0);
-    timeFromShow.setSeconds(0);
-    let timeToShow = new Date(day),
-        timeScale,
-        diffDays = Math.ceil((timeFromShow - timeToShow) / (1000 * 3600 * 24));
-    if (diffDays <= 1) timeScale = '0';
-    else if (diffDays <= 3) timeScale = '1';
-    else if (diffDays <= 7) timeScale = '2';
-    else if (diffDays > 7) timeScale = '2';
-    return timeScale;
-};
 
 export default connect(
     state => ({

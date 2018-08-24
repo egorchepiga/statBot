@@ -12,10 +12,20 @@ Date.prototype.monthAlignment = function() {                                    
     this.setDate(1);
 };
 
+Date.prototype.monthAlignmentFront = function() {                                                                            //1-е число месяца
+    let day = new Date(this.getFullYear(), this.getMonth() + 1, 0);
+    this.setDate(day.getDate());
+};
+
 Date.prototype.weekAlignment = function() {                                                                             //Ближайший понедельник
     let weekDays = [6, 0, 1, 2, 3, 4, 5],
         dayOfWeek = weekDays[this.getDay()];
     this.setDate(this.getDate() - dayOfWeek);
+};
+
+Date.prototype.weekAlignmentFront = function() {                                                                             //Ближайший понедельник
+    let day = this.getDay();
+    this.setDate(this.getDate() + 7 - day);
 };
 
 export const createTimeMessage = (timeArray, dayScale = '0', imposition = false, fromTime = 0, toTime = 0,
@@ -96,20 +106,20 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
         timeFromShow.setHours(0);
         timeFromShow.setMinutes(0);
         timeFromShow.setSeconds(0);
-    let timeToShow = new Date(timeFromShow);
+    let timeToShow = new Date();
         timeToShow.setHours(23);
     if (timeScale === '0' && dayScale === '1') scaleFoo = hours;                                                        //подбираем функцию шаблон, в зависимости от
-    else if (timeScale === '0' ) scaleFoo =  average ? hours : daysHours;                                               //масштабирования и вида графика (average)
-    else if (timeScale === '1') scaleFoo = average ? daysOfWeekSixHours : daySixHours;
-    else if (timeScale === '2') scaleFoo = average  ? dayOfMonth : monthDays;
-    //else if (timeScale === '3') scaleFoo = yearMonthDay;
+    else if (timeScale === '0' ) scaleFoo =  average ? hours : daysHours;
+    else if (timeScale === '1' && dayScale === '3') scaleFoo = daySixHours;                                             //масштабирования и вида графика (average)
+    else if (timeScale === '1') scaleFoo = daysOfWeekSixHours;
+    else if (timeScale === '2') scaleFoo = average  ? days : dayOfMonth ;
     switch (dayScale) {
         case '1':                                                                                                       //день
             if (average) {
                 if (imposition) {
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                        timeArray[i].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
+                        timeArray[i].label = monthDays.call(timeFromShow);
                         timeFromShow.addDays(-1);
                         timeToShow = new Date(timeFromShow);
                         timeToShow.setHours(23);
@@ -117,7 +127,10 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                 } else {
                     timeFromShow.addDays(-1 * (periods - 1));
                     timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
-                    timeArray[0].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
+                    let timeFromShowStr = monthDays.call(timeFromShow),
+                        timeToShowStr = monthDays.call(timeToShow);
+                    timeArray[0].label = (timeFromShowStr === timeToShowStr) ? timeToShowStr
+                        : timeFromShowStr +' - '+ timeToShowStr;
 
                 }
             } else {
@@ -126,49 +139,50 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             }
             break;
         case '2':                                                                                                       //неделя
+            timeFromShow.weekAlignment();
             if (average) {
+                timeToShow.weekAlignmentFront();
+                console.log(timeToShow);
                 if (imposition) {
-                    timeFromShow.weekAlignment();
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                        timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                        timeFromShow.addDays(-7);
+                        timeArray[i].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
                         timeToShow = new Date(timeFromShow);
+                        timeToShow.addDays(-1);
                         timeToShow.setHours(23);
+                        timeFromShow.addDays(-7);
                     }
                 } else {
-                    timeFromShow.weekAlignment();
                     timeFromShow.addDays(-7 * (periods-1));
-                    timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
-                    timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                    timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
+                    timeArray[0].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
                 }
             } else {
-                timeFromShow.weekAlignment();
                 timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
-                timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                timeArray[0].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
             }
             break;
-        case '3':                                                                  //месяц
+        case '3':
+            timeFromShow.monthAlignment();//месяц
             if (average) {
+                timeToShow.monthAlignmentFront();
                 if (imposition) {
-                    timeFromShow.monthAlignment();
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                        timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                        timeFromShow.addDays(-31);
+                        timeArray[i].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
                         timeToShow = new Date(timeFromShow);
+                        timeToShow.addDays(-1);
                         timeToShow.setHours(23);
+                        timeFromShow.addDays(-31);
                     }
                 } else {
-                    timeFromShow.monthAlignment();
                     timeFromShow.addDays(-31 * (periods - 1));
-                    timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
-                    timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                    timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
+                    timeArray[0].label = monthDays.call(timeFromShow) + " - " + monthDays.call(timeToShow);
                 }
             } else {
-                timeFromShow.monthAlignment();
                 timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
-                timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                timeArray[0].label = dayOfMonth.call(timeFromShow) + " - " + dayOfMonth.call(timeToShow);
             }
             break;
         case '4':                                                                                                       //пользовательское время
@@ -186,19 +200,30 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                     if (imposition)
                         for (let i = 0; i < periods; i++) {
                             timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                            timeArray[i].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
-                            timeFromShow.addDays(-diffDays);
+                            let timeFromShowStr = monthDays.call(timeFromShow),
+                                timeToShowStr = monthDays.call(timeToShow);
+                            timeArray[i].label = (timeFromShowStr === timeToShowStr) ? timeToShowStr
+                                : timeFromShowStr +' - '+ timeToShowStr;
                             timeToShow = new Date(timeFromShow);
+                            timeToShow.addDays(-1);
                             timeToShow.setHours(23);
+                            timeFromShow.addDays(-diffDays);
                         }
                     else {
+                        let timeFromShowStr = monthDays.call(timeFromShow),
+                            timeToShowStr = monthDays.call(timeToShow),
+                            label = (timeFromShowStr === timeToShowStr) ? timeToShowStr
+                            : timeFromShowStr +' - '+ timeToShowStr;
                         timeFromShow.addDays((-diffDays) * (periods - 1));
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                        timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                        timeArray[0].label = label;
                     }
                 } else {
                     timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
-                    timeArray[0].label = daysHours.call(timeFromShow) + " - " + daysHours.call(timeToShow);
+                    let timeFromShowStr = monthDays.call(timeFromShow),
+                        timeToShowStr = monthDays.call(timeToShow);
+                    timeArray[0].label = (timeFromShowStr === timeToShowStr) ? timeToShowStr
+                        : timeFromShowStr +' - '+ timeToShowStr;
                 }
             } else
                 timeArray.push({label:'Укажите время'});
@@ -215,11 +240,14 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
 // func - функция шаблон
 
 function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
+    timeFromShow.setHours(0);
+    timeFromShow.setMinutes(0);
+    timeFromShow.setSeconds(0);
     let tmpTimeFromShow = new Date(timeFromShow),
-        hours = timeFromShow.getHours(),
+        hours = 0,
         placeholder = {},
         date = timeToShow === 0 ? new Date() : new Date(timeToShow);
-    date.setHours(23);                                       //последнее учитываемое время за день
+    date.setHours(23);                                                             //последнее учитываемое время за день
     date.setMinutes(0);                                                            //или не изменяя время для грубого режима
     date.setSeconds(0);
     while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < последнее учитываемое время за день
@@ -228,7 +256,7 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
         placeholder[func.call(tmpTimeFromShow)] = 0;                               // функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
     }                                                                              //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
     let times = [];
-    date.setMinutes(59);                                                            //или не изменяя время для грубого режима
+    date.setMinutes(59);                                                           //или не изменяя время для грубого режима
     date.setSeconds(59);
     for (let i = arr.length-1; i > -1; i--) {                                      //Фильтруем массив времени по дате с конца
         if (arr[i] < timeFromShow) break;
@@ -248,6 +276,10 @@ function hours () {
     return hour + ":00";
 }
 
+function days () {
+    return this.getDate();
+}
+
 function daysHours() {
     let hour = (this.getHours() < 10 ?  "0" : "") + this.getHours().toString(),    // XXXX-XX/XX/XX XX:XX -> XX:00
         day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
@@ -256,14 +288,13 @@ function daysHours() {
 
 function daySixHours() {                                                           // XXXX-XX/XX/XX XX:XX -> XX.XX 03:00, 09:00...
     let hour = this.getHours(),
-        month = (this.getMonth()+1 < 10 ?  "0" : "") + (this.getMonth()+1).toString(),
         day = (this.getDate() < 10 ?  "0" : "") + this.getDate().toString();
     let strHour = '';
     if (hour <= 6) strHour = "03";
     else if (hour <= 12) strHour = "09";
     else if (hour <= 18) strHour = "15";
     else if (hour <= 24) strHour = "21";
-    return day + "." + month + " " + strHour + ":00";
+    return day + " " + strHour + ":00";
 }
 
 function monthDays() {                                                             // XXXX-XX/XX/XX XX:XX -> XX.XX

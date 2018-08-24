@@ -31,7 +31,7 @@ class DateRange extends Component {
         this.setState({startDate, endDate, wasClicked});
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
-            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.dayScale,
             this.props.store.timeMessage.imposition,
             startDate.toDate(),
             endDate.toDate(),
@@ -86,8 +86,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, timeScale) => {
-            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, timeScale))
+        setDataThirdGraphic: (time, dayScale, imposition, fromTime, toTime, timeScale, average, periods) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, timeScale, average, periods))
         }
     })
 )(DateRange)

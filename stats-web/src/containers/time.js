@@ -49,7 +49,7 @@ class TimeMessageGraphic extends Component {
     changeImposition = () => {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
-            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.dayScale,
             !this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
@@ -62,7 +62,7 @@ class TimeMessageGraphic extends Component {
     changeAverage = () => {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
-            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.dayScale,
             this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
@@ -75,7 +75,7 @@ class TimeMessageGraphic extends Component {
     changePeriods = (event) => {
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
-            this.props.store.timeMessage.scale,
+            this.props.store.timeMessage.dayScale,
             this.props.store.timeMessage.imposition,
             this.props.store.timeMessage.fromTime,
             this.props.store.timeMessage.toTime,
@@ -128,7 +128,7 @@ class TimeMessageGraphic extends Component {
 
 
     render() {
-        const dayScale = this.props.store.timeMessage.scale;
+        const dayScale = this.props.store.timeMessage.dayScale;
         let impositionVisibility, dateRangeVisibility, timeScaleVisibility, averageVisibility, periodsVisibility,
             buttonsVisibility = dayScale;
         if (buttonsVisibility) {
@@ -177,8 +177,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, scale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1) => {
-            dispatch(createTimeMessage(time, scale, imposition, fromTime, toTime, customScale, average, periods))
+         setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods))
         }
     })
 )(TimeMessageGraphic)

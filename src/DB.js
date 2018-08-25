@@ -1,6 +1,5 @@
 const MYSQL = require('mysql'),
     CONFIG = require('../config'),
-    EXPIRES = CONFIG.expires,
     OPTIONS = {
     host: CONFIG.db.clients.host,
     port: CONFIG.db.clients.port,
@@ -201,6 +200,27 @@ function updateChatStats(chat_id, db, mainbase) {
         });
 }
 
+function updateBannedWords(user_id, chat_id, db, bannedWords) {
+    let sql = 'UPDATE  ' + db + '.`ROOMS` ' +
+        'SET banned_words = ?' +
+        'WHERE chat_id = ?' +
+        'AND database_name = ?';
+    return query(sql, [chat_id, JSON.stringify(bannedWords), user_id])
+}
+
+function getBannedWords(chat_id, mainbase, user_id) {
+    return getUsersWithChat(chat_id, mainbase)
+        .then(res => {
+            let bannedWords;
+            for (let i = 0; i < res.rows.length; i++)
+                if (res.rows[i].database_name === user_id) {
+                    bannedWords = res.rows[i].banned_words
+                    break;
+                }
+            return JSON.parse(bannedWords)
+        });
+}
+
 function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
     return getUsersWithChat(chat_id, mainbase)
         .then(res => {
@@ -214,6 +234,7 @@ function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
             if (arrUserID.length > 1) {
                 sql = `(${sql})`;
                 for (let i = 1; i < arrUserID.length; i++){
+                    bannedWords = JSON.parse(res.rows[i].banned_words);
                     arrUserTables.push( { id : arrUserID[i].id });
                     sql += ' UNION ' +
                         '(SELECT summary ' +
@@ -282,10 +303,12 @@ function getUsersFromChat(chatId, db) {
 module.exports = {
     createChat : createChat,
     createUser : createUser,
-    authorize : authorize,
-    updateChatWords : updateChatWords,
     createStatToken : createStatToken,
     createDB : createDB,
+    authorize : authorize,
+    updateChatWords : updateChatWords,
+    updateBannedWords : updateBannedWords,
+    getBannedWords : getBannedWords,
     getStatToken : getStatToken,
     getUserTables : getUserTables,
     getUsersWithChat : getUsersWithChat,

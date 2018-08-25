@@ -246,6 +246,7 @@ class Bot {
                 if (res.error) return {error : res.error, result: null}
                 return this.DB.createDB(user_id)
             }).then(res => {
+                if (res.error) return {error : res.error, result: null}
                 return botToken;
             });
     }

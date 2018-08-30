@@ -3,7 +3,7 @@ import * as types from '../store/all/actionType'
 
 export const getAll = ({id, token, fromTime, toTime}) =>
     dispatch => {
-        fetch(`https://egorchepiga.ru/chat/local/?user_id=${id}&token=${token}&fromTime=${fromTime}&toTime=${toTime}`, {
+        fetch(`https://egorchepiga.ru/chat/local/analyze/?token=${token}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'

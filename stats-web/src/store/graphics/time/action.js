@@ -33,13 +33,13 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
     dispatch => {
         let preparedTimeArrays = prepareTime(timeArray, dayScale, imposition, fromTime, toTime, timeScale, average, periods),
             timeGraphicData = [];
-        for (let i = 0; i < preparedTimeArrays.length; i++) {
+        for (let i = preparedTimeArrays.length-1; i > -1; i--) {
             timeGraphicData.push([]);
             for (let time in preparedTimeArrays[i])
-                if(time !== 'label') timeGraphicData[i].push({t: time, y: preparedTimeArrays[i][time]});       //наносим метки на Ox и Oy, не трогаем label
+                if(time !== 'label') timeGraphicData[preparedTimeArrays.length-1-i].push({t: time, y: preparedTimeArrays[i][time]});       //наносим метки на Ox и Oy, не трогаем label
         }
         let cfg = createObjForReducer(
-            timeArray, preparedTimeArrays, timeGraphicData,
+            timeArray, preparedTimeArrays.reverse(), timeGraphicData,
             dayScale, timeScale,
             fromTime, toTime,
             imposition, average, periods
@@ -142,7 +142,6 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             timeFromShow.weekAlignment();
             if (average) {
                 timeToShow.weekAlignmentFront();
-                console.log(timeToShow);
                 if (imposition) {
                     for (let i = 0; i < periods; i++) {
                         timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));

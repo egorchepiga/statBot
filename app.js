@@ -8,7 +8,7 @@ const BOT = require('./src/bot').Bot,
     TOKEN = CONFIG.bot.TOKEN,
     OPTIONS = {
     webHook: {
-        endpoint: '/chat',
+        endpoint: '/tg-hook/',
         port: CONFIG.bot.port,
         key: CONFIG.bot.privkey, // Path to file with PEM private key
         cert: CONFIG.bot.cert, // Path to file with PEM certificate
@@ -30,23 +30,72 @@ const BOT = require('./src/bot').Bot,
 
 let bot = new BOT(TOKEN,OPTIONS);
 
-bot.setWebHook('https://egorchepiga.ru/chat/');
+bot.setWebHook('https://egorchepiga.ru/tg-hook/');
 bot.watch();
 
 app.use(bodyParser.json());
-app.get(`/`, (req, res) => {
-    let token = req.param('token') || 0;
+app.get(`/analyze/`, (req, res) => {
+    let token = req.param('token');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     bot.analyze(token)
         .then(botRes => {
-        if (botRes.error){
-            console.log(botRes);
-            res.sendStatus(401);
-        } else res.send(JSON.stringify(botRes));
-    });
-
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        });
 });
+
+app.get(`/chats/`, (req, res) => {
+    let token = req.param('token');
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    bot.getChats(token)
+        .then(botRes => {
+            if (res.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        })
+});
+
+app.get(`/load/`, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let token = req.param('token'),
+        chat_id = req.param('chat_id');
+        bot.loadChat(token, chat_id)
+        .then(botRes => {
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        });
+});
+
+app.get(`/banned/`, (req, res) => {
+    let token = req.param('token'),
+        chat_id = req.param('chat_id'),
+        bannedWords = req.param('banned_words');
+    bot.updateBannedWords(token, chat_id, bannedWords)
+        .then(botRes => {
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        });
+});
+
+
 
 port = 3000;
 app.listen(port, () => {

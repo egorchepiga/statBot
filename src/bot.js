@@ -184,9 +184,18 @@ class Bot {
                         if (res.error) return {error : res.error, result: null};
                         let chatPromises = [];
                         for (let i = 0; i < res.length; i++)
-                            chatPromises.push(this.refreshInfo(res[i], this.dbName(user_id)));
+                            chatPromises.push(this.refreshInfo(res[i], user_id));
                         return Promise.all(chatPromises)
                     });
+            });
+    }
+
+    loadChat(token, chat_id){
+        return this.authorization(token)
+            .then(res => {
+                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                let user_id = res.result[0].database_name ;
+                return this.refreshInfo(chat_id, user_id)
             });
     }
 
@@ -198,15 +207,17 @@ class Bot {
             })
     }
 
-    refreshInfo(chat_id, db) {
+    refreshInfo(chat_id, user_id) {
+        let db = this.dbName(user_id);
         let chatStats = {};
         return this.updateChatStats(chat_id, db)
             .then(res => {
                 if (res.error) return {error : res.error, result: null};
-                return this.getUsersWithChat(chat_id)
+                return this.getBannedWords(chat_id, user_id)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
-                chatStats.name = res.rows[0].chat_name;
+                chatStats.bannedWords = res.banned_words;
+                chatStats.name = res.chat_name;
                 return this.getChatStats(chat_id, db)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
@@ -261,6 +272,7 @@ class Bot {
                     chatPromises.push(
                          this.updateChatWords(msg, words, db)
                         .then(res => {
+                            console.log(res);
                             if(!res.error) return {error : null, result: true};
                             return this.createUser(msg, db)
                                 .then(res => {
@@ -282,17 +294,28 @@ class Bot {
         return this.DB.updateChatStats(chat_id, db, this.mainBase)
     }
 
-    getStatToken(user_id) {
-        return this.DB.getStatToken(user_id, this.mainBase)
+    updateBannedWords(token, chat_id, bannedWords){
+        return this.authorization(token)
             .then(res => {
-                if (res.error) return {error: res.error, result: null};
-                let length = 0;
-                try {
-                    length = res.rows.length;
-                } catch (e){ console.log(e) }
-                if (length < 1) return {error: 'CREATE TOKEN!', result: null};
-                return {error: null, result: res.rows[0].token }
-            })
+                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                let user_id = res.result[0].database_name;
+                return this.DB.updateBannedWords(user_id, chat_id, this.mainBase, bannedWords)
+            });
+    }
+
+    getBannedWords(chat_id, user_id){                                                                   //also returns chat_name
+        return this.DB.getBannedWords(chat_id, this.mainBase, user_id)
+    }
+
+    getChats(token){
+        return this.authorization(token)
+            .then(res => {
+                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                let user_id = res.result[0].database_name;
+                return this.getUserChats(this.dbName(user_id))
+            }).then(res => {
+                return this.DB.getChatsNames(res, this.mainBase)
+            });
     }
 
     getUserChats(baseName) {
@@ -306,6 +329,10 @@ class Bot {
                     return (tableName.search(/^[^#]*$/) !== -1)       //search возвращает > 0
                 });
             });
+    }
+
+    getChatTopWords(chat_id, basename, count = 6) {
+        return this.DB.getChatTopWords(chat_id, basename, count)
     }
 
     getUsersWithChat(chat_id) {

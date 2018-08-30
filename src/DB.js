@@ -1,12 +1,13 @@
 const MYSQL = require('mysql'),
     CONFIG = require('../config'),
+    EXPIRES = CONFIG.expires,
     OPTIONS = {
-    host: CONFIG.db.clients.host,
-    port: CONFIG.db.clients.port,
-    user: CONFIG.db.clients.user,
-    password: CONFIG.db.clients.password,
-    database: CONFIG.db.clients.database
-},
+        host: CONFIG.db.clients.host,
+        port: CONFIG.db.clients.port,
+        user: CONFIG.db.clients.user,
+        password: CONFIG.db.clients.password,
+        database: CONFIG.db.clients.database
+    },
     POOL = MYSQL.createPool(OPTIONS);
 
 function query(sql, params) {
@@ -91,8 +92,16 @@ function createChat(msg, db, mainBase){
                 'top_words varchar(250) NULL,' +
                 'PRIMARY KEY (id));';
             sql +=
+                'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
+                ' (word varchar(120) NOT NULL,' +
+                'summary int (10) DEFAULT 1 NOT NULL,' +
+                'PRIMARY KEY (word)); ';
+            sql +=
                 'INSERT INTO '+ mainBase + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
-            return transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title]);
+            sql +=
+                'INSERT INTO '+ db + '.`' + msg.chat.id + '` ' +
+                '(`id`,`username`) VALUES (?, ?);';
+            return transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title, msg.chat.id, msg.chat.title]);
         });
 }
 
@@ -103,9 +112,9 @@ function createUser(msg, db){
         ' (word varchar(120) NOT NULL,' +
         'summary int (10) DEFAULT 1 NOT NULL,' +
         'PRIMARY KEY (word)); ';
-   /* sql +=
-        'CREATE UNIQUE INDEX ' + table +
-        ' ON ' + table + ' (word(1));';*/
+    /* sql +=
+         'CREATE UNIQUE INDEX ' + table +
+         ' ON ' + table + ' (word(1));';*/
     sql +=
         'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
         '(`id`,`username`) ' +
@@ -161,7 +170,17 @@ function updateChatWords(msg, words, db) {
     for (let i = 0; i < words_buff.length-1; i++)
         sql += ', (?)';
     sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
+
+    table = db +'.`'+ msg.chat.id + '#' + msg.chat.id + '` ';
+    sql += 'INSERT INTO ' + table +
+            ' (`word`) VALUES (?)';
+    for (let i = 0; i < words_buff.length-1; i++)
+        sql += ', (?)';
+    sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
+    words_buff = words_buff.concat(words_buff);
+
     sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, ?, NOW() );';
+
     words_buff.push(msg.message_id, msg.from.id, msg.from.username);
     return transaction(sql, words_buff)
 }
@@ -200,25 +219,48 @@ function updateChatStats(chat_id, db, mainbase) {
         });
 }
 
+// ["бы", "вот", "все", "да", "для", "до",
+// "если", "еще", "за", "и", "им", "из",
+// "их", "как", "меня", "мне", "мы", "на",
+// "не", "нет", "но", "ну", "он", "она",
+// "они", "от", "по", "про", "так", "там",
+// "тебе", "тебя", "то", "тут", "ты", "уже",
+// "что", "же", "это"]
+
 function updateBannedWords(user_id, chat_id, db, bannedWords) {
     let sql = 'UPDATE  ' + db + '.`ROOMS` ' +
-        'SET banned_words = ?' +
-        'WHERE chat_id = ?' +
+        'SET banned_words = ? ' +
+        'WHERE chat_id = ? ' +
         'AND database_name = ?';
-    return query(sql, [chat_id, JSON.stringify(bannedWords), user_id])
+    return query(sql, [bannedWords, chat_id, user_id])
 }
 
 function getBannedWords(chat_id, mainbase, user_id) {
     return getUsersWithChat(chat_id, mainbase)
         .then(res => {
-            let bannedWords;
             for (let i = 0; i < res.rows.length; i++)
                 if (res.rows[i].database_name === user_id) {
-                    bannedWords = res.rows[i].banned_words
-                    break;
+                    return res.rows[i];
                 }
-            return JSON.parse(bannedWords)
+            return {error: `No matching with ${chat_id} and ${user_id}`}
         });
+}
+
+function getChatsNames(arrChatId, mainbase){
+    console.log(mainbase);
+    let sql =
+        ' SELECT chat_id, chat_name ' +
+        'FROM '+ mainbase + '.`ROOMS` ' +
+        'WHERE chat_id IN ( '+ '?,'.repeat(arrChatId.length) +
+        '0 )';                                                              //ending after last ','
+    return query(sql, arrChatId)
+        .then(res => {
+            let obj = {};
+            for (let i=0; i < res.rows.length; i++){
+                obj[res.rows[i].chat_id] = res.rows[i].chat_name;
+            }
+            return obj;
+        })
 }
 
 function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
@@ -234,7 +276,6 @@ function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
             if (arrUserID.length > 1) {
                 sql = `(${sql})`;
                 for (let i = 1; i < arrUserID.length; i++){
-                    bannedWords = JSON.parse(res.rows[i].banned_words);
                     arrUserTables.push( { id : arrUserID[i].id });
                     sql += ' UNION ' +
                         '(SELECT summary ' +
@@ -303,13 +344,13 @@ function getUsersFromChat(chatId, db) {
 module.exports = {
     createChat : createChat,
     createUser : createUser,
-    createStatToken : createStatToken,
-    createDB : createDB,
     authorize : authorize,
     updateChatWords : updateChatWords,
     updateBannedWords : updateBannedWords,
-    getBannedWords : getBannedWords,
+    createStatToken : createStatToken,
+    createDB : createDB,
     getStatToken : getStatToken,
+    getChatsNames : getChatsNames,
     getUserTables : getUserTables,
     getUsersWithChat : getUsersWithChat,
     getChatStats : getChatStats,
@@ -318,5 +359,5 @@ module.exports = {
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
     isChatPrivate : isChatPrivate,
+    getBannedWords : getBannedWords
 };
-

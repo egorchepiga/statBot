@@ -90,6 +90,7 @@ function createChat(msg, db, mainBase){
                 'summary int (10) DEFAULT 0,' +
                 'username varchar(120),' +
                 'top_words varchar(250) NULL,' +
+                'top_stickers varchar(250) NULL,' +
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
@@ -144,7 +145,6 @@ function clearBase(base, mainbase) {
         'WHERE database_name = ?;';
     sql += 'DELETE FROM ' + mainbase + '.`DATABASES` ' +
         'WHERE database_name = ?;';
-    console.log(sql);
     return transaction(sql, [ base, base ]);
 }
 
@@ -189,17 +189,24 @@ function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
     let last = promisesAnswers.length-1;
     if (promisesAnswers[last].error) return {error : promisesAnswers[last].error, res: null}
     let sql = '',
-        arrSQLPlaceholder = [];
-    for (let i = 0; i < promisesAnswers[last].rows.length; i++) {
+        arrSQLPlaceholder = [],
+        j = 0;
+    let a = arrUserTables.length;
+    for (let i = 0; i < a; i++) {
         arrUserTables[i].summary = promisesAnswers[last].rows[i].summary;
         sql +=
             'UPDATE ' + db + '.`'  + chat_id + '` ' +
-            'SET summary = ? , top_words = ?' +
+            'SET summary = ? , top_words = ? , top_stickers = ? '  +
             'WHERE id = ? ;';
         arrSQLPlaceholder.push(arrUserTables[i].summary);
-        arrSQLPlaceholder.push(JSON.stringify(promisesAnswers[i]));
+        arrSQLPlaceholder.push(JSON.stringify(promisesAnswers[j]));
+        arrSQLPlaceholder.push(JSON.stringify(promisesAnswers[j+1]));
         arrSQLPlaceholder.push(arrUserTables[i].id);
+        j += 2;
+
     }
+    console.log(arrUserTables);
+    console.log(arrSQLPlaceholder);
     return transaction(sql, arrSQLPlaceholder)
 
 }
@@ -211,7 +218,7 @@ function updateChatStats(chat_id, db, mainbase) {
             if (res.error) return {error : res.error, res: null };
             for (let i = 0; i < res.rows.length; i++)
                 arrUserTables.push({ id : res.rows[i].id });
-            return getSummaryForUsers(res.rows, chat_id, db, mainbase )
+            return getSummaryForUsers(arrUserTables, chat_id, db, mainbase )
         }).then(res => {
             let last = res.length-1;
             if (res[last].error) return {error : res[last].error, res: null}
@@ -246,8 +253,25 @@ function getBannedWords(chat_id, mainbase, user_id) {
         });
 }
 
+
+function getTopStickers(user_id, chat_id, db, n = 5) {
+    let sql =
+        'SELECT * FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+        "WHERE word LIKE 'stickers/file_%'" +
+        'GROUP BY summary DESC , word ' +
+        'LIMIT ?';
+    return query(sql, [n])
+        .then(res => {
+            if (res.error) return {error : res.error, res: null };
+            let obj = {};
+            for (let i = 0; i < res.rows.length; i++)
+                obj[res.rows[i].word] = res.rows[i].summary;
+            return obj;
+        })
+}
+
+
 function getChatsNames(arrChatId, mainbase){
-    console.log(mainbase);
     let sql =
         ' SELECT chat_id, chat_name ' +
         'FROM '+ mainbase + '.`ROOMS` ' +
@@ -273,6 +297,7 @@ function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
                     'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
                     'WHERE word = \'Messages count\'';
             arrPromises.push(getTopWords(5, arrUserID[0].id, chat_id, db, bannedWords));                   //до
+            arrPromises.push(getTopStickers(arrUserID[0].id, chat_id, db, 5));
             if (arrUserID.length > 1) {
                 sql = `(${sql})`;
                 for (let i = 1; i < arrUserID.length; i++){
@@ -281,7 +306,8 @@ function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
                         '(SELECT summary ' +
                         'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
                         'WHERE word = \'Messages count\')';
-                    arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db, bannedWords))        //topSize
+                    arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db, bannedWords));        //topSize
+                    arrPromises.push(getTopStickers(arrUserID[i].id, chat_id, db, 5));
                 }
             }
             arrPromises.push(query(sql));
@@ -349,7 +375,6 @@ module.exports = {
     updateBannedWords : updateBannedWords,
     createStatToken : createStatToken,
     createDB : createDB,
-    getStatToken : getStatToken,
     getChatsNames : getChatsNames,
     getUserTables : getUserTables,
     getUsersWithChat : getUsersWithChat,

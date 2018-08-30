@@ -156,7 +156,7 @@ class Bot {
                 });
         });
 
-        this.telegramBot.on('photo', msg => {
+/*        this.telegramBot.on('photo', msg => {
             if (msg.from.id === msg.chat.id) {
                 return {result: null, error: ''};
             }
@@ -164,7 +164,7 @@ class Bot {
                 .then(res => {
                     this.updateUsersWords(msg, [res.file_path]);
                 });
-        });
+        });*/
     }
 
     stopWatch() {
@@ -272,7 +272,6 @@ class Bot {
                     chatPromises.push(
                          this.updateChatWords(msg, words, db)
                         .then(res => {
-                            console.log(res);
                             if(!res.error) return {error : null, result: true};
                             return this.createUser(msg, db)
                                 .then(res => {
@@ -357,7 +356,8 @@ class Bot {
                     arr.push({
                         user: res.rows[i].username,
                         summary: res.rows[i].summary,
-                        top_words: JSON.parse(res.rows[i].top_words)
+                        top_words: JSON.parse(res.rows[i].top_words),
+                        top_stickers: JSON.parse(res.rows[i].top_stickers)
                     });
                 return arr;
             })

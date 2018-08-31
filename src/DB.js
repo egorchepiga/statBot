@@ -206,10 +206,7 @@ function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
         j += 2;
 
     }
-    console.log(arrUserTables);
-    console.log(arrSQLPlaceholder);
     return transaction(sql, arrSQLPlaceholder)
-
 }
 
 function updateChatStats(chat_id, db) {

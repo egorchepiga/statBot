@@ -9,7 +9,6 @@ class Bot {
         this.SECRET = OPTIONS.secret;
         this.TOKEN = TOKEN;
         this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
-        this.mainBase = '`' + OPTIONS.mainBase + '`';
         this.topSize = parseInt(OPTIONS.topSize) || 5;
     }
 
@@ -80,7 +79,7 @@ class Bot {
                 }
             } else if(msg.entities) {
                 if (msg.text.indexOf('/report@egorchepiga_bot') !== -1) {
-                    this.DB.isChatPrivate(msg.chat.id, this.mainBase)
+                    this.DB.isChatPrivate(msg.chat.id)
                         .then(res => {
                             if (res) {
                                 return this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
@@ -105,11 +104,11 @@ class Bot {
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {
                             if ((data.status === "creator") /*|| (data.status == "administrator")*/){
-                                self.DB.isChatPrivate(msg.chat.id, self.mainBase)
+                                self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
                                         res = !res;
                                         let str = (res) ? 'Защита активирована.' : 'Защита деактивирована.';
-                                        self.DB.setChatPrivacy(msg.chat.id, res, self.mainBase);
+                                        self.DB.setChatPrivacy(msg.chat.id, res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });
                             } else self.telegramBot.sendMessage( msg.chat.id, 'Изменение настроек разрешено только для администрации.');
@@ -200,7 +199,7 @@ class Bot {
     }
 
     authorization(token) {
-        return this.DB.authorize(token, this.mainBase)
+        return this.DB.authorize(token)
             .then(res => {
                 if (res.error || res.rows.length === 0) return {error: res.error, result: null};
                 return {error: null, result: res.rows }
@@ -231,7 +230,7 @@ class Bot {
     }
 
     renewBase(base) {
-        return this.DB.clearBase(base, this.mainBase)
+        return this.DB.clearBase(base)
             .then(res => {
                 if (res.error) return {error: res.error, result: null};
                 return this.createStatToken(base)
@@ -243,7 +242,7 @@ class Bot {
 
     createChat(msg) {
         let db = this.dbName(msg.from.id);
-        return this.DB.createChat(msg, db, this.mainBase );
+        return this.DB.createChat(msg, db );
     }
 
     createUser(msg, db){
@@ -252,7 +251,7 @@ class Bot {
 
     createStatToken (user_id) {
         let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
-        return this.DB.createStatToken(user_id, botToken, this.mainBase)
+        return this.DB.createStatToken(user_id, botToken)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
                 return this.DB.createDB(user_id)
@@ -290,7 +289,7 @@ class Bot {
     }
 
     updateChatStats(chat_id, db) {
-        return this.DB.updateChatStats(chat_id, db, this.mainBase)
+        return this.DB.updateChatStats(chat_id, db)
     }
 
     updateBannedWords(token, chat_id, bannedWords){
@@ -298,12 +297,12 @@ class Bot {
             .then(res => {
                 if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;
-                return this.DB.updateBannedWords(user_id, chat_id, this.mainBase, bannedWords)
+                return this.DB.updateBannedWords(user_id, chat_id, bannedWords)
             });
     }
 
     getBannedWords(chat_id, user_id){                                                                   //also returns chat_name
-        return this.DB.getBannedWords(chat_id, this.mainBase, user_id)
+        return this.DB.getBannedWords(chat_id, user_id)
     }
 
     getChats(token){
@@ -313,7 +312,7 @@ class Bot {
                 let user_id = res.result[0].database_name;
                 return this.getUserChats(this.dbName(user_id))
             }).then(res => {
-                return this.DB.getChatsNames(res, this.mainBase)
+                return this.DB.getChatsNames(res)
             });
     }
 
@@ -331,7 +330,7 @@ class Bot {
     }
 
     getUsersWithChat(chat_id) {
-        return this.DB.getUsersWithChat(chat_id, this.mainBase)
+        return this.DB.getUsersWithChat(chat_id)
             .then(res => {
                 if(res.error) return {error: res.error, result: null}
                 let length = 0;

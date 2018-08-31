@@ -81,6 +81,8 @@ app.get(`/load/`, (req, res) => {
 });
 
 app.get(`/banned/`, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     let token = req.param('token'),
         chat_id = req.param('chat_id'),
         bannedWords = req.param('banned_words');
@@ -95,6 +97,24 @@ app.get(`/banned/`, (req, res) => {
         });
 });
 
+
+app.get(`/more/`, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let token = req.param('token'),
+        chat_id = req.param('chat_id'),
+        n = req.param('count'),
+        user_id = req.param('user_id');
+    bot.getTopWords(n, token, user_id, chat_id)
+        .then(botRes => {
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        });
+});
 
 
 port = 3000;

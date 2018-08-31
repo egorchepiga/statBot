@@ -330,10 +330,6 @@ class Bot {
             });
     }
 
-    getChatTopWords(chat_id, basename, count = 6) {
-        return this.DB.getChatTopWords(chat_id, basename, count)
-    }
-
     getUsersWithChat(chat_id) {
         return this.DB.getUsersWithChat(chat_id, this.mainBase)
             .then(res => {
@@ -376,6 +372,15 @@ class Bot {
                     })
                 return arr;
             });
+    }
+
+    getTopWords(n, token, user_id, chat_id){
+        return this.authorization(token)
+            .then(res => {
+                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                let db = res.result[0].database_name;
+                return this.DB.getTopWords(parseInt(n), user_id, chat_id, this.dbName(db))
+            })
     }
 
 }

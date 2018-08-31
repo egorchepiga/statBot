@@ -315,10 +315,6 @@ function getSummaryForUsers(arrUserID, chat_id, db, mainbase) {
         });
 }
 
-function getStatToken(user_id, mainBase){
-    return query('SELECT * FROM ' + mainBase + '.`DATABASES` WHERE database_name = ?',[user_id])
-}
-
 function getUserTables(baseName){
     return query('SHOW TABLES FROM ' + baseName)
 }
@@ -363,6 +359,22 @@ function getTopWords(n, user_id, chat_id, db, bannedWords) {
         })
 }
 
+function getDirectTopWords(n, user_id, chat_id, db) {
+    let sql =
+        'SELECT * ' +
+        'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+        'WHERE word != \'Messages count\'' +
+        'GROUP BY summary DESC , word ' +
+        'LIMIT ?';
+    return query(sql, [n]).then(res => {
+        if (res.error) return {error : res.error, res: null };
+        let obj = {};
+        for (let i = 0; i < res.rows.length; i++)
+            obj[res.rows[i].word] = res.rows[i].summary;
+        return obj;
+    })
+}
+
 function getUsersFromChat(chatId, db) {
     return query('SELECT * FROM  ' + db + '.`' + chatId + '`;')
 }
@@ -380,6 +392,7 @@ module.exports = {
     getUsersWithChat : getUsersWithChat,
     getChatStats : getChatStats,
     getChatActivity : getChatActivity,
+    getTopWords : getDirectTopWords,
     updateChatStats : updateChatStats,
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,

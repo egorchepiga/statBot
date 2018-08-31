@@ -4,7 +4,7 @@ import * as chatTypes from '../chat/actionType'
 
 export const loadChat = ({token, chat_id}) =>
     dispatch => {
-        return fetch(`http://egorchepiga.ru/chat/local/load/?token=${token}&chat_id=${chat_id}`, {
+        return fetch(`https://egorchepiga.ru/tg-stats/load/?token=${token}&chat_id=${chat_id}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'
@@ -25,7 +25,7 @@ export const loadChat = ({token, chat_id}) =>
 
 export const loadUserWords = ({token, chat_id, user_id, count}) =>
     dispatch => {
-        fetch(`http://egorchepiga.ru/chat/local/more/?token=${token}&chat_id=${chat_id}&user_id=${user_id}&count=${count}`, {
+        fetch(`https://egorchepiga.ru/tg-stats/more/?token=${token}&chat_id=${chat_id}&user_id=${user_id}&count=${count}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'
@@ -40,7 +40,7 @@ export const loadUserWords = ({token, chat_id, user_id, count}) =>
 
 export const updateBannedWords = ({token, chat_id, banned_words}) =>
     dispatch => {
-        fetch(`http://egorchepiga.ru/chat/local/banned/?token=${token}&chat_id=${chat_id}&banned=${banned_words}`, {
+        fetch(`https://egorchepiga.ru/tg-stats/banned/?token=${token}&chat_id=${chat_id}&banned=${banned_words}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'

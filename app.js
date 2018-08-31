@@ -1,7 +1,8 @@
 let express = require('express'),
     bodyParser = require('body-parser'),
-    app = express();
-
+    app = express(),
+    https = require('https'),
+    fs = require('fs');
 const BOT = require('./src/bot').Bot,
     AGENT = require('socks5-https-client/lib/Agent'),
     CONFIG = require('./config'),
@@ -116,11 +117,22 @@ app.get(`/more/`, (req, res) => {
         });
 });
 
-
-port = 3000;
+let port = 3002;
 app.listen(port, () => {
-    console.log(`Express server is listening on ${port}`);
+    console.log(`http server is listening on ${port}`);
 });
+
+
+let key = fs.readFileSync(CONFIG.bot.privkey),
+    cert = fs.readFileSync(CONFIG.bot.cert),
+    httpsServer = https.createServer({key: key, cert: cert}, app),
+    SSLport = 3000;
+httpsServer.listen(3000, () => {
+    console.log(`https server is listening on ${SSLport}`);
+});
+
+
+
 
 module.exports = app;
 

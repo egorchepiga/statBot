@@ -4,7 +4,7 @@ import * as initialType from '../store/all/actionType'
 
 export const loadChats = ({token}) => {
     return dispatch => {
-        fetch(`http://egorchepiga.ru/chat/local/chats/?token=${token}`, {
+        fetch(`https://egorchepiga.ru/tg-stats/chats/?token=${token}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'

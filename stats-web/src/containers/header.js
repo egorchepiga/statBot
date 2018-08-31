@@ -9,27 +9,20 @@ import {setFromTime, setToTime} from '../store/getStats/timeFrame/action'
 
 class Header extends Component {
 
-    componentWillMount(){
+    constructor(props){
+        super(props);
         let token = new URL(window.location).searchParams.get("token");
         this.props.setToken(token);
     }
 
-    shouldComponentUpdate(){
-        http://hydraruzxpnew4af.onion/
+    componentWillMount(){
     }
 
     render() {
         return (
             <div>
-                <Init 
-                    userClick={this.userClick}
-                    userId={this.props.store.user.id}
+                <Init
                     token={this.props.store.token}
-                    fromTime={this.props.store.timeFrame.fromTime}
-                    toTime={this.props.store.timeFrame.toTime}
-                    tokenClick={this.tokenClick}
-                    fromTimeClick={this.fromTimeClick}
-                    toTimeClick={this.toTimeClick}
                     getStats={this.getStats}
                 />
             </div>)

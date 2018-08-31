@@ -1,53 +1,63 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import './App.css';
-
 import {createSummaryGraphic} from './store/graphics/summary/action'
 import {createTopWordsForChat} from './store/graphics/top/action'
 import {createTimeMessage} from './store/graphics/time/action'
-import {setChat} from './store/chat/action';
-import {getAll} from './services/stats';
+import {loadChats} from './services/stats';
+import {saveChat, loadChat, loadUserWords, updateBannedWords} from "./store/chat/action";
 import {setToken} from './store/getStats/token/action'
+import {calculateTimeScale} from "./common/timeHelpers";
+import Button from './components/button';
 import SummaryGraphic from './containers/summary';
 import TopGraphic from './containers/top';
 import TimeMessageGraphic from './containers/time';
-import {calculateTimeScale} from "./common/timeHelpers";
-
 
 class App extends Component {
 
-    componentWillMount(){
+    constructor(props) {
+        super(props);
         let token = new URL(window.location).searchParams.get("token");
         this.props.setToken(token);
-        this.getStats(token);
-    };
-
-    getStats = (token) => {
-        this.props.get({token: token});
-    };
+        this.props.getChats({token});
+    }
 
     setChat = (event) => {
-        this.props.setChat(event.target.id);
-        this.props.setDataFirstGraphic(this.props.store.stats[event.target.id]);                               //создаем первый график
-        this.props.setDataSecondGraphic(this.props.store.stats[event.target.id]);                              //создаем второй график
-
-        let timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0]);
-        this.props.setDataThirdGraphic(this.props.store.stats[event.target.id].timeReady,'0',0,0,0,timeScale); //создаем третий график
+        this.props.setChat({token : this.props.store.token, chat_id : event.target.id});
     };
+
+    createButton = (id, label) => (
+        <Button key={id}
+                id={id}
+                label={label}
+                onClick={this.setChat}
+        />
+    );
+
+    createButtons = () => {
+        let arr = [];
+        for (let key in this.props.store.stats)
+            arr.push(this.createButton(key, this.props.store.stats[key]));
+        return arr;
+    };
+
+    shouldComponentUpdate(props){
+        return props.store.stats.length !== 0
+    }
 
     render() {
         return (
             <div className="App">
                 <div>
                     <div>
-                        {(this.props.store.stats.length > 0) ? this.props.store.stats.map((chat, i) => {
-                            return <button key={i} onClick={this.setChat} id={i}>{chat.name}</button>
-                        }) : null}
+                        {this.createButtons()}
                     </div>
-                    <SummaryGraphic/>
-                    <TopGraphic/>
                     <div>
-                    <TimeMessageGraphic/>
+                        <SummaryGraphic/>
+                        <TopGraphic/>
+                        <div>
+                            <TimeMessageGraphic/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,20 +73,17 @@ export default connect(
         setToken: (token) => {
             dispatch(setToken(token));
         },
-        setChat: (id) => {
-            dispatch(setChat(id))
+        getChats: ({token}) => {
+            dispatch(loadChats({token}))
         },
-        setDataFirstGraphic: (data) => {
-            dispatch(createSummaryGraphic(data))
-        },
-        setDataSecondGraphic: (data) => {
-            dispatch(createTopWordsForChat(data))
-        },
-        setDataThirdGraphic: (time, scale, brutal, fromTime, toTime, customScale) => {
-            dispatch(createTimeMessage(time, scale, brutal, fromTime, toTime, customScale))
-        },
-        get: ({id, token, fromTime, toTime}) => {
-            dispatch(getAll({id, token, fromTime, toTime}));
+        setChat: ({token, chat_id}) => {
+            dispatch(loadChat({token, chat_id}))
+                .then(data => {
+                    dispatch(createSummaryGraphic(data));
+                    dispatch(createTopWordsForChat(data));
+                    dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0])));
+                });
+
         }
     })
 )(App);

@@ -29,7 +29,7 @@ class TimeMessageGraphic extends Component {
         let timeScale = this.props.store.timeMessage.timeScale,
             average = this.props.store.timeMessage.average;
         if(event.target.id === '0') {
-            timeScale = calculateTimeScale(this.props.store.stats[event.target.id].timeReady[0]);
+            timeScale = calculateTimeScale(this.props.store.chat.timeReady[0]);
             average = false;
         }
         else if(event.target.id === '1') timeScale = '0';

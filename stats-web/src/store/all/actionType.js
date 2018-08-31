@@ -1,1 +1,1 @@
-export const SET_STATS = 'SET_STATS';
+export const SET_CHATS = 'SET_CHATS';

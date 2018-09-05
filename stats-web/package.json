@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "aphrodite": "^2.2.3",
     "chart.js": "^2.7.2",
     "cross-fetch": "^2.2.2",
     "moment": "^2.22.2",
     "react": "^16.4.1",
+    "react-animations": "^1.0.0",
     "react-chartjs-2": "^2.7.4",
     "react-datepicker": "^1.6.0",
     "react-dom": "^16.4.1",
@@ -14,11 +16,13 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "gulp sass | react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sass": "^4.0.1",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
     "redux-devtools-extension": "^2.13.2",

@@ -19,8 +19,8 @@ const buttonLabels = [
 
 const radioLabels = [
     ' hours ',
-    ' days for 6 hours ',
-    ' month with day '
+    ' 6 hours ',
+    ' days '
 ];
 
 class TimeMessageGraphic extends Component {
@@ -31,6 +31,7 @@ class TimeMessageGraphic extends Component {
         if(event.target.id === '0') {
             timeScale = calculateTimeScale(this.props.store.chat.timeReady[0]);
             average = false;
+            console.log(timeScale);
         }
         else if(event.target.id === '1') timeScale = '0';
         else if(event.target.id === '2' ) timeScale = '1';

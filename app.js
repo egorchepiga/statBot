@@ -117,10 +117,10 @@ app.get(`/more/`, (req, res) => {
         });
 });
 
-let port = 3002;
+/*let port = 3002;
 app.listen(port, () => {
     console.log(`http server is listening on ${port}`);
-});
+});*/
 
 
 let key = fs.readFileSync(CONFIG.bot.privkey),

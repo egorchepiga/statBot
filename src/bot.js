@@ -215,11 +215,14 @@ class Bot {
                 return this.getBannedWords(chat_id, user_id)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
-                chatStats.bannedWords = res.banned_words;
+                chatStats.id = chat_id;
                 chatStats.name = res.chat_name;
+                chatStats.bannedWords = res.banned_words;
                 return this.getChatStats(chat_id, db)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
+                chatStats.chat = res[0];
+                res.splice(0,1);
                 chatStats.users = res;
                 return this.getChatActivity(chat_id, db, this.fromTime, this.toTime)
             }).then(res => {

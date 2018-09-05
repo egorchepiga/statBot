@@ -80,8 +80,7 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayS
             scales: {
                 xAxes: [{
                     scaleLabel: {
-                        display: true,
-                        labelString: 'время'
+                        display: true
                     }
                 }],
                 yAxes: [{
@@ -108,6 +107,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
     else if (timeScale === '0' ) scaleFoo =  average ? hours : daysHours;
     else if (timeScale === '1' && dayScale === '3') scaleFoo = daySixHours;                                             //масштабирования и вида графика (average)
     else if (timeScale === '1') scaleFoo = daysOfWeekSixHours;
+    else if (timeScale === '2' && dayScale === '0') scaleFoo =   monthDays ;
     else if (timeScale === '2') scaleFoo = average  ? days : dayOfMonth ;
     switch (dayScale) {
         case '1':                                                                                                       //день
@@ -138,6 +138,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
         case '2':                                                                                                       //неделя
             timeFromShow.weekAlignment();
             if (average) {
+                if (timeScale === '2') scaleFoo = daysOfWeek;
                 timeToShow.weekAlignmentFront();
                 if (imposition) {
                     for (let i = 0; i < periods; i++) {
@@ -159,7 +160,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             }
             break;
         case '3':
-            timeFromShow.monthAlignment();//месяц
+            timeFromShow.monthAlignment();                                                                              //месяц
             if (average) {
                 timeToShow.monthAlignmentFront();
                 if (imposition) {

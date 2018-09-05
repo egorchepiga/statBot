@@ -2,38 +2,47 @@ import colors from '../../../etc/color'
 import * as types from './actionType'
 export const createTopWordsForChat = (data) =>
     dispatch => {
-        let tmp = {};
-        for (let user in data.users)
-            for (let word in data.users[user].top_words)
-                if (tmp[word]) {
-                    tmp[word] += data.users[user].top_words[word]
+        let tmp = [];
+        let labels =[],data1=[], names=[];
+        for (let user in data.users) {
+            for (let word in data.users[user].top_words) {
+                tmp.push({user: data.users[user].user, word: word, count: data.users[user].top_words[word]})
+            }
+        }
+        while (tmp.length > 0) {
+            let tm = tmp[0],
+                index = 0;
+            for (let i = 1; i < tmp.length; i++) {
+                if (tm.count < tmp[i].count) {
+                    tm = tmp[i];
+                    index = i;
                 }
-                else {
-                    tmp[word] = data.users[user].top_words[word]
-                }
+            }
+            data1.push(tmp[index].count);
+            labels.push(tmp[index].word);
+            names.push(tmp[index].user);
+            tmp.splice(index, 1);
+        }
 
-        let sortable = [];
-        for (let vehicle in tmp) {
-            sortable.push([vehicle, tmp[vehicle]]);
-        }
-        sortable.sort(function(a, b) {
-            return b[1] - a[1];
-        });
-        let labels =[],data1=[];
-        for (let s in sortable) {
-            data1.push(sortable[s][1]);
-            labels.push(sortable[s][0]);
-        }
         let _tmp = {
             data: {
                 datasets: [{
                     data: data1,
                     backgroundColor: colors(),
-                    label: data.name
+                    label: data.name,
+                    labels : names
                 }],
                 labels: labels
             },
             options: {
+                tooltips: {
+                    callbacks: {
+                        label: function(item, data) {
+                            return data.datasets[item.datasetIndex].labels[item.index]
+                                + ": " + data.datasets[item.datasetIndex].data[item.index];
+                        }
+                    }
+                },
                 scales: {
                     xAxes: [{
                         beginAtZero: true,
@@ -48,7 +57,3 @@ export const createTopWordsForChat = (data) =>
         };
         dispatch({type: types.SET_SECOND_ALL, payload: _tmp})
     };
-function f(a, b) {
-    if (a > b) return -1;
-    if (a < b) return 1;
-}

@@ -100,10 +100,12 @@ class TimeMessageGraphic extends Component {
     };
 
     createButton = (label, index) => (
-        <Button key={index}
+        <Button className="btn btn-outline-primary btn-sm col-sm-12 col-md-2 col-lg-2 col-xl-2"
+                key={index}
                 id={index}
                 label={label}
                 onClick={this.setScale}
+                active={this.props.store.timeMessage.dayScale === index.toString()}
         />
     );
 
@@ -142,6 +144,12 @@ class TimeMessageGraphic extends Component {
             value={value}/>
     );
 
+    createHeader = (label) => (
+        <div className="header__most-active">
+            <b>{label}</b>
+        </div>
+    );
+
 
     render() {
         const dayScale = this.props.store.timeMessage.dayScale;
@@ -150,24 +158,29 @@ class TimeMessageGraphic extends Component {
         if (buttonsVisibility) {
             averageVisibility = dayScale !== '0';
             dateRangeVisibility = dayScale === '4';
-            timeScaleVisibility = dayScale !== '1' && dayScale !== '0';
+            timeScaleVisibility = dayScale !== '1' && dayScale !== '0' && dayScale !== '0' && dayScale !== '3';
             periodsVisibility = this.props.store.timeMessage.average && averageVisibility;
             impositionVisibility = periodsVisibility;
         }
         return (
-            <div>
+            <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
+                {buttonsVisibility && this.createHeader("Time activity")}
                 <div>
-                    {buttonsVisibility && this.createButtons(buttonLabels)}
+                    <LineChart data={this.props.store.timeMessage.data}
+                               options={this.props.store.timeMessage.options}/>
+                </div>
+                <div className="wrapper flex-container btn btn__wrapper">
+                    <div className="row btn__wrapper">
+                        {buttonsVisibility && this.createButtons(buttonLabels)}
+                    </div>
+                    {dateRangeVisibility && this.createDateRange()}
+                    <div>
+                        {timeScaleVisibility && this.createRadios(radioLabels)}
+                    </div>
                     {averageVisibility && this.createCheckbox('average', this.changeAverage, this.props.store.timeMessage.average)}
                     {impositionVisibility && this.createCheckbox('imposition', this.changeImposition, this.props.store.timeMessage.imposition)}
                     {periodsVisibility && this.createInput('periods', this.changePeriods, this.props.store.timeMessage.periods)}
                 </div>
-                    {dateRangeVisibility && this.createDateRange()}
-                <div>
-                    {timeScaleVisibility && this.createRadios(radioLabels)}
-                </div>
-                <LineChart data={this.props.store.timeMessage.data}
-                            options={this.props.store.timeMessage.options}/>
             </div>
         );
     };

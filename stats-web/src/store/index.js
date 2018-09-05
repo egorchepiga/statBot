@@ -7,8 +7,7 @@ import chat from './chat/reducer';
 import summaryGraphic from './graphics/summary/reducer'
 import topWordsForChat from './graphics/top/reducer'
 import timeMessage from './graphics/time/reducer'
-
-
+import menu from "./menu/reducer"
 
 export default combineReducers({
     token: token,
@@ -18,5 +17,6 @@ export default combineReducers({
     summaryGraphic: summaryGraphic,
     topWordsForChat: topWordsForChat,
     timeMessage: timeMessage,
-    chat: chat
+    chat: chat,
+    menu: menu
 });

@@ -1,8 +1,4 @@
 import * as types from './actionType'
-import colors from '../../../etc/color'
-//let moment = require('moment');
-//moment.locale('ru');
-
 
 Date.prototype.addDays = function(days) {
     this.setDate(this.getDate() + days);
@@ -129,7 +125,8 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                     timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow));
                     let timeFromShowStr = monthDays.call(timeFromShow),
                         timeToShowStr = monthDays.call(timeToShow);
-                    timeArray[0].label = (timeFromShowStr === timeToShowStr) ? timeToShowStr
+                    timeArray[0].label = (timeFromShowStr === timeToShowStr)
+                        ? timeToShowStr
                         : timeFromShowStr +' - '+ timeToShowStr;
 
                 }
@@ -196,6 +193,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
                 timeToShow.setSeconds(0);
                 let diffDays = Math.ceil((timeToShow - timeFromShow) / (1000 * 3600 * 24));
                 if (average) {
+                    if (diffDays * periods < 32) scaleFoo = daysOfWeek;
                     if (imposition)
                         for (let i = 0; i < periods; i++) {
                             timeArray.push(scaleTimeGraphic(arr, scaleFoo, timeFromShow, timeToShow));
@@ -319,6 +317,11 @@ function daysOfWeekSixHours () {
     else if (hour <= 18) strHour = "15";
     else if (hour <= 24) strHour = "21";
     return dayOfWeek + " " + strHour + ":00"
+}
+
+function daysOfWeek () {
+    let weekDays = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+    return weekDays[this.getDay()];
 }
 
 function dayOfMonth() {

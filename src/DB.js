@@ -294,7 +294,10 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
                 sql = 'SELECT summary ' +
                     'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
                     'WHERE word = \'Messages count\'';
-            arrPromises.push(getTopWords(5, arrUserID[0].id, chat_id, db, bannedWords));                   //до
+            if(arrUserTables[0].id === chat_id) n = 20;
+            arrPromises.push(getTopWords(
+                arrUserTables[0].id === chat_id ? 20 : 5,
+                arrUserID[0].id, chat_id, db, bannedWords));                   //до
             arrPromises.push(getTopStickers(arrUserID[0].id, chat_id, db, 5));
             if (arrUserID.length > 1) {
                 sql = `(${sql})`;
@@ -304,7 +307,9 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
                         '(SELECT summary ' +
                         'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
                         'WHERE word = \'Messages count\')';
-                    arrPromises.push(getTopWords(5, arrUserTables[i].id, chat_id, db, bannedWords));        //topSize
+                    arrPromises.push(getTopWords(
+                        arrUserTables[i].id === chat_id ? 20 : 5
+                        , arrUserTables[i].id, chat_id, db, bannedWords));        //topSize
                     arrPromises.push(getTopStickers(arrUserID[i].id, chat_id, db, 5));
                 }
             }

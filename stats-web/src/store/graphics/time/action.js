@@ -24,26 +24,111 @@ Date.prototype.weekAlignmentFront = function() {                                
     this.setDate(this.getDate() + 7 - day);
 };
 
+export const createTimeUsers = (chat, store, messageActivity) =>
+    dispatch => {
+    console.log(messageActivity);
+        let timeArray = [];
+        if (messageActivity) timeArray = chat.timeReady;
+        else {
+            let hours;
+            let date = new Date(chat.time[0].time);
+            date.setHours(0);
+            date.setSeconds(0);
+            date.setMinutes(0);
+            let obj = {};
+            switch (store.timeScale) {
+                case '0' :
+                    hours = new Date(chat.time[0].time).getHours() + 1;
+                    date.setHours(hours);
+                    for (let i = 0; i < chat.time.length; i++) {
+                        obj[chat.time[i].user] = 0;
+                        if (new Date(chat.time[i].time) > date) {
+                            for (let user in obj)
+                                timeArray.push(new Date(date));
+                            hours = date.getHours() + 1;
+                            date.setHours(hours);
+                            obj = {};
+                        }
+                    }
+                    break;
+                case '1' :                                          //spaghetti
+                    for(let i = 0; i < 6; i++) {
+                        hours = date.getHours() + 1;
+                        date.setHours(hours);
+                    }
+                    for (let i = 0; i < chat.time.length; i++) {
+                        obj[chat.time[i].user] = 0;
+                        if (new Date(chat.time[i].time) > date) {
+                            for (let user in obj)
+                                timeArray.push(new Date(date));
+                            for(let i = 0; i < 6; i++) {
+                                hours = date.getHours() + 1;
+                                date.setHours(hours);
+                            }
+                            obj = {};
+                        }
+                    }
+                    break;
+                case '2' :
+                    for (let i = 0; i < chat.time.length; i++) {
+                        obj[chat.time[i].user] = 0;
+                        if (new Date(chat.time[i].time) > date) {
+                            for (let user in obj)
+                                timeArray.push(new Date(date));
+                            date.addDays(1);
+                            console.log(obj);
+                            obj = {};
+                        }
+                    }
+                    break;
+            }
+        }
+
+        dispatch(createTimeMessage(
+            timeArray,
+            store.dayScale,
+            store.imposition,
+            store.fromTime,
+            store.toTime,
+            store.timeScale,
+            store.average,
+            store.periods,
+            messageActivity
+        )
+    );
+};
+
 export const createTimeMessage = (timeArray, dayScale = '0', imposition = false, fromTime = 0, toTime = 0,
-                                  timeScale = '0', average = false, periods = 1 ) =>
+                                  timeScale = '0', average = false, periods = 1, messageActivity = true ) =>
     dispatch => {
         let preparedTimeArrays = prepareTime(timeArray, dayScale, imposition, fromTime, toTime, timeScale, average, periods),
             timeGraphicData = [];
         for (let i = preparedTimeArrays.length-1; i > -1; i--) {
             timeGraphicData.push([]);
-            for (let time in preparedTimeArrays[i])
-                if(time !== 'label') timeGraphicData[preparedTimeArrays.length-1-i].push({t: time, y: preparedTimeArrays[i][time]});       //наносим метки на Ox и Oy, не трогаем label
+            if (!messageActivity) {
+                for (let time in preparedTimeArrays[i])
+                    if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
+                        t: time,
+                        y: Math.ceil(preparedTimeArrays[i][time]/periods)
+                    });
+            } else {
+                for (let time in preparedTimeArrays[i])
+                    if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
+                        t: time,
+                        y: preparedTimeArrays[i][time]
+                    });                                                                                 //наносим метки на Ox и Oy, не трогаем label
+            }
         }
         let cfg = createObjForReducer(
             timeArray, preparedTimeArrays.reverse(), timeGraphicData,
             dayScale, timeScale,
             fromTime, toTime,
-            imposition, average, periods
+            imposition, average, periods, messageActivity
         );
         dispatch({type: types.SET_THIRD_ALL, payload: cfg});
     };
 
-function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayScale, timeScale, fromTime, toTime, imposition, average, periods) {
+function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayScale, timeScale, fromTime, toTime, imposition, average, periods, messageActivity) {
     let dataSets = [];
     let B = 20;
     let R = 235;
@@ -64,6 +149,7 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayS
         });
     }
     return {
+        messageActivity : messageActivity,
         RAWTime: timeArray,
         dayScale : dayScale,
         imposition : imposition,
@@ -86,7 +172,7 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayS
                 yAxes: [{
                     scaleLabel: {
                         display: true,
-                        labelString: 'сообщения'
+                        labelString: messageActivity ? 'сообщения' : 'пользователи'
                     }
                 }]
             }

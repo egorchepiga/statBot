@@ -1,1 +1,2 @@
 export const SET_THIRD_ALL = 'SET_THIRD_ALL';
+export const CHANGE_ACTIVITY = 'CHANGE_ACTIVITY';

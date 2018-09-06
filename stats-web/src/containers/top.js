@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import GraphicBar from '../components/bar';
+import Button from '../components/button';
+import {createTopWordsForChat} from "../store/graphics/top/action";
 
 class TopGraphic extends Component {
 
@@ -8,6 +10,23 @@ class TopGraphic extends Component {
         <div className="header__most-active">
             <b>{label}</b>
         </div>
+    );
+
+    changeForchat = () => {
+        this.props.createSecondGraphic(
+            this.props.store.chat,
+            !this.props.store.topWordsForChat.forChat
+        )
+    };
+
+    forChatSwitcher = () => (
+        <Button className="btn btn-outline-primary btn-sm col-sm-12 col-md-2 col-lg-2 col-xl-2"
+                key="201"
+                id="201"
+                label="users"
+                onClick={this.changeForchat}
+                active={this.props.store.topWordsForChat.forChat}
+        />
     );
 
     render() {
@@ -19,6 +38,7 @@ class TopGraphic extends Component {
                      bottom: '0px', overflow: 'hidden', 'pointer-events': 'none',
                      visibility: 'hidden', 'z-index': -1}}*/>
                     {visibility && this.createHeader('Top words')}
+                    {visibility && this.forChatSwitcher()}
                     <GraphicBar data={this.props.store.topWordsForChat.data}
                                  options={this.props.store.topWordsForChat.options}/>
                 </div>
@@ -29,6 +49,8 @@ class TopGraphic extends Component {
 export default connect(state => ({
         store: state
     }), dispatch => ({
-
+        createSecondGraphic : (data, forChat) => {
+            dispatch(createTopWordsForChat(data, forChat))
+        }
     })
 )(TopGraphic)

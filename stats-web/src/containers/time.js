@@ -6,7 +6,7 @@ import Checkbox from '../components/checkbox';
 import RadioButton from '../components/radiobutton';
 import DateRange from '../components/daterange';
 import Input from '../components/input';
-import {createTimeMessage} from '../store/graphics/time/action';
+import {createTimeMessage, createTimeUsers} from '../store/graphics/time/action';
 import {calculateTimeScale} from "../common/timeHelpers";
 
 const buttonLabels = [
@@ -36,15 +36,28 @@ class TimeMessageGraphic extends Component {
         else if(event.target.id === '1') timeScale = '0';
         else if(event.target.id === '2' ) timeScale = '1';
         else if(event.target.id === '3' || event.target.id === '4' ) timeScale = '2';
-        this.props.setDataThirdGraphic(
-            this.props.store.timeMessage.RAWTime,
-            event.target.id,
-            this.props.store.timeMessage.imposition,
-            this.props.store.timeMessage.fromTime,
-            this.props.store.timeMessage.toTime,
-            timeScale,
-            average,
-            this.props.store.timeMessage.periods
+
+        if(!this.props.store.timeMessage.messageActivity) {
+            let obj = this.props.store.timeMessage;
+            obj.dayScale = event.target.id;
+            obj.timeScale = timeScale;
+            obj.average = average;
+            this.props.createTimeUsers(
+                this.props.store.chat,
+                obj,
+                this.props.store.timeMessage.messageActivity);
+        }
+        else
+            this.props.setDataThirdGraphic(
+                this.props.store.timeMessage.RAWTime,
+                event.target.id,
+                this.props.store.timeMessage.imposition,
+                this.props.store.timeMessage.fromTime,
+                this.props.store.timeMessage.toTime,
+                timeScale,
+                average,
+                this.props.store.timeMessage.periods,
+                this.props.store.timeMessage.messageActivity
             );
     };
 
@@ -57,7 +70,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.toTime,
             this.props.store.timeMessage.timeScale,
             this.props.store.timeMessage.average,
-            this.props.store.timeMessage.periods
+            this.props.store.timeMessage.periods,
+            this.props.store.timeMessage.messageActivity
         );
     };
 
@@ -70,7 +84,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.toTime,
             this.props.store.timeMessage.timeScale,
             !this.props.store.timeMessage.average,
-            this.props.store.timeMessage.periods
+            this.props.store.timeMessage.periods,
+            this.props.store.timeMessage.messageActivity
         );
     };
 
@@ -84,6 +99,7 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.timeScale,
             this.props.store.timeMessage.average,
             event.target.value > 0 ? event.target.value : 1,
+            this.props.store.timeMessage.messageActivity
         );
     };
 
@@ -96,7 +112,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.toTime,
             event.target.id,
             this.props.store.timeMessage.average,
-            this.props.store.timeMessage.periods
+            this.props.store.timeMessage.periods,
+            this.props.store.timeMessage.messageActivity
         );
     };
 
@@ -151,6 +168,19 @@ class TimeMessageGraphic extends Component {
         </div>
     );
 
+    activitySwitcher = () => (
+        <Button className="btn btn-outline-primary btn-sm col-sm-12 col-md-2 col-lg-2 col-xl-2"
+                key="202"
+                id="202"
+                label="messages"
+                onClick={this.changeActivity}
+                active={this.props.store.timeMessage.messageActivity}
+        />
+    );
+
+    changeActivity = () => {
+        this.props.createTimeUsers(this.props.store.chat, this.props.store.timeMessage, !this.props.store.timeMessage.messageActivity);
+    };
 
     render() {
         const dayScale = this.props.store.timeMessage.dayScale;
@@ -166,6 +196,7 @@ class TimeMessageGraphic extends Component {
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
                 {buttonsVisibility && this.createHeader("Time activity")}
+                {buttonsVisibility && this.activitySwitcher()}
                 <div>
                     <LineChart data={this.props.store.timeMessage.data}
                                options={this.props.store.timeMessage.options}/>
@@ -192,8 +223,11 @@ export default connect(
         store: state
     }),
     dispatch => ({
-         setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1) => {
-            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods))
+        createTimeUsers : (chat, store, messageActivity) => {
+            dispatch(createTimeUsers(chat, store, messageActivity))
+        },
+        setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1, messagesActivity = true) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity))
         }
     })
 )(TimeMessageGraphic)

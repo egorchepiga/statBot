@@ -33,10 +33,7 @@ class TopGraphic extends Component {
         let visibility = this.props.store.topWordsForChat.data;
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
-                <div className="chartjs-size-monitor"
-                     /*style={{position: 'absolute', left: '0px', top: '0px', right: '0px',
-                     bottom: '0px', overflow: 'hidden', 'pointer-events': 'none',
-                     visibility: 'hidden', 'z-index': -1}}*/>
+                <div className="chartjs-size-monitor">
                     {visibility && this.createHeader('Top words')}
                     {visibility && this.forChatSwitcher()}
                     <GraphicBar data={this.props.store.topWordsForChat.data}

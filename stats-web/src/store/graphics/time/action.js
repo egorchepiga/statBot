@@ -24,66 +24,41 @@ Date.prototype.weekAlignmentFront = function() {                                
     this.setDate(this.getDate() + 7 - day);
 };
 
+const  prepareTimeForUsers = (time, scale) => {
+    let timeArray = [];
+    let obj = {};
+    let hours;
+    let date = new Date(time[0].time);
+    date.setHours(0);
+    date.setSeconds(0);
+    date.setMinutes(0);
+    let n = scale === '0' ? 1 :
+            scale === '1' ? 6 :
+            scale === '2' ? 24 : '';
+    for(let i = 0; i < n; i++) {
+        hours = date.getHours() + 1;
+        date.setHours(hours);
+    }
+    for (let i = 0; i < time.length; i++) {
+        if (new Date(time[i].time) > date) {
+            for (let user in obj)
+                timeArray.push(new Date(date));
+            for(let i = 0; i < n; i++) {
+                hours = date.getHours() + 1;
+                date.setHours(hours);
+            }
+            obj = {};
+        } else obj[time[i].user] = 0;
+    }
+    for (let user in obj)
+        timeArray.push(new Date(date));
+    return timeArray;
+};
+
 export const createTimeUsers = (chat, store, messageActivity) =>
     dispatch => {
-    console.log(messageActivity);
-        let timeArray = [];
-        if (messageActivity) timeArray = chat.timeReady;
-        else {
-            let hours;
-            let date = new Date(chat.time[0].time);
-            date.setHours(0);
-            date.setSeconds(0);
-            date.setMinutes(0);
-            let obj = {};
-            switch (store.timeScale) {
-                case '0' :
-                    hours = new Date(chat.time[0].time).getHours() + 1;
-                    date.setHours(hours);
-                    for (let i = 0; i < chat.time.length; i++) {
-                        obj[chat.time[i].user] = 0;
-                        if (new Date(chat.time[i].time) > date) {
-                            for (let user in obj)
-                                timeArray.push(new Date(date));
-                            hours = date.getHours() + 1;
-                            date.setHours(hours);
-                            obj = {};
-                        }
-                    }
-                    break;
-                case '1' :                                          //spaghetti
-                    for(let i = 0; i < 6; i++) {
-                        hours = date.getHours() + 1;
-                        date.setHours(hours);
-                    }
-                    for (let i = 0; i < chat.time.length; i++) {
-                        obj[chat.time[i].user] = 0;
-                        if (new Date(chat.time[i].time) > date) {
-                            for (let user in obj)
-                                timeArray.push(new Date(date));
-                            for(let i = 0; i < 6; i++) {
-                                hours = date.getHours() + 1;
-                                date.setHours(hours);
-                            }
-                            obj = {};
-                        }
-                    }
-                    break;
-                case '2' :
-                    for (let i = 0; i < chat.time.length; i++) {
-                        obj[chat.time[i].user] = 0;
-                        if (new Date(chat.time[i].time) > date) {
-                            for (let user in obj)
-                                timeArray.push(new Date(date));
-                            date.addDays(1);
-                            console.log(obj);
-                            obj = {};
-                        }
-                    }
-                    break;
-            }
-        }
-
+        let timeArray =  messageActivity ?
+            chat.timeReady : prepareTimeForUsers(chat.time, store.timeScale);
         dispatch(createTimeMessage(
             timeArray,
             store.dayScale,
@@ -109,7 +84,7 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
                 for (let time in preparedTimeArrays[i])
                     if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
                         t: time,
-                        y: Math.ceil(preparedTimeArrays[i][time]/periods)
+                        y: imposition ? preparedTimeArrays[i][time] : preparedTimeArrays[i][time] / periods,
                     });
             } else {
                 for (let time in preparedTimeArrays[i])
@@ -314,7 +289,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             break;
         default:                                                                                                        //всё время
             timeArray.push(scaleTimeGraphic(arr, scaleFoo, arr[0]));
-            timeArray[0].label = monthDays.call(arr[0]) + " - " + monthDays.call(timeToShow);;
+            timeArray[0].label = monthDays.call(arr[0]) + " - " + monthDays.call(timeToShow);
     }
     return timeArray;
 }
@@ -330,7 +305,7 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
     let tmpTimeFromShow = new Date(timeFromShow),
         hours = 0,
         placeholder = {},
-        date = timeToShow === 0 ? new Date() : new Date(timeToShow);
+        date = timeToShow === 0 ? new Date(arr[arr.length-1]) : new Date(timeToShow);
     date.setHours(23);                                                             //последнее учитываемое время за день
     date.setMinutes(0);                                                            //или не изменяя время для грубого режима
     date.setSeconds(0);

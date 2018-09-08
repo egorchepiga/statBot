@@ -30,6 +30,8 @@ export const createTopStickers = (data, forChat = false) =>
             tmp.splice(index, 1);
         }
 
+        labels.splice(5);
+
         let payload = {
             stickers : stickers,
             forChat : forChat,

@@ -14,8 +14,8 @@ class Stickers extends Component {
         )
     };
 
-    stickerImage = (src) => (
-        <img key={src.sticker} className="img-mock" src={'https://egorchepiga.ru/tg-stats/'+src.sticker}/>
+    stickerImage = (src, index) => (
+        index < 5 ? <img key={src.sticker} className="img-mock" src={'https://egorchepiga.ru/tg-stats/'+src.sticker}/> : ""
     );
 
     createHeader = (label) => (

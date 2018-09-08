@@ -4,11 +4,10 @@ import './App.css';
 import {loadChats} from './store/all/action';
 import {setToken} from './store/getStats/token/action'
 import {changeActive} from "./store/menu/action";
-import {setNavigation} from "./store/menu/action";
 import SummaryGraphic from './containers/summary';
 import TopGraphic from './containers/top';
 import TimeMessageGraphic from './containers/time';
-import Menu from './containers/menu';
+import Stickers from './containers/stickers';
 import SlideMenu from './components/Menu/Menu'
 import Button from './components/button';
 import {createTimeMessage} from "./store/graphics/time/action";
@@ -16,6 +15,7 @@ import {createTopWordsForChat} from "./store/graphics/top/action";
 import {loadChat} from "./store/chat/action";
 import {calculateTimeScale} from "./common/timeHelpers";
 import {createSummaryGraphic} from "./store/graphics/summary/action";
+import {createTopStickers} from "./store/graphics/stickers_top/action";
 
 class App extends Component {
 
@@ -76,6 +76,7 @@ class App extends Component {
                                 <div className="graphich__wrapper_row row justify-content-center">
                                     <SummaryGraphic/>
                                     <TopGraphic/>
+                                    <Stickers/>
                                     <TimeMessageGraphic/>
                                 </div>
                             </div>
@@ -105,6 +106,7 @@ export default connect(
             dispatch(loadChat({token, chat_id}))
                 .then(data => {
                     dispatch(createSummaryGraphic(data));
+                    dispatch(createTopStickers(data));
                     dispatch(createTopWordsForChat(data));
                     dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0])));
                 });

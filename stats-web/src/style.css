@@ -82,3 +82,42 @@ canvas {
 
 .wrapper__slider {
   margin: 20px; }
+
+.stickers-bar-holder {
+  display: inline-block;
+  width: 92%; }
+
+.img-mock {
+  border-radius: 50%;
+  margin: 1px;
+  width: 100%;
+  display: block; }
+
+.stickers-holder {
+  position: relative;
+  vertical-align: top;
+  display: inline-block;
+  top: 37px;
+  width: 7%; }
+
+@media screen and (max-width: 990px) {
+  .stickers-holder {
+    top: 31px; } }
+
+@media screen and (max-width: 736px) {
+  .stickers-holder {
+    top: 29px; } }
+
+@media screen and (max-width: 580px) {
+  .stickers-holder {
+    top: 27px; } }
+
+@media screen and (max-width: 420px) {
+  .stickers-holder {
+    top: 29px;
+    width: 6%; } }
+
+@media screen and (max-width: 320px) {
+  .stickers-holder {
+    top: 24px;
+    width: 6%; } }

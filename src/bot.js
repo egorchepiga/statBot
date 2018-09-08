@@ -141,29 +141,13 @@ class Bot {
             }
         });
 
-        //download sticker with
-        //https://api.telegram.org/file/bot491772305:AAF_X2NSD5Y9IlyHUuS9i9TmbWWrb_mg23E/stickers/file_24.webp
-        //https://api.telegram.org/file/botTOKEN/stickers/file_#.webp
-
         this.telegramBot.on('sticker', msg => {
             if (msg.from.id === msg.chat.id) {
                 return {result: null, error: 'PRIVATE_MSG_NOT_ALLOWED'};
             }
-            this.telegramBot.getFile(msg.sticker.file_id)
-                .then(res => {
-                    this.updateUsersWords(msg, [res.file_path]);
-                });
+                    this.updateUsersWords(msg, ['stickers/' + msg.sticker.file_id]);
         });
 
-/*        this.telegramBot.on('photo', msg => {
-            if (msg.from.id === msg.chat.id) {
-                return {result: null, error: ''};
-            }
-            this.telegramBot.getFile(msg.photo[1].file_id)
-                .then(res => {
-                    this.updateUsersWords(msg, [res.file_path]);
-                });
-        });*/
     }
 
     stopWatch() {
@@ -206,6 +190,46 @@ class Bot {
             })
     }
 
+    getFilePath(file_id) {
+        return this.telegramBot.getFile(file_id)
+            .then(res => {
+               return res.file_path;
+            });
+    }
+
+    requestStickers(chat){
+        let topStickers = {};
+        let chatTopStickers = {};
+        let promiseArr = [];
+        for(let i = 0; i < chat.users.length; i++) {
+            for(let key in chat.users[i].top_stickers) {
+                promiseArr.push(this.getFilePath(key.slice(9)))
+            }
+        }
+        for(let key in chat.chat.top_stickers) {
+            promiseArr.push(this.getFilePath(key.slice(9)))
+        }
+        return Promise.all(promiseArr)
+            .then(res=> {
+                let resIndex = 0;
+                for(let i = 0; i < chat.users.length; i++) {
+                    for(let key in chat.users[i].top_stickers) {
+                        topStickers[res[resIndex++]] = chat.users[i].top_stickers[key];
+                    }
+                    chat.users[i].top_stickers = topStickers;
+                    topStickers = {};
+                }
+
+                for(let key in chat.chat.top_stickers) {
+                    chatTopStickers[res[resIndex++]] = chat.chat.top_stickers[key];
+                }
+                chat.chat.top_stickers = chatTopStickers;
+                return chat;
+            }).catch(error => {
+                return {error : error, result: null};
+            });
+    }
+
     refreshInfo(chat_id, user_id) {
         let db = this.dbName(user_id);
         let chatStats = {};
@@ -228,6 +252,10 @@ class Bot {
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
                 chatStats.time = res;
+                return this.requestStickers(chatStats);
+            }).then(res => {
+                if (res.error) return {error : res.error, result: null};
+                chatStats = res;
                 return chatStats;
             });
     }
@@ -238,7 +266,7 @@ class Bot {
                 if (res.error) return {error: res.error, result: null};
                 return this.createStatToken(base)
             }).then(res => {
-                if (res.error) return {error: res.error, result: null}
+                if (res.error) return {error: res.error, result: null};
                 return res
             });
     }

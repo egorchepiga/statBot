@@ -90,8 +90,8 @@ function createChat(msg, db){
                 '(id varchar(120) NOT NULL,' +
                 'summary int (10) DEFAULT 0,' +
                 'username varchar(120),' +
-                'top_words varchar(250) NULL,' +
-                'top_stickers varchar(250) NULL,' +
+                'top_words varchar(350) NULL,' +
+                'top_stickers varchar(350) NULL,' +
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
@@ -114,9 +114,6 @@ function createUser(msg, db){
         ' (word varchar(120) NOT NULL,' +
         'summary int (10) DEFAULT 1 NOT NULL,' +
         'PRIMARY KEY (word)); ';
-    /* sql +=
-         'CREATE UNIQUE INDEX ' + table +
-         ' ON ' + table + ' (word(1));';*/
     sql +=
         'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
         '(`id`,`username`) ' +
@@ -255,7 +252,7 @@ function getBannedWords(chat_id, user_id) {
 function getTopStickers(user_id, chat_id, db, n = 5) {
     let sql =
         'SELECT * FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
-        "WHERE word LIKE 'stickers/file_%'" +
+        "WHERE word LIKE 'stickers/%'" +
         'GROUP BY summary DESC , word ' +
         'LIMIT ?';
     return query(sql, [n])
@@ -354,6 +351,7 @@ function getWords(n, user_id, chat_id, db) {
     let sql =
         'SELECT * ' +
         'FROM   ' + db + '.`' + user_id + '#' + chat_id + '` ' +
+        "WHERE word NOT LIKE 'stickers/%' " +
         'GROUP BY summary DESC , word ' +
         'LIMIT ?';
     return query(sql, [++n]).then(res => {

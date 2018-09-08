@@ -2,37 +2,52 @@ let express = require('express'),
     bodyParser = require('body-parser'),
     app = express(),
     https = require('https'),
+    getSocks = require('socks5-https-client'),
     fs = require('fs');
 const BOT = require('./src/bot').Bot,
     AGENT = require('socks5-https-client/lib/Agent'),
     CONFIG = require('./config'),
     TOKEN = CONFIG.bot.TOKEN,
     OPTIONS = {
-    webHook: {
-        endpoint: '/tg-hook/',
-        port: CONFIG.bot.port,
-        key: CONFIG.bot.privkey, // Path to file with PEM private key
-        cert: CONFIG.bot.cert, // Path to file with PEM certificate
+        webHook: {
+            endpoint: '/tg-hook/',
+            port: CONFIG.bot.port,
+            key: CONFIG.bot.privkey, // Path to file with PEM private key
+            cert: CONFIG.bot.cert, // Path to file with PEM certificate
+        },
+        request: {
+            agentClass: AGENT,
+            agentOptions: {
+                socksHost: CONFIG.SOCKS5.socksHost,
+                socksPort: CONFIG.SOCKS5.socksPort,
+                socksUsername: CONFIG.SOCKS5.socksUsername,
+                socksPassword: CONFIG.SOCKS5.socksPassword
+            }
+        },
+        secret : CONFIG.secret,
+        mainBase: CONFIG.bot.mainBase,
+        topSize : CONFIG.bot.topSize,
+        bannedWords : CONFIG.bot.bannedWords
     },
-    request: {
-        agentClass: AGENT,
-        agentOptions: {
-            socksHost: CONFIG.SOCKS5.socksHost,
-            socksPort: CONFIG.SOCKS5.socksPort,
-            socksUsername: CONFIG.SOCKS5.socksUsername,
-            socksPassword: CONFIG.SOCKS5.socksPassword
-        }
-    },
-    secret : CONFIG.secret,
-    mainBase: CONFIG.bot.mainBase,
-    topSize : CONFIG.bot.topSize,
-    bannedWords : CONFIG.bot.bannedWords
-};
+    KEY = fs.readFileSync(CONFIG.bot.privkey),
+    CERT = fs.readFileSync(CONFIG.bot.cert),
+    SSL_CREDENTIALS = {key: KEY, cert: CERT},
+    SSL_PORT = 3000,
+    GET_SOCKS_OPTIONS = {
+        ...OPTIONS.request.agentOptions,
+        ...SSL_CREDENTIALS,
+        hostname : 'api.telegram.org',
+        rejectUnauthorized : true
+    };
 
 let bot = new BOT(TOKEN,OPTIONS);
-
 bot.setWebHook('https://egorchepiga.ru/tg-hook/');
 bot.watch();
+
+let httpsServer = https.createServer(SSL_CREDENTIALS, app);
+httpsServer.listen(SSL_PORT, () => {
+    console.log(`https server is listening on ${SSL_PORT}`);
+});
 
 app.use(bodyParser.json());
 app.get(`/analyze/`, (req, res) => {
@@ -117,21 +132,24 @@ app.get(`/more/`, (req, res) => {
         });
 });
 
-/*let port = 3002;
-app.listen(port, () => {
-    console.log(`http server is listening on ${port}`);
-});*/
 
-
-let key = fs.readFileSync(CONFIG.bot.privkey),
-    cert = fs.readFileSync(CONFIG.bot.cert),
-    httpsServer = https.createServer({key: key, cert: cert}, app),
-    SSLport = 3000;
-httpsServer.listen(3000, () => {
-    console.log(`https server is listening on ${SSLport}`);
+app.get(`/stickers/*`, (req, res) => {
+    getSocks.get({
+        ...GET_SOCKS_OPTIONS,
+        path: '/file/bot'+ TOKEN +'/stickers/' + req.params[0]
+    }, function (socksRes) {
+        socksRes.on('readable', function () {
+            let chunk = socksRes.read();
+            if (chunk) {
+                let buffer = Buffer.alloc(chunk.length, chunk);
+                res.write(buffer);
+            }
+        });
+        socksRes.on('end', function () {
+            res.end();
+        });
+    });
 });
-
-
 
 
 module.exports = app;

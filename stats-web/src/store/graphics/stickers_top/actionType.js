@@ -1,0 +1,1 @@
+export const SET_TOP_STICKERS = 'SET_TOP_STICKERS';

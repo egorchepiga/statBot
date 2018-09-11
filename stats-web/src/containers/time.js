@@ -78,7 +78,7 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.chat.store.time
+            this.props.store.chat.time
         );
     };
 
@@ -94,7 +94,7 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.chat.store.time
+            this.props.store.chat.time
         );
     };
 
@@ -110,7 +110,7 @@ class TimeMessageGraphic extends Component {
             event.target.value > 0 ? event.target.value : 1,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.chat.store.time
+            this.props.store.chat.time
         );
     };
 
@@ -126,7 +126,7 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.chat.store.time
+            this.props.store.chat.time
         );
     };
 

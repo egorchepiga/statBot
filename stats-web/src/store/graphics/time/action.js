@@ -102,13 +102,13 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
                     for (let time in preparedTimeArrays[i])
                         if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
                             t: time,
-                            y: imposition ? preparedTimeArrays[i][time] : preparedTimeArrays[i][time] / periods,
+                            y: !imposition && average ? preparedTimeArrays[i][time] / periods : preparedTimeArrays[i][time]
                         });
                 } else {
                     for (let time in preparedTimeArrays[i])
                         if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
                             t: time,
-                            y: preparedTimeArrays[i][time]
+                            y: !imposition && average ? preparedTimeArrays[i][time] / periods : preparedTimeArrays[i][time]
                         });                                                                                 //наносим метки на Ox и Oy, не трогаем label
                 }
             }

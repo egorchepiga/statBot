@@ -1,2 +1,0 @@
-export const MENU_ACTIVE_CHANGE = 'MENU_ACTIVE_CHANGE';
-export const MENU_NAV_CHANGE = 'MENU_NAV_CHANGE';

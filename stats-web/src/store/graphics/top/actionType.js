@@ -1,1 +1,2 @@
 export const SET_SECOND_ALL = 'SET_SECOND_ALL';
+export const LOAD_MORE_WORDS = 'LOAD_MORE_WORDS';

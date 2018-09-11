@@ -92,6 +92,7 @@ function createChat(msg, db){
                 'username varchar(120),' +
                 'top_words varchar(350) NULL,' +
                 'top_stickers varchar(350) NULL,' +
+                'up_to_date BOOLEAN TRUE,' +
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
@@ -118,7 +119,8 @@ function createUser(msg, db){
         'INSERT INTO ' + db + '.`' + msg.chat.id + '` ' +
         '(`id`,`username`) ' +
         'VALUES (?, ?);';
-    return transaction(sql, [ msg.from.id, msg.from.username ]);
+    let username = msg.from.username || msg.from.id;
+    return transaction(sql, [ msg.from.id, username ]);
 }
 
 function createStatToken(user_id, botToken) {
@@ -157,6 +159,36 @@ function clearBannedWords(user_id, chat_id, db, bannedWords) {                //
 
 function authorize(token) {
     return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE token = ?',[token]);
+}
+
+function updateUserInfo(chat_id, user_id, file_id, username, up_to_date, db) {
+    let sql =
+        'UPDATE ' + db + '.`'  + chat_id + '` ' +
+        'SET img = ? , username = ?' +
+        'WHERE id = ? ;';
+    return query(sql, [file_id, username, user_id])
+        .then(res => {
+            if (up_to_date) return res;
+            return chat_id === user_id ?
+                updateRoom(chat_id, username)
+                : updateTimeLogs(chat_id, username, user_id, db)
+        })
+}
+
+function updateTimeLogs(chat_id, username, user_id, db) {
+    let sql =
+        'UPDATE ' + db + '.`'  + chat_id + '#log` ' +
+        'SET username = ? ' +
+        'WHERE user_id = ? ;';
+    return query(sql, [username, user_id])
+}
+
+function updateRoom(chat_id, username) {
+    let sql =
+        'UPDATE ' + mainBase + '.`ROOMS` ' +
+        'SET chat_name = ? ' +
+        'WHERE chat_id = ? ;';
+    return query(sql, [username, chat_id])
 }
 
 function updateChatWords(msg, words, db) {
@@ -317,6 +349,15 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
 
 function getUserTables(baseName){
     return query('SHOW TABLES FROM ' + baseName)
+        .then(res => {
+            if (res.error) return {error : res.error, result: null};
+            let chats = [];
+            for (let i = 0; i < res.rows.length; i++)
+                chats.push(Object.values(res.rows[i])[0]);
+            return chats.filter(tableName => {                       //проверяем, нету ли # в слове. Если нет, то
+                return (tableName.search(/^[^#]*$/) !== -1)       //search возвращает > 0
+            });
+        });
 }
 
 function getUsersWithChat(chatId ) {
@@ -325,10 +366,33 @@ function getUsersWithChat(chatId ) {
         'FROM '+ mainBase +'.`ROOMS` ' +
         'WHERE chat_id = ? ;';
     return query(sql, [chatId])
+        .then(res => {
+            if(res.error) return {error: res.error, result: null}
+            let length = 0;
+            try {
+                length = res.rows.length;
+            } catch (e){ console.log(e) }
+            if (length < 1) return {error: 'DATABASE NOT FOUND. CREATE TOKEN!', result: null}
+            return {error: null, rows: res.rows}
+        });
 }
 
 function getChatStats(chatId, db) {
     return query('SELECT * FROM   ' + db + '.`' + chatId + '`')
+        .then(res => {
+            if (res.error) return {error : res.error, result: null };
+            let arr = [];
+            for (let i = 0; i < res.rows.length; i++)
+                arr.push({
+                    user: res.rows[i].username,
+                    summary: res.rows[i].summary,
+                    top_words: JSON.parse(res.rows[i].top_words),
+                    top_stickers: JSON.parse(res.rows[i].top_stickers),
+                    img : res.rows[i].img,
+                    id : res.rows[i].id
+                });
+            return arr;
+        })
 }
 
 function getChatActivity(chatId, db, from, to) {
@@ -337,6 +401,17 @@ function getChatActivity(chatId, db, from, to) {
         'FROM   ' + db + '.`'  + chatId + '#log` ';
     sql += (from && to) ? `WHERE time > ${from}  AND time < ${to}` : '';
     return query(sql)
+        .then(res => {
+            if (res.error) return {error : res.error, result: null };
+            let arr = [];
+            for (let i = 0; i < res.rows.length; i++)
+                arr.push({
+                    user_id: res.rows[i].user_id,
+                    user: res.rows[i].username,
+                    time: res.rows[i].time
+                })
+            return arr;
+        });
 }
 
 function getTopWords(n, user_id, chat_id, db, bannedWords) {
@@ -383,6 +458,7 @@ module.exports = {
     getChatActivity : getChatActivity,
     getTopWords : getWords,
     updateChatStats : updateChatStats,
+    updateUserInfo : updateUserInfo,
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
     isChatPrivate : isChatPrivate,

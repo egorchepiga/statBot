@@ -1,8 +1,8 @@
 import * as types from './actionType'
 
-const initialState = {id: "162182640"};
+const initialState = false;
 export default function user(state = initialState, action) {
-    if (action.type === types.SET_USER_ID) {  //пока что не id, а полностью изер
+    if (action.type === types.CHOOSE) {
         return action.payload;
     }
     return state;

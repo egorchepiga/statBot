@@ -15,7 +15,8 @@ class TopGraphic extends Component {
     changeForchat = () => {
         this.props.createSecondGraphic(
             this.props.store.chat,
-            !this.props.store.topWordsForChat.forChat
+            !this.props.store.topWordsForChat.forChat,
+            this.props.store.chosen
         )
     };
 
@@ -25,7 +26,7 @@ class TopGraphic extends Component {
                 id="201"
                 label="users"
                 onClick={this.changeForchat}
-                active={this.props.store.topWordsForChat.forChat}
+                active={!this.props.store.topWordsForChat.forChat}
         />
     );
 
@@ -46,8 +47,8 @@ class TopGraphic extends Component {
 export default connect(state => ({
         store: state
     }), dispatch => ({
-        createSecondGraphic : (data, forChat) => {
-            dispatch(createTopWordsForChat(data, forChat))
+        createSecondGraphic : (data, forChat, chosen) => {
+            dispatch(createTopWordsForChat(data, forChat, chosen))
         }
     })
 )(TopGraphic)

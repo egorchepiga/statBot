@@ -55,6 +55,7 @@ const  prepareTimeForUsers = (time, scale) => {
     return timeArray;
 };
 
+
 export const createTimeUsers = (chat, store, messageActivity) =>
     dispatch => {
         let timeArray =  messageActivity ?
@@ -74,36 +75,56 @@ export const createTimeUsers = (chat, store, messageActivity) =>
 };
 
 export const createTimeMessage = (timeArray, dayScale = '0', imposition = false, fromTime = 0, toTime = 0,
-                                  timeScale = '0', average = false, periods = 1, messageActivity = true ) =>
+                                  timeScale = '0', average = false, periods = 1, messageActivity = true, chosen = false, RAWTime = []) =>
     dispatch => {
-        let preparedTimeArrays = prepareTime(timeArray, dayScale, imposition, fromTime, toTime, timeScale, average, periods),
-            timeGraphicData = [];
-        for (let i = preparedTimeArrays.length-1; i > -1; i--) {
-            timeGraphicData.push([]);
-            if (!messageActivity) {
-                for (let time in preparedTimeArrays[i])
-                    if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
-                        t: time,
-                        y: imposition ? preparedTimeArrays[i][time] : preparedTimeArrays[i][time] / periods,
-                    });
-            } else {
-                for (let time in preparedTimeArrays[i])
-                    if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
-                        t: time,
-                        y: preparedTimeArrays[i][time]
-                    });                                                                                 //наносим метки на Ox и Oy, не трогаем label
-            }
+        if(chosen) {
+            let userTimes = [];
+            for (let i = 0; i < RAWTime.length; i++)
+                if (RAWTime[i].user === chosen)
+                    userTimes.push(new Date(RAWTime[i].time));
+            timeArray = userTimes.slice();
         }
-        let cfg = createObjForReducer(
-            timeArray, preparedTimeArrays.reverse(), timeGraphicData,
-            dayScale, timeScale,
-            fromTime, toTime,
-            imposition, average, periods, messageActivity
-        );
-        dispatch({type: types.SET_THIRD_ALL, payload: cfg});
+        if (timeArray.length === 0) {
+            let payload = createObjForReducer(
+                0,[{}],0,
+                dayScale, timeScale,
+                fromTime, toTime,
+                imposition, average, periods, messageActivity
+            );
+            dispatch({type: types.SET_THIRD_ALL, payload: payload});
+        }
+        else {
+            let preparedTimeArrays = prepareTime(timeArray, dayScale, imposition, fromTime, toTime, timeScale, average, periods),
+                timeGraphicData = [];
+            for (let i = preparedTimeArrays.length - 1; i > -1; i--) {
+                timeGraphicData.push([]);
+                if (!messageActivity) {
+                    for (let time in preparedTimeArrays[i])
+                        if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
+                            t: time,
+                            y: imposition ? preparedTimeArrays[i][time] : preparedTimeArrays[i][time] / periods,
+                        });
+                } else {
+                    for (let time in preparedTimeArrays[i])
+                        if (time !== 'label') timeGraphicData[preparedTimeArrays.length - 1 - i].push({
+                            t: time,
+                            y: preparedTimeArrays[i][time]
+                        });                                                                                 //наносим метки на Ox и Oy, не трогаем label
+                }
+            }
+            let cfg = createObjForReducer(
+                timeArray, preparedTimeArrays.reverse(), timeGraphicData,
+                dayScale, timeScale,
+                fromTime, toTime,
+                imposition, average, periods, messageActivity
+            );
+            dispatch({type: types.SET_THIRD_ALL, payload: cfg});
+        }
     };
 
-function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData, dayScale, timeScale, fromTime, toTime, imposition, average, periods, messageActivity) {
+function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
+                             dayScale, timeScale, fromTime, toTime,
+                             imposition, average, periods, messageActivity) {
     let dataSets = [];
     let B = 20;
     let R = 235;

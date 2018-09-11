@@ -1,16 +1,25 @@
 import colors from '../../../etc/color'
 import * as types from './actionType'
-export const createTopStickers = (data, forChat = false) =>
+export const createTopStickers = (data, forChat = true, chosen = false) =>
     dispatch => {
-        let tmp = [], labels =[], data1=[], names=[];
+        let tmp = [], labels =[], data1=[], names=[],
+            users = data.users.slice();
 
-        if (!forChat)
+        if(chosen) {
+            let chosenUser = [];
+            for (let i = 0; i < users.length; i++)
+                if (users[i].user === chosen)
+                    chosenUser.push(users[i]);
+            users = chosenUser;
+        }
+
+        if (forChat)
             for (let sticker in data.chat.top_stickers)
                 tmp.push({sticker: sticker, count: data.chat.top_stickers[sticker]})
         else
-            for (let user in data.users)
-                for (let sticker in data.users[user].top_stickers) {
-                    tmp.push({user: data.users[user].user, sticker: sticker, count: data.users[user].top_stickers[sticker]})
+            for (let user in users)
+                for (let sticker in users[user].top_stickers) {
+                    tmp.push({user: users[user].user, sticker: sticker, count: users[user].top_stickers[sticker]})
                 }
 
         let stickers = tmp.slice();
@@ -31,6 +40,9 @@ export const createTopStickers = (data, forChat = false) =>
         }
 
         labels.splice(5);
+
+        while (labels.length<5)
+            labels.push('');
 
         let payload = {
             stickers : stickers,

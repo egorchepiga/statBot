@@ -50,20 +50,6 @@ httpsServer.listen(SSL_PORT, () => {
 });
 
 app.use(bodyParser.json());
-app.get(`/analyze/`, (req, res) => {
-    let token = req.param('token');
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    bot.analyze(token)
-        .then(botRes => {
-            if (botRes.error) {
-                console.log(botRes);
-                res.sendStatus(401);
-            } else {
-                res.send(JSON.stringify(botRes));
-            }
-        });
-});
 
 app.get(`/chats/`, (req, res) => {
     let token = req.param('token');
@@ -132,11 +118,52 @@ app.get(`/more/`, (req, res) => {
         });
 });
 
-
-app.get(`/stickers/*`, (req, res) => {
+app.get('/stickers/*', (req, res) => {
+    let path = req.route.path;
+    path = path.slice(0, path.length-1);
     getSocks.get({
         ...GET_SOCKS_OPTIONS,
-        path: '/file/bot'+ TOKEN +'/stickers/' + req.params[0]
+        path: '/file/bot'+ TOKEN + path + req.params[0]
+    }, function (socksRes) {
+        socksRes.on('readable', function () {
+            let chunk = socksRes.read();
+            if (chunk) {
+                let buffer = Buffer.alloc(chunk.length, chunk);
+                res.write(buffer);
+            }
+        });
+        socksRes.on('end', function () {
+            res.end();
+        });
+    });
+});
+
+app.get('/profile_photos/*', (req, res) => {
+    let path = req.route.path;
+    path = path.slice(0, path.length-1);
+    getSocks.get({
+        ...GET_SOCKS_OPTIONS,
+        path: '/file/bot'+ TOKEN + path + req.params[0]
+    }, function (socksRes) {
+        socksRes.on('readable', function () {
+            let chunk = socksRes.read();
+            if (chunk) {
+                let buffer = Buffer.alloc(chunk.length, chunk);
+                res.write(buffer);
+            }
+        });
+        socksRes.on('end', function () {
+            res.end();
+        });
+    });
+});
+
+app.get('/photos/*', (req, res) => {
+    let path = req.route.path;
+    path = path.slice(0, path.length-1);
+    getSocks.get({
+        ...GET_SOCKS_OPTIONS,
+        path: '/file/bot'+ TOKEN + path + req.params[0]
     }, function (socksRes) {
         socksRes.on('readable', function () {
             let chunk = socksRes.read();

@@ -27,7 +27,8 @@ class Stickers extends Component {
     changeForChat = () => {
         this.props.createStickersTop(
             this.props.store.chat,
-            !this.props.store.stickers.forChat
+            !this.props.store.stickers.forChat,
+            this.props.store.chosen
         )
     };
 
@@ -37,7 +38,7 @@ class Stickers extends Component {
                 id="201"
                 label="users"
                 onClick={this.changeForChat}
-                active={this.props.store.stickers.forChat}
+                active={!this.props.store.stickers.forChat}
         />
     );
 

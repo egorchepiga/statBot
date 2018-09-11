@@ -1,18 +1,20 @@
 import {combineReducers} from 'redux';
 import token from './getStats/token/reducer';
-import user from './getStats/user/reducer';
+import chosen from './getStats/chosen/reducer';
 import timeFrame from './getStats/timeFrame/reducer';
 import chats from './all/reducer';
 import chat from './chat/reducer';
 import summaryGraphic from './graphics/summary/reducer'
 import topWordsForChat from './graphics/top/reducer'
 import timeMessage from './graphics/time/reducer'
-import menu from "./menu/reducer"
+import menu from "./containers/menu/reducer"
+import userList from "./containers/userlist/reducer"
 import stickers from "./graphics/stickers_top/reducer"
+import chat_profile from "./containers/chat_profile/reducer";
 
 export default combineReducers({
     token: token,
-    user: user,
+    chosen: chosen,
     timeFrame: timeFrame,
     stats: chats,
     summaryGraphic: summaryGraphic,
@@ -20,5 +22,7 @@ export default combineReducers({
     timeMessage: timeMessage,
     chat: chat,
     menu: menu,
-    stickers: stickers
+    stickers: stickers,
+    userList : userList,
+    chatProfile: chat_profile
 });

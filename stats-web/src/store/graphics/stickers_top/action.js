@@ -70,9 +70,10 @@ export const createTopStickers = (data, forChat = true, chosen = false) =>
                 } ,
                 scales: {
                     xAxes: [{
-                        gridLines: {
-                        },
-                        beginAtZero: true,
+
+                        ticks: {
+                            beginAtZero: true
+                        }
                     }],
                     yAxes: [{
                         gridLines: {

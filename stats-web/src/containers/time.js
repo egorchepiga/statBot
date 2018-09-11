@@ -37,6 +37,9 @@ class TimeMessageGraphic extends Component {
         else if(event.target.id === '2' ) timeScale = '1';
         else if(event.target.id === '3' || event.target.id === '4' ) timeScale = '2';
 
+
+        console.log(this.props.store.chat.time);
+
         if(!this.props.store.timeMessage.messageActivity) {
             let obj = this.props.store.timeMessage;
             obj.dayScale = event.target.id;
@@ -57,7 +60,9 @@ class TimeMessageGraphic extends Component {
                 timeScale,
                 average,
                 this.props.store.timeMessage.periods,
-                this.props.store.timeMessage.messageActivity
+                this.props.store.timeMessage.messageActivity,
+                this.props.store.chosen,
+                this.props.store.chat.time
             );
     };
 
@@ -71,7 +76,9 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.timeScale,
             this.props.store.timeMessage.average,
             this.props.store.timeMessage.periods,
-            this.props.store.timeMessage.messageActivity
+            this.props.store.timeMessage.messageActivity,
+            this.props.store.chosen,
+            this.props.chat.store.time
         );
     };
 
@@ -85,7 +92,9 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.timeScale,
             !this.props.store.timeMessage.average,
             this.props.store.timeMessage.periods,
-            this.props.store.timeMessage.messageActivity
+            this.props.store.timeMessage.messageActivity,
+            this.props.store.chosen,
+            this.props.chat.store.time
         );
     };
 
@@ -99,7 +108,9 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.timeScale,
             this.props.store.timeMessage.average,
             event.target.value > 0 ? event.target.value : 1,
-            this.props.store.timeMessage.messageActivity
+            this.props.store.timeMessage.messageActivity,
+            this.props.store.chosen,
+            this.props.chat.store.time
         );
     };
 
@@ -113,7 +124,9 @@ class TimeMessageGraphic extends Component {
             event.target.id,
             this.props.store.timeMessage.average,
             this.props.store.timeMessage.periods,
-            this.props.store.timeMessage.messageActivity
+            this.props.store.timeMessage.messageActivity,
+            this.props.store.chosen,
+            this.props.chat.store.time
         );
     };
 
@@ -226,8 +239,8 @@ export default connect(
         createTimeUsers : (chat, store, messageActivity) => {
             dispatch(createTimeUsers(chat, store, messageActivity))
         },
-        setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1, messagesActivity = true) => {
-            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity))
+        setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1, messagesActivity = true, chosen = false, RAWTime = []) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime))
         }
     })
 )(TimeMessageGraphic)

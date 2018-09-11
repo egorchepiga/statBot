@@ -3,19 +3,23 @@ import {connect} from 'react-redux';
 import './App.css';
 import {loadChats} from './store/all/action';
 import {setToken} from './store/getStats/token/action'
-import {changeActive} from "./store/menu/action";
+import {changeActive} from "./store/containers/menu/action";
 import SummaryGraphic from './containers/summary';
 import TopGraphic from './containers/top';
 import TimeMessageGraphic from './containers/time';
 import Stickers from './containers/stickers';
 import SlideMenu from './components/Menu/Menu'
 import Button from './components/button';
+import UserList from './containers/userlist';
+import ChatProfile from './containers/chat_profile'
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
 import {loadChat} from "./store/chat/action";
 import {calculateTimeScale} from "./common/timeHelpers";
 import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
+import {setChosen} from "./store/getStats/chosen/action";
+import {calculateInfo} from './store/containers/chat_profile/action'
 
 class App extends Component {
 
@@ -64,6 +68,7 @@ class App extends Component {
     }
 
     render() {
+        let ready = this.props.store.chat;
         return (
             <SlideMenu
                 active={this.props.store.menu.active}
@@ -73,8 +78,10 @@ class App extends Component {
                         {this.selectChatButton()}
                         <div className="wrapper container">
                             <div className="graphich__wrapper_column">
+                                {ready && <ChatProfile/>}
+                                {ready && <UserList/>}
                                 <div className="graphich__wrapper_row row justify-content-center">
-                                    <SummaryGraphic/>
+                                    {!this.props.store.chosen && <SummaryGraphic/>}
                                     <TopGraphic/>
                                     <Stickers/>
                                     <TimeMessageGraphic/>
@@ -93,6 +100,9 @@ export default connect(
         store: state
     }),
     dispatch => ({
+        chooseUser :  (chosen) => {
+            dispatch(setChosen(chosen))
+        },
         setToken: (token) => {
             dispatch(setToken(token));
         },
@@ -109,6 +119,7 @@ export default connect(
                     dispatch(createTopStickers(data));
                     dispatch(createTopWordsForChat(data));
                     dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0])));
+                    dispatch(calculateInfo(data.time,'0'))
                 });
 
         }

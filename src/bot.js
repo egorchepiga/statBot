@@ -304,7 +304,7 @@ class Bot {
                         let link = 'https://egorchepiga.ru/' + res;
                         this.answerCallbackQuery(msg.id, link, false);
                         this.sendMessage(  msg.message.chat.id, 'Для наблюдения за группой повторите добавление' +
-                            'в неё бота, или прикажите /report в нужной группе.')
+                            'в неё бота.')
                             .then(res => {
                                 this.sendMessage(msg.message.chat.id, 'Новая ссылка на отчёт: \n' + link)
                             });

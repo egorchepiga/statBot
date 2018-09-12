@@ -35,7 +35,7 @@ export const calculateInfo = (timeArray, scale) =>
             pickHours[tmp.getHours()]++;
         }
         let maxHour = 0;
-        info.pickHour = "00:00";
+        info.pickHour = "no activity";
         for(let hour in pickHours)
                 if (pickHours[hour] > maxHour) {
                     maxHour = pickHours[hour];

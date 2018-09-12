@@ -6,7 +6,9 @@ import {createTopStickers} from "../store/graphics/stickers_top/action";
 import {createTimeMessage} from "../store/graphics/time/action";
 import {loadUserWords} from "../store/graphics/top/action";
 import {findUser} from "../store/containers/userlist/action";
+import {loadImages} from "../store/chat/action";
 
+const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
 class UserList extends Component {
 
     constructor(props) {
@@ -15,18 +17,15 @@ class UserList extends Component {
 
     chooseUser = (event) => {
         this.props.chooseUser(event.target.id);
-
         let users = this.props.store.chat.users;
         let user, index;
         for(let i=0; i<users.length; i++) {
             if(users[i].user === event.target.id) {
-                console.log(users[i])
                 user = users[i];
                 index = i;
                 break;
             }
         }
-        console.log(user.user);
         this.props.createTopWordsForUser(
             this.props.store.chat,
             index,
@@ -55,10 +54,11 @@ class UserList extends Component {
 
     };
 
+
     createUserProfile = (user, index) => (
         <div key={index} onClick={this.chooseUser} id={user.user} className="user-preview">
-            <img  id={user.user} className="user-image" src={user.img ? 'https://egorchepiga.ru/tg-stats/' + user.img
-            : 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png'}/>
+            <img  id={user.user} className="user-image"
+                  src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
             <label id={user.user} >{user.user + " #" + (index+1)}</label>
         </div>
     );
@@ -87,6 +87,7 @@ class UserList extends Component {
         this.props.find(event.target.value);
     };
 
+
     render() {
         return (
             <div>
@@ -97,7 +98,10 @@ class UserList extends Component {
             </div>
         )
     }
+
 }
+
+
 
 export default connect(
     state => ({
@@ -109,7 +113,6 @@ export default connect(
         createTopWordsForUser: (data, index, token, chat_id, user_id, count, chosen) => {
             dispatch(loadUserWords({token, chat_id, user_id, count}))
                 .then(res => {
-                    console.log(data);
                     data.users[index].top_words = res;
                     dispatch(createTopWordsForChat(data, false, chosen));
             })

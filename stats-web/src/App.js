@@ -14,7 +14,7 @@ import UserList from './containers/userlist';
 import ChatProfile from './containers/chat_profile'
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
-import {loadChat} from "./store/chat/action";
+import {loadChat, loadImages} from "./store/chat/action";
 import {calculateTimeScale} from "./common/timeHelpers";
 import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
@@ -25,7 +25,9 @@ class App extends Component {
 
     constructor(props) {
         super(props);
-        let token = new URL(window.location).searchParams.get("token");
+        let reg = /(?<=ru\/)/;
+        let url = new URL(window.location).href;
+        let token = url.slice(url.match(reg).index);
         this.props.setToken(token);
         this.props.getChats({token});
     }
@@ -112,11 +114,16 @@ export default connect(
         changeActive: () => {
             dispatch(changeActive())
         },
-        setChat: ({token, chat_id}) => {
-            dispatch(loadChat({token, chat_id}))
+        setChat: ({token, chat_id, img_ready}) => {
+            dispatch(loadChat({token, chat_id, img_ready}))
                 .then(data => {
+                    dispatch(loadImages(data))
+                        .then(res => {
+                            console.log(data);
+                            res.name = data.name;
+                            dispatch(createTopStickers(res));
+                        });
                     dispatch(createSummaryGraphic(data));
-                    dispatch(createTopStickers(data));
                     dispatch(createTopWordsForChat(data));
                     dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0])));
                     dispatch(calculateInfo(data.time,'0'))

@@ -53,7 +53,7 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         if (topSwitch) {
             let topSummary = [],
                 topUserNames = [];
-            while (topSummary.length < 3) {
+            while (topSummary.length < 3 && userNames.length > 1) {
                 let tmp = summary[0],
                     index = 0;
                 for (let i = 1; i < summary.length; i++) {
@@ -68,12 +68,15 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
                 userNames.splice(index, 1);
             }
             let sum = 0;
-            for (let i = 0; i < summary.length; i++)
-                sum += summary[i];
-            topSummary.push(sum);
-            topUserNames.push('other');
+            if(userNames.length > 1) {
+                for (let i = 0; i < summary.length; i++)
+                    sum += summary[i];
+                topSummary.push(sum);
+                topUserNames.push('other');
+            }
             userNames = topUserNames;
             summary = topSummary;
+
         }
 
         let tmp = {

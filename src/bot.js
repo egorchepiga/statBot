@@ -108,14 +108,14 @@ class Bot {
                 chatStats.chat = res[0];
                 res.splice(0, 1);
                 chatStats.users = res;
-                return this.telegramBot.getFile(chatStats.chat.img)
+               /* return this.telegramBot.getFile(chatStats.chat.img)
             }).then(res => {
-                chatStats.chat.img = res.file_path;
+                chatStats.chat.img = res.file_path;*/
                 return this.getChatActivity(chat_id, db, this.fromTime, this.toTime)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
                 chatStats.time = res;
-                return this.requestStickers(chatStats);
+                /*return this.requestStickers(chatStats);
             }).then(res => {
                 if (res.error) {
                     console.log(res);
@@ -128,8 +128,7 @@ class Bot {
                     console.log(res);
                     return chatStats;
                 }
-                chatStats = res;
-                //this.refreshUsersInfo(chat_id, db);                                                                     //лишняя нагрузка. на демон
+                chatStats = res;*/
                 return chatStats;
             });
     }
@@ -294,7 +293,7 @@ class Bot {
                 self.createStatToken(msg.from.id)
                     .then(res => {
                         if (res.error) console.log(res.error);
-                        let link = 'https://egorchepiga.ru/?token=' + res;
+                        let link = 'https://egorchepiga.ru/' + res;
                         this.answerCallbackQuery(msg.id, link, true);
                         this.sendMessage( msg.message.chat.id, link);
                     });
@@ -302,7 +301,7 @@ class Bot {
                 self.renewBase(msg.from.id)
                     .then(res => {
                         if (res.error) return({error : res.error, result: null});
-                        let link = 'https://egorchepiga.ru/?token=' + res;
+                        let link = 'https://egorchepiga.ru/' + res;
                         this.answerCallbackQuery(msg.id, link, false);
                         this.sendMessage(  msg.message.chat.id, 'Для наблюдения за группой повторите добавление' +
                             'в неё бота, или прикажите /report в нужной группе.')
@@ -350,30 +349,30 @@ class Bot {
                             if (res) {
                                 return this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                                     .then(function(data) {
-                                        if ((data.status === "creator") /*|| (data.status == "administrator")*/)
-                                            return self.createChat(msg)
-                                                .then(res => {
-                                                    if (res.error) return {error: res.error, result: null};
-                                                    return self.createUser(msg, self.dbName(msg.from.id));
-                                                });
-                                        self.telegramBot.sendMessage(msg.chat.id, 'Аналитика разрешена только для администрации.\n' +
-                                            'Проверьте настройки приватности бота /privacy.');
+                                        if ((data.status === "creator") || (data.status === "administrator"))
+                                            return self.DB.findChat(msg.chat.id).then(
+                                                res => {
+                                                    if (res.rows.length > 0)
+                                                        return self.telegramBot.sendMessage( msg.chat.id, "https://egorchepiga.ru/" + res.rows[0].token);
+                                                }
+                                            );
+                                        else return self.telegramBot.sendMessage( msg.chat.id, "This chat is private. Only administration has access, sorry ;(");
                                     });
                             }
-                            else return this.createChat(msg)
-                                .then(res => {
-                                    if (res.error) return {error: res.error, result: null};
-                                    return this.createUser(msg, this.dbName(msg.from.id));
-                                });
+                            else return self.DB.findChat(msg.chat.id).then(
+                                res => {
+                                    if (res.rows.length > 0)
+                                        return self.telegramBot.sendMessage( msg.chat.id, "https://egorchepiga.ru/" + res.rows[0].token);
+                                }
+                            );
                         });
                 } else if (msg.text.indexOf('/privacy@egorchepiga_bot') !== -1) {
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {
-                            if ((data.status === "creator") /*|| (data.status == "administrator")*/){
+                            if ((data.status === "creator") || (data.status === "administrator")){
                                 self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
-                                        res = !res;
-                                        let str = (res) ? 'Защита активирована.' : 'Защита деактивирована.';
+                                        let str = (res) ? 'Защита деактивирована.':'Защита активирована.' ;
                                         self.DB.setChatPrivacy(msg.chat.id, res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });

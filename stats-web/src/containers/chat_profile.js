@@ -5,6 +5,8 @@ import {createTopStickers} from "../store/graphics/stickers_top/action";
 import {setChosen} from "../store/getStats/chosen/action";
 import {createTimeMessage} from "../store/graphics/time/action";
 
+const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
+
 class ChatProfile extends Component {
 
     chooseUser = () => {
@@ -28,9 +30,12 @@ class ChatProfile extends Component {
     };
 
     render() {
+        let img = this.props.store.chat.chat.img;
         return (
             <div className="chat-profile" onClick={this.chooseUser}>
-                <img className="chat-image" src={"https://egorchepiga.ru/tg-stats/" + this.props.store.chat.chat.img}/>
+                <img className="chat-image"
+                     src={img !== null  && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}
+                />
                 <div className="chat-profile-info">
                     <label>{this.props.store.chat.name}</label>
                     <div className="chat-profile-stats">

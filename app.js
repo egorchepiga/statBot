@@ -179,6 +179,24 @@ app.get('/photos/*', (req, res) => {
 });
 
 
+app.get('/file_id/*', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let file_id = req.params[0];
+    if(file_id !== 'null')
+    bot.getFilePath(file_id)
+        .then(botRes => {
+            console.log(botRes);
+            if (res.error) {
+                console.log(botRes);
+                res.sendStatus(404);
+            } else
+                res.send({path: botRes});
+        });
+    else res.sendStatus(404);
+});
+
+
 module.exports = app;
 
 process.on('uncaughtException', function(err) {

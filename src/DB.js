@@ -74,6 +74,10 @@ function isChatPrivate(chat_id) {
 
 }
 
+function findChat(chat_id) {
+    return query('SELECT * FROM ' + mainBase +'.`ROOMS` WHERE chat_id = ?',[chat_id]);
+}
+
 function createChat(msg, db){
     return isChatPrivate(msg.chat.id, mainBase)
         .then(res => {
@@ -125,7 +129,7 @@ function createUser(msg, db){
 
 function createStatToken(user_id, botToken) {
     let sql =
-        'INSERT INTO '+ mainBase +'.`DATABASES` ' +
+        'INSERT INTO '+ mainBase +'.`ROOMS` ' +
         '(`database_name`,`token`) ' +
         'VALUES (?, ?)' +
         'ON DUPLICATE KEY UPDATE token = ?;';
@@ -143,8 +147,8 @@ function clearBase(base) {
     let sql = 'DROP DATABASE `' + base +'#telegram`;';
     sql += 'DELETE FROM ' + mainBase + '.`ROOMS` ' +
         'WHERE database_name = ?;';
-    sql += 'DELETE FROM ' + mainBase + '.`DATABASES` ' +
-        'WHERE database_name = ?;';
+    /*sql += 'DELETE FROM ' + mainBase + '.`DATABASES` ' +
+        'WHERE database_name = ?;';*/
     return transaction(sql, [ base, base ]);
 }
 
@@ -158,7 +162,7 @@ function clearBannedWords(user_id, chat_id, db, bannedWords) {                //
 }
 
 function authorize(token) {
-    return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE token = ?',[token]);
+    return query('SELECT * FROM ' + mainBase +'.`ROOMS` WHERE token = ?',[token]);
 }
 
 function updateUserInfo(chat_id, user_id, file_id, username, up_to_date, db) {
@@ -462,5 +466,6 @@ module.exports = {
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
     isChatPrivate : isChatPrivate,
-    getBannedWords : getBannedWords
+    getBannedWords : getBannedWords,
+    findChat : findChat
 };

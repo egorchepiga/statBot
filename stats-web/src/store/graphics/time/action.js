@@ -1,3 +1,4 @@
+import colors from '../../../common/colors';
 import * as types from './actionType'
 
 Date.prototype.addDays = function(days) {
@@ -58,8 +59,10 @@ const  prepareTimeForUsers = (time, scale) => {
 
 export const createTimeUsers = (chat, store, messageActivity) =>
     dispatch => {
+    console.log(chat.theme);
         let timeArray =  messageActivity ?
             chat.timeReady : prepareTimeForUsers(chat.time, store.timeScale);
+        console.log(timeArray);
         dispatch(createTimeMessage(
             timeArray,
             store.dayScale,
@@ -69,13 +72,16 @@ export const createTimeUsers = (chat, store, messageActivity) =>
             store.timeScale,
             store.average,
             store.periods,
-            messageActivity
+            messageActivity,
+            false,
+            [],
+            chat.theme
         )
     );
 };
 
 export const createTimeMessage = (timeArray, dayScale = '0', imposition = false, fromTime = 0, toTime = 0,
-                                  timeScale = '0', average = false, periods = 1, messageActivity = true, chosen = false, RAWTime = []) =>
+                                  timeScale = '0', average = false, periods = 1, messageActivity = true, chosen = false, RAWTime = [], colorPresetIndex) =>
     dispatch => {
         if(chosen) {
             let userTimes = [];
@@ -89,7 +95,7 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
                 0,[{}],0,
                 dayScale, timeScale,
                 fromTime, toTime,
-                imposition, average, periods, messageActivity
+                imposition, average, periods, messageActivity, colorPresetIndex
             );
             dispatch({type: types.SET_THIRD_ALL, payload: payload});
         }
@@ -116,7 +122,8 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
                 timeArray, preparedTimeArrays.reverse(), timeGraphicData,
                 dayScale, timeScale,
                 fromTime, toTime,
-                imposition, average, periods, messageActivity
+                imposition, average, periods, messageActivity,
+                colorPresetIndex
             );
             dispatch({type: types.SET_THIRD_ALL, payload: cfg});
         }
@@ -124,7 +131,7 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
 
 function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
                              dayScale, timeScale, fromTime, toTime,
-                             imposition, average, periods, messageActivity) {
+                             imposition, average, periods, messageActivity, colorPresetIndex) {
     let dataSets = [];
     let B = 20;
     let R = 235;
@@ -133,6 +140,8 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
         R = B > R ? R - 30 : R;
         let label = preparedTimeArray[i].label;
         delete preparedTimeArray[i].label;
+        let rand = parseInt(Math.random() * 19);
+        let color = colors(colorPresetIndex);
         dataSets.push({
             label: label,
             data: timeGraphicData[i],
@@ -140,8 +149,8 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
             fill: false,
             borderWidth: 2,
             lineTension: 0,
-            backgroundColor: 'rgba('+R+',20,'+B+', 0.6)',
-            borderColor: 'rgba('+R+',20,'+B+',1)'
+            backgroundColor: color[rand],
+            borderColor: color[rand],
         });
     }
     return {
@@ -340,7 +349,6 @@ function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
         hours = tmpTimeFromShow.getHours() + 1;                                    //Увеличиваем счётчик первой записи на 1 час вперёд
         placeholder[func.call(tmpTimeFromShow)] = 0;                               // функция-шаблон {time:'XXXX-XX/XX/XX', ...} -> {'XX.XX XX:XX' : 0, ...)
     }                                                                              //формируем шаблон для Ox - объект с ключами соотвествующими функции шаблону (равномерные метки по Ox).
-    console.log(placeholder);
     let times = [];
     date.setMinutes(59);                                                           //или не изменяя время для грубого режима
     date.setSeconds(59);

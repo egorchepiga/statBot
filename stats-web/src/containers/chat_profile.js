@@ -34,7 +34,7 @@ class ChatProfile extends Component {
         return (
             <div className="chat-profile" onClick={this.chooseUser}>
                 <img className="chat-image"
-                     src={img !== null  && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}
+                     src={img !== null && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}
                 />
                 <div className="chat-profile-info">
                     <label>{this.props.store.chat.name}</label>

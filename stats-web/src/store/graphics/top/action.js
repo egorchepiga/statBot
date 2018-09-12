@@ -1,4 +1,4 @@
-import colors from '../../../etc/color'
+import colors from '../../../common/colors'
 import * as types from './actionType'
 import fetch from "cross-fetch";
 
@@ -61,7 +61,7 @@ export const createTopWordsForChat = (data, forChat = true, chosen = false) =>
             data: {
                 datasets: [{
                     data: data1,
-                    backgroundColor: colors(),
+                    backgroundColor: colors(data.theme),
                     label: data.name,
                     labels : names
                 }],

@@ -11,5 +11,9 @@ export default function chat(state = null, action) {
         return {...state, users, chat: {...chat, top_stickers} };
     }
 
+    if (action.type === types.SET_COLOR_THEME) {
+        return {...state, theme : action.payload}
+    }
+
     return state;
 }

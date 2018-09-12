@@ -61,7 +61,7 @@ class SummaryGraphic extends Component {
     );
 
     render() {
-        let buttonsVisibility = this.props.store.chat;
+        let buttonsVisibility = this.props.store.chat && this.props.store.chat.chat;
         return (
             <div className="graphich__first graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
                 <div>

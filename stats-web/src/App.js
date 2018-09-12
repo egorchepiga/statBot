@@ -14,23 +14,74 @@ import UserList from './containers/userlist';
 import ChatProfile from './containers/chat_profile'
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
-import {loadChat, loadImages} from "./store/chat/action";
+import {loadChat, loadImages, setColorTheme} from "./store/chat/action";
 import {calculateTimeScale} from "./common/timeHelpers";
 import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
 import {setChosen} from "./store/getStats/chosen/action";
 import {calculateInfo} from './store/containers/chat_profile/action'
+import {getRandomPreset} from './common/colors';
+
+
+const buttonLabels = [
+    ' Red',
+    ' Orange ',
+    ' Yellow ',
+    ' Light-green ',
+    ' Green ',
+    ' Aqua-green ',
+    ' Aqua-blue ',
+    ' Blue ',
+    ' Purple ',
+    ' Pink ',
+    ' Random '
+];
+
+function getCookie(name) {
+    let matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}
 
 class App extends Component {
 
     constructor(props) {
         super(props);
+
+        this.props.setTheme({ presetIndex : getCookie('theme') || getRandomPreset() });
+
         let reg = /(?<=ru\/)/;
         let url = new URL(window.location).href;
         let token = url.slice(url.match(reg).index);
         this.props.setToken(token);
         this.props.getChats({token});
     }
+
+    changeTheme = (event) => {
+        document.cookie = `theme=${event.target.id}; path=/;`;
+        let a = Object.create(this.props.store.chat);
+        a.theme = event.target.id;
+        this.props.setTheme({presetIndex : event.target.id, data : a});
+
+    };
+
+    createButtonForTheme = (label, index) => (
+        <Button className={"btn btn-outline-primary btn-sm row-sm-10 row-md-10 row-lg-10 row-xl-10 theme-switcher " + label}
+                key={index}
+                id={index}
+                label={label}
+                onClick={this.changeTheme}
+                active={this.props.store.chat && this.props.store.chat.theme === index.toString()}
+        />
+    );
+
+    createButtonsForThemeSwitch = (buttonLabels) => (
+        <div className="theme-switcher-holder">{
+            buttonLabels.map(this.createButtonForTheme)
+        }</div>
+
+    );
 
     selectChatButton = () => (
         <div className="slideout-menu-wrapper">
@@ -53,31 +104,34 @@ class App extends Component {
     );
 
     setChat = (event) => {
-        this.props.setChat({token : this.props.store.token, chat_id : event.target.id});
+        let theme = this.props.store.chat.theme;
+        this.props.setChat({token : this.props.store.token, chat_id : event.target.id, theme});
         this.props.changeActive();
     };
 
     createNavigationComponents = (items) => {
         let arr = [];
-        for (let key in items){
+        for (let key in items)
             arr.push(this.createButton(key, items[key]))
-        }
         return arr;
     };
 
     shouldComponentUpdate(props){
-        return props.store.stats.length !== 0
+        return props.store.stats.chats.length !== 0
     }
 
     render() {
-        let ready = this.props.store.chat;
+        let ready = this.props.store.chat && this.props.store.chat.chat;
         return (
             <SlideMenu
                 active={this.props.store.menu.active}
-                nav={this.createNavigationComponents(this.props.store.stats)} >
+                nav={this.createNavigationComponents(this.props.store.stats.chats)} >
                 <div className="App">
                     <main id="panel" className="slideout-panel slideout-panel-left">
-                        {this.selectChatButton()}
+                        <div className="header-buttons">
+                            {this.selectChatButton()}
+                            {ready && this.createButtonsForThemeSwitch(buttonLabels)}
+                        </div>
                         <div className="wrapper container">
                             <div className="graphich__wrapper_column">
                                 {ready && <ChatProfile/>}
@@ -114,21 +168,32 @@ export default connect(
         changeActive: () => {
             dispatch(changeActive())
         },
-        setChat: ({token, chat_id, img_ready}) => {
+        setChat: ({token, chat_id, img_ready, theme}) => {
             dispatch(loadChat({token, chat_id, img_ready}))
                 .then(data => {
+                    data.theme = theme;
                     dispatch(loadImages(data))
                         .then(res => {
-                            console.log(data);
                             res.name = data.name;
+                            res.theme = theme;
                             dispatch(createTopStickers(res));
                         });
                     dispatch(createSummaryGraphic(data));
                     dispatch(createTopWordsForChat(data));
-                    dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0])));
+                    dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0]),
+                        false, 1, true, false, [], theme));
                     dispatch(calculateInfo(data.time,'0'))
                 });
-
+        },
+        setTheme: ({data, presetIndex}) => {
+            if (data) {
+                dispatch(createSummaryGraphic(data));
+                dispatch(createTopWordsForChat(data));
+                dispatch(createTimeMessage(data.timeReady, '0', 0, 0, 0, calculateTimeScale(data.timeReady[0]),
+                    false, 1, true, false, [], presetIndex));
+                dispatch(calculateInfo(data.time, '0'))
+            }
+            dispatch(setColorTheme(presetIndex));
         }
     })
 )(App);

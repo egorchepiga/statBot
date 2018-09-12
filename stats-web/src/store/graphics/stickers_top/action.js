@@ -1,4 +1,4 @@
-import colors from '../../../etc/color'
+import colors from '../../../common/colors'
 import * as types from './actionType'
 export const createTopStickers = (data, forChat = true, chosen = false) =>
     dispatch => {
@@ -50,7 +50,7 @@ export const createTopStickers = (data, forChat = true, chosen = false) =>
             data: {
                 datasets: [{
                     data: data1,
-                    backgroundColor: colors(),
+                    backgroundColor: colors(data.theme),
                     label: data.name,
                     labels : names
                 }],

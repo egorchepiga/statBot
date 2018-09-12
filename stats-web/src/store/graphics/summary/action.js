@@ -1,4 +1,4 @@
-import colors from '../../../etc/color';
+import colors from '../../../common/colors';
 import * as types from './actionType';
 
 
@@ -78,13 +78,12 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
             summary = topSummary;
 
         }
-
         let tmp = {
             topSwitch : topSwitch,
             dayScale: dayScale,
             datasets: [{
                 data: summary,
-                backgroundColor: colors(),
+                backgroundColor: colors(data.theme),
                 label: ""
             }],
             labels: userNames

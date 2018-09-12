@@ -1,8 +1,8 @@
 import * as types from './actionType'
-const initialState = [];
+const initialState = {chats:[]};
 export default function stats(state = initialState, action) {
     if (action.type === types.SET_CHATS) {
-        return action.payload;
+        return {...state, chats : action.payload}
     }
     return state;
 }

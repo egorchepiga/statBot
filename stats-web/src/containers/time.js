@@ -31,14 +31,10 @@ class TimeMessageGraphic extends Component {
         if(event.target.id === '0') {
             timeScale = calculateTimeScale(this.props.store.chat.timeReady[0]);
             average = false;
-            console.log(timeScale);
         }
         else if(event.target.id === '1') timeScale = '0';
         else if(event.target.id === '2' ) timeScale = '1';
         else if(event.target.id === '3' || event.target.id === '4' ) timeScale = '2';
-
-
-        console.log(this.props.store.chat.time);
 
         if(!this.props.store.timeMessage.messageActivity) {
             let obj = this.props.store.timeMessage;
@@ -62,7 +58,8 @@ class TimeMessageGraphic extends Component {
                 this.props.store.timeMessage.periods,
                 this.props.store.timeMessage.messageActivity,
                 this.props.store.chosen,
-                this.props.store.chat.time
+                this.props.store.chat.time,
+                this.props.store.chat.theme
             );
     };
 
@@ -78,7 +75,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.store.chat.time
+            this.props.store.chat.time,
+            this.props.store.chat.theme
         );
     };
 
@@ -94,7 +92,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.store.chat.time
+            this.props.store.chat.time,
+            this.props.store.chat.theme
         );
     };
 
@@ -110,7 +109,8 @@ class TimeMessageGraphic extends Component {
             event.target.value > 0 ? event.target.value : 1,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.store.chat.time
+            this.props.store.chat.time,
+            this.props.store.chat.theme
         );
     };
 
@@ -126,7 +126,8 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.periods,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
-            this.props.store.chat.time
+            this.props.store.chat.time,
+            this.props.store.chat.theme
         );
     };
 
@@ -195,6 +196,7 @@ class TimeMessageGraphic extends Component {
         this.props.createTimeUsers(this.props.store.chat, this.props.store.timeMessage, !this.props.store.timeMessage.messageActivity);
     };
 
+
     render() {
         const dayScale = this.props.store.timeMessage.dayScale;
         let impositionVisibility, dateRangeVisibility, timeScaleVisibility, averageVisibility, periodsVisibility,
@@ -209,7 +211,7 @@ class TimeMessageGraphic extends Component {
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
                 {buttonsVisibility && this.createHeader("Time activity")}
-                {buttonsVisibility && this.activitySwitcher()}
+                {buttonsVisibility && !this.props.store.chosen && this.activitySwitcher()}
                 <div>
                     <LineChart data={this.props.store.timeMessage.data}
                                options={this.props.store.timeMessage.options}/>
@@ -239,8 +241,8 @@ export default connect(
         createTimeUsers : (chat, store, messageActivity) => {
             dispatch(createTimeUsers(chat, store, messageActivity))
         },
-        setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1, messagesActivity = true, chosen = false, RAWTime = []) => {
-            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime))
+        setDataThirdGraphic: (time, dayScale, imposition, fromTime = null, toTime = null, customScale = null, average = false, periods = 1, messagesActivity = true, chosen = false, RAWTime = [], theme) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime, theme))
         }
     })
 )(TimeMessageGraphic)

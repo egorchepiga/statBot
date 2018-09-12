@@ -2,6 +2,11 @@ import fetch from 'cross-fetch'
 import * as types from './actionType';
 import * as chatTypes from '../chat/actionType'
 
+export const setColorTheme = (presetIndex) =>
+    dispatch => {
+        dispatch({type: types.SET_COLOR_THEME, payload: presetIndex});
+    };
+
 export const loadImages = ({users, chat}) =>
     dispatch => {
         let arrPromise = [];
@@ -47,7 +52,6 @@ export const loadImages = ({users, chat}) =>
                     return json.path;
                 })
             );
-        console.log( chat.img);
         arrPromise.push(
             fetch(`https://egorchepiga.ru/tg-stats/file_id/` + chat.img, {
                 headers: {

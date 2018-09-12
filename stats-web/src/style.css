@@ -45,6 +45,7 @@ canvas {
   display: flex; }
 
 .slideout-menu-wrapper {
+  display: inline-block;
   padding-top: 2px; }
 
 .slideout-menu-left {
@@ -82,6 +83,12 @@ canvas {
 
 .wrapper__slider {
   margin: 20px; }
+
+.header-buttons {
+  text-align: left; }
+
+.theme-switcher-holder {
+  display: inline-block; }
 
 .stickers-bar-holder {
   display: inline-block;

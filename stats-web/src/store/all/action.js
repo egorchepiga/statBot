@@ -1,7 +1,6 @@
 import fetch from 'cross-fetch'
 import * as types from './actionType'
 
-
 export const loadChats = ({token}) => {
     return dispatch => {
         return fetch(`https://egorchepiga.ru/tg-stats/chats/?token=${token}`, {

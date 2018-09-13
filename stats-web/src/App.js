@@ -21,6 +21,7 @@ import {createTopStickers} from "./store/graphics/stickers_top/action";
 import {setChosen} from "./store/getStats/chosen/action";
 import {calculateInfo} from './store/containers/chat_profile/action'
 import {getRandomPreset} from './common/colors';
+import BanForm from './containers/banForm';
 
 
 const buttonLabels = [
@@ -53,7 +54,7 @@ class App extends Component {
 
         let reg = /(?<=ru\/)/;
         let url = new URL(window.location).href;
-        let token = url.slice(url.match(reg).index);
+        let token = "2b1d1c36fe718e317c04"; //url.slice(url.match(reg).index);
         this.props.setToken(token);
         this.props.getChats({token});
     }
@@ -128,11 +129,12 @@ class App extends Component {
                 nav={this.createNavigationComponents(this.props.store.stats.chats)} >
                 <div className="App">
                     <main id="panel" className="slideout-panel slideout-panel-left">
-                        <div className="header-buttons">
+                        <div className="header-buttons">                         
                             {this.selectChatButton()}
                             {ready && this.createButtonsForThemeSwitch(buttonLabels)}
                         </div>
                         <div className="wrapper container">
+                            <BanForm/>
                             <div className="graphich__wrapper_column">
                                 {ready && <ChatProfile/>}
                                 {ready && <UserList/>}

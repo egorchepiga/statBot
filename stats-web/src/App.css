@@ -27,3 +27,31 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.modal{
+  position: absolute;
+  height: 100vh;
+}
+
+.modal-wrapper-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 20px;
+}
+
+.modal-wrapper-list__item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-list__item {
+  display: flex;
+  align-items: center;
+}
+
+.modal-header {
+  justify-content: center;
+}
+.modal-backdrop {
+  position: inherit;
+}

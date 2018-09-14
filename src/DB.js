@@ -324,10 +324,9 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
             let bannedWords = JSON.parse(res.rows[0].banned_words),
                 arrPromises = [],
                 arrUserTables = [{ id : arrUserID[0].id }],
-                sql = 'SELECT summary ' +
+                sql = 'SELECT summary, 0 as id ' +
                     'FROM ' + db + '.`' + arrUserID[0].id + '#' + chat_id + '` ' +
                     'WHERE word = \'Messages count\'';
-            if(arrUserTables[0].id === chat_id) n = 20;
             arrPromises.push(getTopWords(
                 arrUserTables[0].id === chat_id ? 20 : 5,
                 arrUserID[0].id, chat_id, db, bannedWords));                   //до
@@ -337,7 +336,7 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
                 for (let i = 1; i < arrUserID.length; i++){
                     arrUserTables.push( { id : arrUserID[i].id });
                     sql += ' UNION ' +
-                        '(SELECT summary ' +
+                        '(SELECT summary, ' +i+ ' as id ' +
                         'FROM  ' + db + '.`'  + arrUserID[i].id + '#' + chat_id + '` ' +
                         'WHERE word = \'Messages count\')';
                     arrPromises.push(getTopWords(
@@ -346,6 +345,7 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
                     arrPromises.push(getTopStickers(arrUserID[i].id, chat_id, db, 5));
                 }
             }
+            console.log(sql);
             arrPromises.push(query(sql));
             return Promise.all(arrPromises)
         });

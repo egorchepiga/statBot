@@ -1,5 +1,5 @@
 import * as types from './actionType'
-const initialState = {active: true, nav:[]};
+const initialState = {active: false, nav:[]};
 export default function menu(state = initialState, action) {
 
     if (action.type === types.MENU_ACTIVE_CHANGE) {

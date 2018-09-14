@@ -26,12 +26,13 @@ class Menu extends Component {
         let arr = [];
         for (let key in this.props.store.stats)
             arr.push(this.createButton(key, this.props.store.stats[key]));
+        console.log('*',arr);
         return arr;
     };
 
 
     render() {
-       return (
+       return ( 
             <nav id="menu" className="slideout-menu slideout-menu-left">
                 <div className="menu__label">
                     <b className="text-primary">Выберите чат из списка доступных</b>

@@ -1,6 +1,27 @@
 import * as types from './actionType'
-
-export default function chat(state = {theme:null, bannedWords: {list: ['d','3'], input:"", edit: -1}}, action) {
+const initState = {
+    bannedWords: {
+        list: {0: 'd', 1: '3'}, 
+        input: "", 
+        edit: -1,
+        search: "",
+        visibleList: {0: 'd', 1: '3'}
+    },
+    /*chat: {
+        id: null,
+        img: null,
+        summary: -1,
+        top_stickers: {},
+        top_words: {},
+        user: null  //Сюда заносится название чата.. надо убрать
+    },*/
+    theme: -1,
+    /*time: [],
+    timeReady: [],
+    users: [],
+    name: null*/
+}
+export default function chat(state = initState, action) {
     if (action.type === types.SET_CHAT) {
         return action.payload;
     } else if (action.type === types.SET_USERS_IMAGE) {
@@ -24,11 +45,20 @@ export default function chat(state = {theme:null, bannedWords: {list: ['d','3'],
             input:  state.bannedWords.list[action.payload]}}
     } else if (action.type === types.SAVE_INPUT) {
         return {...state,
-            bannedWords:{
+            bannedWords:{...state.bannedWords,
                 list: action.payload,
                 input: "",
                 edit: -1 }}
-    }
+    } else if (action.type === types.SET_SEARCH) {
+        return {...state, 
+            bannedWords:{...state.bannedWords,
+                search: action.payload }}
+    } else if (action.type === types.SET_VISIBLE_LIST) {
+        console.log(action.payload)
+        return {...state, 
+            bannedWords:{...state.bannedWords,
+                visibleList: action.payload }}
+    } 
 
     return state;
 }

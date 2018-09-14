@@ -55,3 +55,7 @@
 .modal-backdrop {
   position: inherit;
 }
+
+.modal-body {
+  min-height: 282px;  
+}

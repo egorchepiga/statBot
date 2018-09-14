@@ -96,8 +96,12 @@ export const loadChat = ({token, chat_id}) =>
             method: "GET"
         }).then(async response => {
             let chat = await response.json(),
-                times = [];
-                chat.bannedWords = { list: JSON.parse(chat.bannedWords), input:"", edit:""}
+                times = [],
+                list = JSON.parse(chat.bannedWords).reduce(function(acc, cur, i) {
+  acc[i] = cur;
+  return acc;
+}, {});
+                chat.bannedWords = { list: list, input:"", edit:"", visibleList: list}
             for (let i = 0; i < chat.time.length; i++)
                 times.push(new Date(chat.time[i].time));
             chat.timeReady = times;

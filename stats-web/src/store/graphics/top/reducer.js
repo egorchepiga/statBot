@@ -6,6 +6,7 @@ export default function topWordsForChat(state = initialState, action) {
     if (action.type === types.SET_SECOND_ALL) {
         return {
             ...state,
+            theme: action.payload.theme,
             forChat : action.payload.forChat,
             options: action.payload.options,
             data: action.payload.data

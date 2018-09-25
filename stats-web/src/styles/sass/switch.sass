@@ -1,0 +1,104 @@
+.summary-switch
+  margin-left: -5px
+
+.words-switch
+  margin-left: 10px
+
+.stickers-switch
+  margin-left: 10px
+
+.activity-switch
+  margin-left: -30px
+
+.input
+  display: none
+
+.label
+  margin: 0 10px
+  font-size: 16px
+  font-family: sans-serif
+  color: #666666
+
+.toggle-container
+  display: inline-block
+
+.input
+  + .toggle
+    display: block
+    position: relative
+    cursor: pointer
+    outline: none
+    user-select: none
+    padding: 2px
+    width: 64px
+    height: 30px
+    background-color: #dddddd
+    border-radius: 30px
+    transition: background 0.4s
+    display: inline-block
+    vertical-align: middle
+    &:before, &:after
+      display: block
+      position: absolute
+      content: ""
+    &:before
+      top: 2px
+      left: 2px
+      bottom: 2px
+      right: 2px
+      background-color: #fff
+      border-radius: 30px
+      transition: background 0.4s
+    &:after
+      top: 4px
+      left: 4px
+      bottom: 4px
+      width: 26px
+      background-color: #dddddd
+      border-radius: 26px
+      transition: margin 0.4s, background 0.4s
+
+
+  &:checked + .toggle
+    background-color: #8ce196
+    &:after
+      margin-left: 30px
+      background-color: #8ce196
+
+  &:checked + .toggle.Orange
+    background-color: #fe8c5a
+    &:after
+      margin-left: 30px
+      background-color: #fe8c5a
+
+  &:checked + .toggle.Yellow-Gray
+    background-color: #e8ce2e
+    &:after
+      margin-left: 30px
+      background-color: #e8ce2e
+
+  &:checked + .toggle.Green
+    background-color: #299d1a
+    &:after
+      margin-left: 30px
+      background-color: #299d1a
+
+  &:checked + .toggle.Aqua
+    background-color: #4571ca
+    &:after
+      margin-left: 30px
+      background-color: #4571ca
+
+  &:checked + .toggle.Purple-Gray
+    background-color: #54457f
+    &:after
+      margin-left: 30px
+      background-color: #54457f
+
+  &:checked + .toggle.Pink
+    background-color: #ecacc7
+    &:after
+      margin-left: 30px
+      background-color: #ecacc7
+
+

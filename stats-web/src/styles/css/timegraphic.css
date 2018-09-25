@@ -1,0 +1,183 @@
+.datepicker {
+  margin-bottom: 10px;
+  text-align: left; }
+  .datepicker input {
+    border: solid 2px;
+    border-radius: 7%;
+    text-align: center;
+    max-width: 100px; }
+  .datepicker:first-child {
+    text-align: right; }
+
+.scale-label {
+  margin-top: 5px;
+  text-align: right; }
+
+.datepicker-item {
+  display: flex;
+  padding-left: 10px; }
+
+.datepicker-label-from {
+  margin-right: 5px; }
+
+.datepicker-to label {
+  margin-right: 5px; }
+
+.TimeRadio {
+  white-space: nowrap; }
+
+.periods label {
+  padding-top: 7px;
+  padding-left: 7px; }
+
+.periods input {
+  text-align: center;
+  border: solid 2px orange;
+  border-radius: 5%; }
+
+.average-item {
+  text-align: left; }
+  .average-item input {
+    max-width: 40px; }
+
+@media (min-width: 1200px) {
+  .datepicker-to {
+    margin-left: -40px; }
+  .datepicker-to label {
+    padding-right: 1px; } }
+
+@media (min-width: 992px) {
+  .datepicker-label-from {
+    text-align: right; }
+  .datepicker-item label {
+    padding-right: 10px; }
+  .datepicker-to {
+    margin-left: -45px; } }
+
+@media (max-width: 768.98px) {
+  .datepicker-label-from {
+    margin-right: 10px; } }
+
+@media (max-width: 575.98px) {
+  .datepicker-label-from {
+    margin-right: 5px; }
+  .more-form {
+    font-size: 12px; }
+  .datepicker input {
+    max-width: 72px; }
+  .periods div {
+    display: flex; } }
+
+@media (max-width: 450px) {
+  .datepicker-to label {
+    margin-right: 0px; }
+  .periods label {
+    font-size: 0px; }
+  .periods input {
+    height: 25px;
+    margin-top: 6px; } }
+
+@media (max-width: 370px) {
+  .datepicker-from {
+    margin-right: 10px; } }
+
+.TimeRadio, .CheckBox {
+  text-align: left; }
+  .TimeRadio input[type="checkbox"], .CheckBox input[type="checkbox"] {
+    padding-left: 7px; }
+  .TimeRadio input[type="checkbox"], .TimeRadio input[type="radio"], .CheckBox input[type="checkbox"], .CheckBox input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    z-index: -1; }
+  .TimeRadio label, .CheckBox label {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding-left: 30px;
+    padding-right: 10px;
+    line-height: 36px;
+    cursor: pointer; }
+    .TimeRadio label::before, .CheckBox label::before {
+      content: " ";
+      position: absolute;
+      top: 6px;
+      left: 0;
+      display: block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #8e44ad;
+      border-radius: 4px;
+      z-index: -1; }
+  .TimeRadio input[type="radio"] + label::before, .CheckBox input[type="radio"] + label::before {
+    border-radius: 18px; }
+  .TimeRadio input[type="checkbox"]:checked + label, .TimeRadio input[type="radio"]:checked + label, .CheckBox input[type="checkbox"]:checked + label, .CheckBox input[type="radio"]:checked + label {
+    padding-left: 10px;
+    color: #fff; }
+  .TimeRadio input[type="checkbox"]:checked + label::before, .TimeRadio input[type="radio"]:checked + label::before, .CheckBox input[type="checkbox"]:checked + label::before, .CheckBox input[type="radio"]:checked + label::before {
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #8e44ad; }
+  .TimeRadio label, .CheckBox label {
+    -webkit-transition: .25s all ease;
+    -o-transition: .25s all ease;
+    transition: .25s all ease; }
+    .TimeRadio label::before, .CheckBox label::before {
+      -webkit-transition: .25s all ease;
+      -o-transition: .25s all ease;
+      transition: .25s all ease; }
+
+.OrangeTimeRadio label::before, .OrangeCheckBox label::before {
+  border: 2px solid #fe8c5a; }
+
+.OrangeTimeRadio input[type="checkbox"]:checked + label::before, .OrangeTimeRadio input[type="radio"]:checked + label::before, .OrangeCheckBox input[type="checkbox"]:checked + label::before, .OrangeCheckBox input[type="radio"]:checked + label::before {
+  background: #fe8c5a; }
+
+.OrangePeriods input, .OrangeDatepicker input {
+  border-color: #fe8c5a; }
+
+.Yellow-GrayTimeRadio label::before, .Yellow-GrayCheckBox label::before {
+  border: 2px solid #e8ce2e; }
+
+.Yellow-GrayTimeRadio input[type="checkbox"]:checked + label::before, .Yellow-GrayTimeRadio input[type="radio"]:checked + label::before, .Yellow-GrayCheckBox input[type="checkbox"]:checked + label::before, .Yellow-GrayCheckBox input[type="radio"]:checked + label::before {
+  background: #e8ce2e; }
+
+.Yellow-GrayPeriods input, .Yellow-GrayDatepicker input {
+  border-color: #e8ce2e; }
+
+.GreenTimeRadio label::before, .GreenCheckBox label::before {
+  border: 2px solid #299d1a; }
+
+.GreenTimeRadio input[type="checkbox"]:checked + label::before, .GreenTimeRadio input[type="radio"]:checked + label::before, .GreenCheckBox input[type="checkbox"]:checked + label::before, .GreenCheckBox input[type="radio"]:checked + label::before {
+  background: #299d1a; }
+
+.GreenPeriods input, .GreenDatepicker input {
+  border-color: #299d1a; }
+
+.AquaTimeRadio label::before, .AquaCheckBox label::before {
+  border: 2px solid #4571ca; }
+
+.AquaTimeRadio input[type="checkbox"]:checked + label::before, .AquaTimeRadio input[type="radio"]:checked + label::before, .AquaCheckBox input[type="checkbox"]:checked + label::before, .AquaCheckBox input[type="radio"]:checked + label::before {
+  background: #4571ca; }
+
+.AquaPeriods input, .AquaDatepicker input {
+  border-color: #4571ca; }
+
+.Purple-GrayTimeRadio label::before, .Purple-GrayCheckBox label::before {
+  border: 2px solid #54457f; }
+
+.Purple-GrayTimeRadio input[type="checkbox"]:checked + label::before, .Purple-GrayTimeRadio input[type="radio"]:checked + label::before, .Purple-GrayCheckBox input[type="checkbox"]:checked + label::before, .Purple-GrayCheckBox input[type="radio"]:checked + label::before {
+  background: #54457f; }
+
+.Purple-GrayPeriods input, .Purple-GrayDatepicker input {
+  border-color: #54457f; }
+
+.PinkTimeRadio label::before, .PinkCheckBox label::before {
+  border: 2px solid #ecacc7; }
+
+.PinkTimeRadio input[type="checkbox"]:checked + label::before, .PinkTimeRadio input[type="radio"]:checked + label::before, .PinkCheckBox input[type="checkbox"]:checked + label::before, .PinkCheckBox input[type="radio"]:checked + label::before {
+  background: #ecacc7; }
+
+.PinkPeriods input, .PinkDatepicker input {
+  border-color: #ecacc7; }

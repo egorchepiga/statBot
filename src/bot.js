@@ -29,8 +29,8 @@ class Bot {
             });
     }
 
-    authorization(token) {
-        return this.DB.authorize(token)
+    authorization(token, admin_token) {
+        return this.DB.authorize(token, admin_token)
             .then(res => {
                 if (res.error || res.rows.length === 0) return {error: res.error, result: null};
                 return {error: null, result: res.rows }
@@ -41,52 +41,6 @@ class Bot {
         return this.telegramBot.getFile(file_id)
             .then(res => {
                return res.file_path;
-            });
-    }
-
-    requestUserImages(chat){
-        let promiseArr = [];
-        for(let i = 0; i < chat.users.length; i++)
-            if (chat.users[i].img) promiseArr.push(this.getFilePath(chat.users[i].img));
-        return Promise.all(promiseArr)
-            .then(res=> {
-                let resIndex = 0;
-                for(let i = 0; i < chat.users.length; i++)
-                    if (chat.users[i].img) chat.users[i].img = res[resIndex++];
-                return chat;
-            });
-    }
-
-    requestStickers(chat){
-        let topStickers = {};
-        let chatTopStickers = {};
-        let promiseArr = [];
-        for(let i = 0; i < chat.users.length; i++) {
-            for(let key in chat.users[i].top_stickers) {
-                promiseArr.push(this.getFilePath(key.slice(9)))                                                         //remove stickers/ from top_stickers DB
-            }
-        }
-        for(let key in chat.chat.top_stickers) {
-            promiseArr.push(this.getFilePath(key.slice(9)))
-        }
-        return Promise.all(promiseArr)
-            .then(res=> {
-                let resIndex = 0;
-                for(let i = 0; i < chat.users.length; i++) {
-                    for(let key in chat.users[i].top_stickers) {
-                        topStickers[res[resIndex++]] = chat.users[i].top_stickers[key];
-                    }
-                    chat.users[i].top_stickers = topStickers;
-                    topStickers = {};
-                }
-
-                for(let key in chat.chat.top_stickers) {
-                    chatTopStickers[res[resIndex++]] = chat.chat.top_stickers[key];
-                }
-                chat.chat.top_stickers = chatTopStickers;
-                return chat;
-            }).catch(error => {
-                return {error : error, result: null};
             });
     }
 
@@ -108,27 +62,10 @@ class Bot {
                 chatStats.chat = res[0];
                 res.splice(0, 1);
                 chatStats.users = res;
-               /* return this.telegramBot.getFile(chatStats.chat.img)
-            }).then(res => {
-                chatStats.chat.img = res.file_path;*/
                 return this.getChatActivity(chat_id, db, this.fromTime, this.toTime)
             }).then(res => {
                 if (res.error) return {error : res.error, result: null};
                 chatStats.time = res;
-                /*return this.requestStickers(chatStats);
-            }).then(res => {
-                if (res.error) {
-                    console.log(res);
-                    return chatStats;
-                }
-                chatStats = res;
-                return this.requestUserImages(chatStats);
-            }).then(res => {
-                if (res.error) {
-                    console.log(res);
-                    return chatStats;
-                }
-                chatStats = res;*/
                 return chatStats;
             });
     }
@@ -153,7 +90,7 @@ class Bot {
 
     createChat(msg) {
         let db = this.dbName(msg.from.id);
-        return this.DB.createChat(msg, db );
+        return this.DB.createChat(msg, db )
     }
 
     createUser(msg, db) {
@@ -167,14 +104,12 @@ class Bot {
     }
 
     createStatToken (user_id) {
-        let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
-        return this.DB.createStatToken(user_id, botToken)
+        let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37),
+            adminToken = this.SHA512(this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
+        return this.DB.createStatToken(user_id, botToken, adminToken)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
-                return this.DB.createDB(user_id)
-            }).then(res => {
-                if (res.error) return {error : res.error, result: null}
-                return botToken;
+                return {token: botToken, admin_token: adminToken };
             });
     }
 
@@ -249,10 +184,10 @@ class Bot {
         return this.DB.getBannedWords(chat_id, user_id)
     }
 
-    getChats(token){
-        return this.authorization(token)
+    getChats(token, admin_token){
+        return this.authorization(token, admin_token)
             .then(res => {
-                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;
                 return this.getUserChats(this.dbName(user_id))
             }).then(res => {
@@ -292,31 +227,40 @@ class Bot {
             if (msg.data === 'отчёт')
                 self.createStatToken(msg.from.id)
                     .then(res => {
+                        console.log(res);
                         if (res.error) console.log(res.error);
-                        let link = 'https://egorchepiga.ru/' + res;
+                        let link = 'Ссылка для администраторов:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
                         this.answerCallbackQuery(msg.id, link, true);
                         this.sendMessage( msg.message.chat.id, link);
                     });
             else if (msg.data === 'обнулить') {
-                self.renewBase(msg.from.id)
-                    .then(res => {
-                        if (res.error) return({error : res.error, result: null});
-                        let link = 'https://egorchepiga.ru/' + res;
-                        this.answerCallbackQuery(msg.id, link, false);
-                        this.sendMessage(  msg.message.chat.id, 'Для наблюдения за группой повторите добавление' +
-                            'в неё бота.')
-                            .then(res => {
-                                this.sendMessage(msg.message.chat.id, 'Новая ссылка на отчёт: \n' + link)
-                            });
-                    })
+                self.getUserChats(self.dbName(msg.from.id))
+                .then(res => {
+                    let arrPromises =[];
+                    console.log(res);
+                    for(let i=0; i < res.length; i++)
+                        arrPromises.push(self.telegramBot.leaveChat(res[i]))
+                    return arrPromises;
+                }).then(res => {
+                    return self.renewBase(msg.from.id)
+                }).then(res => {
+                    if (res.error) return({error : res.error, result: null});
+                    this.answerCallbackQuery(msg.id, 'success', false);
+                    this.sendMessage(  msg.message.chat.id, 'Отчёты удалены. \n' +
+                        'Используйте команду /start для перезагрузки бота.')
+                })
             }
         });
 
         this.telegramBot.on('text', msg => {
             if (msg.from.id === msg.chat.id) {
                 if(msg.text === '/start') {
-                    this.createStatToken(msg.from.id)
+                    this.DB.createDB(msg.from.id)
                         .then(res => {
+                            if (res.error) console.log({error: res.error, result: null});
+                            return this.createStatToken(msg.from.id)
+                        }) .then(res =>{
+                            if (res.error) console.log({error: res.error, result: null});
                             let options = {
                                 reply_markup: JSON.stringify({
                                     inline_keyboard: [
@@ -327,16 +271,15 @@ class Bot {
                                     ]
                                 })
                             };
-                            if (res.error) console.log({error : res.error, result: null})
                             this.telegramBot.sendMessage( msg.chat.id,
                                 'Добавьте бота в группу для учёта её статистики. \n')
                                 .then(res => {
                                     this.telegramBot.sendMessage( msg.chat.id,
-                                        'Если бот уже находится в группе, вы можете начать формировать свою статистику приказав боту /report. \n')
+                                        'Если бот уже находится в группе, вы можете получить ссылку на статистику командой /report. \n' +
+                                        'Администратор может отключить данную возможность командой /privacy.')
                                         .then(res => {
                                             this.telegramBot.sendMessage( msg.chat.id,
-                                                'Для получения отчёта или его обнуления, воспользуйтесь кнопками ниже. \n' +
-                                                'При обнулении отчёта ссылка на него будет заменена.\n' +
+                                                'Для получения ссылки на ваши отчёты или их обнуления, воспользуйтесь кнопками ниже. \n' +
                                                 'Приятного пользования!', options);
                                         });
                                 });
@@ -344,6 +287,7 @@ class Bot {
                 }
             } else if(msg.entities) {
                 if (msg.text.indexOf('/report@egorchepiga_bot') !== -1) {
+                    let chat = msg.chat.id;
                     this.DB.isChatPrivate(msg.chat.id)
                         .then(res => {
                             if (res) {
@@ -353,7 +297,8 @@ class Bot {
                                             return self.DB.findChat(msg.chat.id).then(
                                                 res => {
                                                     if (res.rows.length > 0)
-                                                        return self.telegramBot.sendMessage( msg.chat.id, "https://egorchepiga.ru/" + res.rows[0].token);
+                                                        return self.telegramBot.sendMessage( msg.chat.id,
+                                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id);
                                                 }
                                             );
                                         else return self.telegramBot.sendMessage( msg.chat.id, "This chat is private. Only administration has access, sorry ;(");
@@ -362,7 +307,8 @@ class Bot {
                             else return self.DB.findChat(msg.chat.id).then(
                                 res => {
                                     if (res.rows.length > 0)
-                                        return self.telegramBot.sendMessage( msg.chat.id, "https://egorchepiga.ru/" + res.rows[0].token);
+                                        return self.telegramBot.sendMessage( msg.chat.id,
+                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id);
                                 }
                             );
                         });
@@ -373,7 +319,7 @@ class Bot {
                                 self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
                                         let str = (res) ? 'Защита деактивирована.':'Защита активирована.' ;
-                                        self.DB.setChatPrivacy(msg.chat.id, res);
+                                        self.DB.setChatPrivacy(msg.chat.id, !res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });
                             } else self.telegramBot.sendMessage( msg.chat.id, 'Изменение настроек разрешено только для администрации.');

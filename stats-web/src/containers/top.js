@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import GraphicBar from '../components/bar';
 import Button from '../components/button';
 import {createTopWordsForChat} from "../store/graphics/top/action";
-
+import SwitchButton from "../components/switchbutton"
 class TopGraphic extends Component {
 
     createHeader = (label) => (
@@ -13,30 +13,37 @@ class TopGraphic extends Component {
     );
 
     changeForchat = () => {
+        let chat = {
+            ...this.props.store.chat,
+            theme : this.props.store.topWordsForChat.theme
+        };
         this.props.createSecondGraphic(
-            this.props.store.chat,
+            chat,
             !this.props.store.topWordsForChat.forChat,
             this.props.store.chosen
         )
     };
 
     forChatSwitcher = () => (
-        <Button className="btn btn-outline-primary btn-sm col-sm-12 col-md-2 col-lg-2 col-xl-2"
-                key="201"
-                id="201"
-                label="users"
-                onClick={this.changeForchat}
-                active={!this.props.store.topWordsForChat.forChat}
+        <SwitchButton
+            className="words-switch"
+            id="topWordsSwitcher"
+            isChecked={!this.props.store.topWordsForChat.forChat}
+            labelLeft="Chat"
+            labelRight="Users"
+            action={this.changeForchat}
+            theme={this.props.store.topWordsForChat.theme}
         />
     );
 
     render() {
         let visibility = this.props.store.topWordsForChat.data;
         return (
-            <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
+            <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
+
                 <div className="chartjs-size-monitor">
                     {visibility && this.createHeader('Top words')}
-                    {visibility && this.forChatSwitcher()}
+                    {visibility && !this.props.store.chosen && this.forChatSwitcher()}
                     <GraphicBar data={this.props.store.topWordsForChat.data}
                                  options={this.props.store.topWordsForChat.options}/>
                 </div>

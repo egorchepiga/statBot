@@ -42,21 +42,29 @@ class DateRange extends Component {
 
     render() {
         return (
-            <div className="row">
-                <DatePicker
-                    selected={this.state.startDate}
-                    selectsStart
-                    startDate={this.state.startDate}
-                    endDate={this.state.endDate}
-                    onChange={this.handleChangeStart}
-                />
-                <DatePicker
-                    selected={this.state.endDate}
-                    selectsEnd
-                    startDate={this.state.startDate}
-                    endDate={this.state.endDate}
-                    onChange={this.handleChangeEnd}
-                />
+            <div className={"datepicker row " + this.props.store.timeMessage.theme+"Datepicker"}>
+                <div className="datepicker-label-from col-1 col-sm-1 col-md-1 col-lg-3 col-xl-3">
+                    From:
+                </div>
+                <div className="datepicker-item datepicker-from col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
+                    <DatePicker
+                        selected={this.state.startDate}
+                        selectsStart
+                        startDate={this.state.startDate}
+                        endDate={this.state.endDate}
+                        onChange={this.handleChangeStart}
+                    />
+                </div>
+                <div className="datepicker-item col-5 col-sm-5 col-md-5 col-lg-6 col-xl-6 datepicker-to">
+                    <label>To:</label>
+                    <DatePicker
+                        selected={this.state.endDate}
+                        selectsEnd
+                        startDate={this.state.startDate}
+                        endDate={this.state.endDate}
+                        onChange={this.handleChangeEnd}
+                    />
+                </div>
             </div>
         )
     };

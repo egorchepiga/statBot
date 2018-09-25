@@ -1,8 +1,8 @@
 import * as types from './actionType'
 
-export const setNavigation = (nav) => {
+export const changeSettings = () => {
     return dispatch => {
-        dispatch({type: types.MENU_NAV_CHANGE, payload : nav})
+        dispatch({type: types.SETTINGS_ACTIVE_CHANGE})
     }
 };
 

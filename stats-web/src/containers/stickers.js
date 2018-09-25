@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import Button from '../components/button';
 import {HorizontalBar} from 'react-chartjs-2';
 import {createTopStickers} from "../store/graphics/stickers_top/action";
+import SwitchButton from "../components/switchbutton"
 
 const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
 
@@ -19,7 +20,7 @@ class Stickers extends Component {
     stickerImage = (src, index) => {
         let img = src.sticker;
         return (
-        index < 5 ? <img key={src.sticker} className="img-mock"
+        index < 5 ? <img key={src.sticker} className="thumbnail img-mock"
                          src={img !== null  && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}/> : ""
     )};
 
@@ -30,29 +31,35 @@ class Stickers extends Component {
     );
 
     changeForChat = () => {
+        let chat = {
+            ...this.props.store.chat,
+            theme : this.props.store.stickers.theme
+        };
         this.props.createStickersTop(
-            this.props.store.chat,
+            chat,
             !this.props.store.stickers.forChat,
             this.props.store.chosen
         )
     };
 
     forChatSwitcher = () => (
-        <Button className="btn btn-outline-primary btn-sm col-sm-12 col-md-2 col-lg-2 col-xl-2"
-                key="201"
-                id="201"
-                label="users"
-                onClick={this.changeForChat}
-                active={!this.props.store.stickers.forChat}
+        <SwitchButton
+            className="stickers-switch"
+            labelLeft="Chat" labelRight="Users"
+            key="stickersSwitcher"
+            id="stickersSwitcher"
+            action={this.changeForChat}
+            isChecked={!this.props.store.stickers.forChat}
+            theme={this.props.store.stickers.theme}
         />
     );
 
     render() {
         let visibility = this.props.store.stickers.data;
         return (
-            <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-9 col-xl-7">
+            <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
                 {visibility && this.createHeader('Top stickers')}
-                {visibility && this.forChatSwitcher()}
+                {visibility && !this.props.store.chosen && this.forChatSwitcher()}
                 <div>
                     {visibility && this.topStickers()}
                     {visibility && (

@@ -4,7 +4,14 @@ import {Provider} from 'react-redux';
 import {createStore, applyMiddleware} from 'redux';
 import {composeWithDevTools } from 'redux-devtools-extension';
 import thunk from 'redux-thunk';
-import './style.css';
+import './styles/css/common.css';
+import './styles/css/menu.css';
+import './styles/css/switch.css';
+import './styles/css/stickers.css';
+import './styles/css/buttons.css';
+import './styles/css/userlist.css';
+import './styles/css/timegraphic.css';
+import './styles/css/chatprofile.css';
 import App from './App';
 import combineReducers from './store/index'
 

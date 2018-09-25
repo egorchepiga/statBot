@@ -5,8 +5,8 @@ import {createTopWordsForChat} from "../store/graphics/top/action";
 import {createTopStickers} from "../store/graphics/stickers_top/action";
 import {createTimeMessage} from "../store/graphics/time/action";
 import {loadUserWords} from "../store/graphics/top/action";
-import {findUser} from "../store/containers/userlist/action";
-import {loadImages} from "../store/chat/action";
+import {findUser, showAll} from "../store/containers/userlist/action";
+import Button from '../components/button';
 
 const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
 class UserList extends Component {
@@ -14,6 +14,10 @@ class UserList extends Component {
     constructor(props) {
         super(props);
     }
+
+    showALlUsers = () => {
+      this.props.showALlUsers();
+    };
 
     chooseUser = (event) => {
         this.props.chooseUser(event.target.id);
@@ -49,25 +53,36 @@ class UserList extends Component {
             this.props.store.timeMessage.periods,
             true,
             event.target.id,
-            this.props.store.chat.time
+            this.props.store.chat.time,
+            this.props.store.chat.theme
         );
 
     };
 
 
-    createUserProfile = (user, index) => (
-        <div key={index} onClick={this.chooseUser} id={user.user} className="user-preview">
-            <img  id={user.user} className="user-image"
-                  src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
-            <label id={user.user} >{user.user + " #" + (index+1)}</label>
-        </div>
-    );
+    createUserProfile = (user, index) => {
+        console.log(user)
+        let chosen = user.user === this.props.store.chosen ? ' chosen ' : "";
+        return(
+            <div key={index} onClick={this.chooseUser} id={user.user} className="user-block">
+                <div id={user.user} className={"user__img" + chosen +  this.props.store.chat.theme+"Img" }>
+                    <img  id={user.user}
+                          src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
+                </div>
+                <div id={user.user} className="user__name">
+                    <label id={user.user}>{user.user}</label>
+                    <label id={user.user}>{"#" + (index+1)}</label>
+                </div>
+
+            </div>
+        )
+    };
 
     userList = (usersStore) => {
         //let regExp = new RegExp('^[' + this.props.store.userList.find + ']*$');
         let users = usersStore.slice();
         let tmp = [];
-        while (users.length > 0 && tmp.length < 7) {
+        while (users.length > 0 && (this.props.store.userList.showAll  || tmp.length < 7)) {
             let user = users[0],
                 index = 0;
             for (let i = 1; i < users.length; i++) {
@@ -76,7 +91,7 @@ class UserList extends Component {
                     index = i;
                 }
             }
-            if(users[index].user.indexOf(this.props.store.userList.find) !== -1)
+            if(users[index].user.toLowerCase().indexOf(this.props.store.userList.find.toLowerCase()) !== -1)
                 tmp.push(users[index]);
             users.splice(index, 1);
         }
@@ -87,13 +102,30 @@ class UserList extends Component {
         this.props.find(event.target.value);
     };
 
+    createButton = (id, label, action, className, active) => (
+        <Button className={className}
+                key={id}
+                id={id}
+                label={label}
+                onClick={action}
+                active={active}
+        />
+    );
 
     render() {
         return (
-            <div>
-                <input onChange={this.findUser}></input>
-                <div className="user-list">
-                   {this.userList(this.props.store.chat.users)}
+            <div className="users">
+                <div className="users-search input-group">
+                    <input onChange={this.findUser} className="form-control" type="text" aria-describedby="button-addon" placeholder="Search" />
+                    <div className="input-group-append">
+                        {this.createButton("button-addon",
+                            "Show all",
+                            this.showALlUsers,"search-btn btn-fr " + this.props.store.chat.theme,
+                            this.props.store.userList.showAll )}
+                    </div>
+                </div>
+                <div className={"users-list " + (this.props.store.userList.showAll ? "all" : '')}>
+                    {this.userList(this.props.store.chat.users)}
                 </div>
             </div>
         )
@@ -120,11 +152,14 @@ export default connect(
         createTopStickersForUser: (data, chosen) => {
             dispatch(createTopStickers(data, false, chosen));
         },
-        createTimeMessageForUser: (time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime) => {
-            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime))
+        createTimeMessageForUser: (time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime, theme) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, customScale, average, periods, messagesActivity, chosen, RAWTime, theme))
         },
         find: (string) => {
             dispatch(findUser(string));
+        },
+        showALlUsers: () => {
+            dispatch(showAll());
         }
     })
 )(UserList)

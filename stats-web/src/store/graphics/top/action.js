@@ -22,14 +22,14 @@ export const loadUserWords = ({token, chat_id, user_id, count}) =>
 export const createTopWordsForChat = (data, forChat = true, chosen = false) =>
     dispatch => {
         let tmp = [], labels =[], data1=[], names=[],
-            users = data.users.slice();
+            users = data.users.slice(),
+            chosenUser = [];
 
         if(chosen) {
-            let chosenUser = [];
             for (let i = 0; i < users.length; i++)
                 if (users[i].user === chosen)
                     chosenUser.push(users[i]);
-            users = chosenUser;
+            users = chosenUser.slice();
         }
 
         if (forChat)
@@ -56,13 +56,15 @@ export const createTopWordsForChat = (data, forChat = true, chosen = false) =>
             tmp.splice(index, 1);
         }
 
+        let graphColors = colors(data.theme);
         let payload = {
+            theme: graphColors.theme,
             forChat : forChat,
             data: {
                 datasets: [{
                     data: data1,
-                    backgroundColor: colors(data.theme),
-                    label: data.name,
+                    backgroundColor: graphColors.colors,
+                    label: chosenUser.length>0 ? chosenUser[0].user : data.name,
                     labels : names
                 }],
                 labels: labels

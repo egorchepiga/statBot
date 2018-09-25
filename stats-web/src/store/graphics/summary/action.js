@@ -78,12 +78,14 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
             summary = topSummary;
 
         }
+        let graphColors = colors(data.theme);
         let tmp = {
+            theme: graphColors.theme,
             topSwitch : topSwitch,
             dayScale: dayScale,
             datasets: [{
                 data: summary,
-                backgroundColor: colors(data.theme),
+                backgroundColor: graphColors.colors,
                 label: ""
             }],
             labels: userNames

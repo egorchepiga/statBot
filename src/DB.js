@@ -9,7 +9,8 @@ const MYSQL = require('mysql'),
         password: CONFIG.db.clients.password,
         database: CONFIG.db.clients.database
     },
-    POOL = MYSQL.createPool(OPTIONS);
+    POOL = MYSQL.createPool(OPTIONS),
+    SHA512 = require('js-sha512');
 
 function query(sql, params) {
     return new Promise(resolve => {
@@ -75,13 +76,13 @@ function isChatPrivate(chat_id) {
 }
 
 function findChat(chat_id) {
-    return query('SELECT * FROM ' + mainBase +'.`ROOMS` WHERE chat_id = ?',[chat_id]);
+    return query('SELECT * FROM ' + mainBase +'.`ROOMS` WHERE chat_id = ?',[chat_id])
+        .then(res => {
+            return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE database_name = ?',[res.rows[0].database_name]);
+        })
 }
 
 function createChat(msg, db){
-    return isChatPrivate(msg.chat.id, mainBase)
-        .then(res => {
-            if (res) return {error : 'chat is private!', res: null };
             let sql =
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
                 '(id int (10) NOT NULL,' +
@@ -96,7 +97,8 @@ function createChat(msg, db){
                 'username varchar(120),' +
                 'top_words varchar(350) NULL,' +
                 'top_stickers varchar(350) NULL,' +
-                'up_to_date BOOLEAN TRUE,' +
+                'up_to_date BOOLEAN DEFAULT TRUE,' +
+                'img varchar(100) DEFAULT NULL,' +
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
@@ -108,8 +110,14 @@ function createChat(msg, db){
             sql +=
                 'INSERT INTO '+ db + '.`' + msg.chat.id + '` ' +
                 '(`id`,`username`) VALUES (?, ?);';
-            return transaction(sql,[msg.chat.id + msg.from.id, msg.chat.id, msg.from.id, msg.chat.title, msg.chat.id, msg.chat.title]);
-        });
+            return transaction(sql,[
+                msg.chat.id + msg.from.id,
+                msg.chat.id,
+                msg.from.id,
+                msg.chat.title,
+                msg.chat.id,
+                msg.chat.title
+            ]);
 }
 
 function createUser(msg, db){
@@ -127,13 +135,13 @@ function createUser(msg, db){
     return transaction(sql, [ msg.from.id, username ]);
 }
 
-function createStatToken(user_id, botToken) {
+function createStatToken(user_id, botToken, adminToken) {
     let sql =
-        'INSERT INTO '+ mainBase +'.`ROOMS` ' +
-        '(`database_name`,`token`) ' +
-        'VALUES (?, ?)' +
-        'ON DUPLICATE KEY UPDATE token = ?;';
-    return query(sql, [user_id, botToken, botToken])
+        'INSERT INTO '+ mainBase +'.`DATABASES` ' +
+        '(`database_name`,`token`, `admin_token`) ' +
+        'VALUES (?, ?, ?)' +
+        'ON DUPLICATE KEY UPDATE token = ?, admin_token = ?; '
+    return query(sql, [user_id, botToken, adminToken, botToken, adminToken])
 }
 
 function createDB(user_id) {
@@ -162,7 +170,7 @@ function clearBannedWords(user_id, chat_id, db, bannedWords) {                //
 }
 
 function authorize(token) {
-    return query('SELECT * FROM ' + mainBase +'.`ROOMS` WHERE token = ?',[token]);
+    return query('SELECT * FROM ' + mainBase +'.`DATABASES` WHERE token = ?',[token]);
 }
 
 function updateUserInfo(chat_id, user_id, file_id, username, up_to_date, db) {
@@ -345,7 +353,6 @@ function getSummaryForUsers(arrUserID, chat_id, db) {
                     arrPromises.push(getTopStickers(arrUserID[i].id, chat_id, db, 5));
                 }
             }
-            console.log(sql);
             arrPromises.push(query(sql));
             return Promise.all(arrPromises)
         });

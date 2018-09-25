@@ -52,10 +52,13 @@ httpsServer.listen(SSL_PORT, () => {
 app.use(bodyParser.json());
 
 app.get(`/chats/`, (req, res) => {
-    let token = req.param('token');
+    let token = req.param('token') ,
+        admin_token = req.param('adm');
+    console.log(admin_token);
+    console.log(token);
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    bot.getChats(token)
+    bot.getChats(token,admin_token)
         .then(botRes => {
             if (res.error) {
                 console.log(botRes);

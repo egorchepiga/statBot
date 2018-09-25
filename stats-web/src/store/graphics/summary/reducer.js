@@ -10,6 +10,7 @@ const initialState = {
 export default function summaryGraphic(state = initialState, action) {
     if (action.type === types.SET_FIRST_DATA) {
         return {
+            theme : action.payload.theme,
             topSwitch: action.payload.topSwitch,
             dayScale : action.payload.dayScale,
             graphic : {

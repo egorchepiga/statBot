@@ -1,4 +1,4 @@
-import colors from '../../../common/colors';
+import {staticColors} from '../../../common/colors';
 import * as types from './actionType'
 
 Date.prototype.addDays = function(days) {
@@ -59,10 +59,8 @@ const  prepareTimeForUsers = (time, scale) => {
 
 export const createTimeUsers = (chat, store, messageActivity) =>
     dispatch => {
-    console.log(chat.theme);
         let timeArray =  messageActivity ?
             chat.timeReady : prepareTimeForUsers(chat.time, store.timeScale);
-        console.log(timeArray);
         dispatch(createTimeMessage(
             timeArray,
             store.dayScale,
@@ -135,13 +133,13 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
     let dataSets = [];
     let B = 20;
     let R = 235;
+    let color = staticColors(colorPresetIndex);
+
     for (let i = 0; i < timeGraphicData.length; i++) {
         B = B < R ? B + 30 : B;
         R = B > R ? R - 30 : R;
         let label = preparedTimeArray[i].label;
         delete preparedTimeArray[i].label;
-        let rand = parseInt(Math.random() * 19);
-        let color = colors(colorPresetIndex);
         dataSets.push({
             label: label,
             data: timeGraphicData[i],
@@ -149,11 +147,12 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
             fill: false,
             borderWidth: 2,
             lineTension: 0,
-            backgroundColor: color[rand],
-            borderColor: color[rand],
+            backgroundColor: color.colors[timeGraphicData.length-i-1],
+            borderColor: color.colors[timeGraphicData.length-i-1],
         });
     }
     return {
+        theme: color.theme,
         messageActivity : messageActivity,
         RAWTime: timeArray,
         dayScale : dayScale,

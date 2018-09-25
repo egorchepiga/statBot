@@ -1,9 +1,9 @@
 import fetch from 'cross-fetch'
 import * as types from './actionType'
 
-export const loadChats = ({token}) => {
+export const loadChats = ({token, admin_token}) => {
     return dispatch => {
-        return fetch(`https://egorchepiga.ru/tg-stats/chats/?token=${token}`, {
+        return fetch(`https://egorchepiga.ru/tg-stats/chats/?token=${token}&adm=${admin_token}`, {
             headers: {
                 'Accept': 'application/json',
                 'content-type': 'application/x-www-form-urlencoded'

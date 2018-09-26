@@ -5,7 +5,7 @@ import {createTopStickers} from "../store/graphics/stickers_top/action";
 import {setChosen} from "../store/getStats/chosen/action";
 import {createTimeMessage} from "../store/graphics/time/action";
 
-const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
+const TELEGRAM_ICON = 'https://egorchepiga.ru/tg.gif';
 
 class ChatProfile extends Component {
 

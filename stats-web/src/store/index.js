@@ -1,7 +1,6 @@
 import {combineReducers} from 'redux';
 import token from './getStats/token/reducer';
 import chosen from './getStats/chosen/reducer';
-import timeFrame from './getStats/timeFrame/reducer';
 import chats from './all/reducer';
 import chat from './chat/reducer';
 import summaryGraphic from './graphics/summary/reducer'
@@ -16,7 +15,6 @@ import banForm from "./containers/banned_words/reducer";
 export default combineReducers({
     token: token,
     chosen: chosen,
-    timeFrame: timeFrame,
     stats: chats,
     summaryGraphic: summaryGraphic,
     topWordsForChat: topWordsForChat,

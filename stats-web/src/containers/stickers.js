@@ -5,7 +5,7 @@ import {HorizontalBar} from 'react-chartjs-2';
 import {createTopStickers} from "../store/graphics/stickers_top/action";
 import SwitchButton from "../components/switchbutton"
 
-const TELEGRAM_ICON = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/1200px-Telegram_logo.svg.png';
+const TELEGRAM_ICON = 'https://egorchepiga.ru/tg.gif';
 
 class Stickers extends Component {
 

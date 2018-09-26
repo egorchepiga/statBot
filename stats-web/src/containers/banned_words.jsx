@@ -20,7 +20,7 @@ class BanForm extends Component {
     save = () => {
         let list = this.props.store.banForm.list;
         let edit_index = this.props.store.banForm.edit;
-        edit_index>-1 ? list[edit_index]=this.props.store.chat.bannedWords.input : list.push(this.props.store.banForm.input)
+        edit_index>-1 ? list[edit_index]=this.props.store.banForm.input : list.push(this.props.store.banForm.input)
 
         this.props.save(list);}
     deleteWord = (event) => {
@@ -41,6 +41,9 @@ class BanForm extends Component {
         let index = event.target.dataset.index;
         this.props.edit(index);
     }
+    open = () =>{
+        this.props.open();
+    }
     createUl = () =>(
         <ul className="list-group">
             {this.props.store.banForm.list.length>0 && this.createWordsList()}
@@ -50,14 +53,16 @@ class BanForm extends Component {
     render() {
         return (
             <div>
+                {this.props.store.banForm.isOpen ? <div class="modal-backdrop2 fade show" onClick={this.open}></div> : null}
                 <div className="modal fade"
                      id="banModal"
                      tabindex="-9999"
                      role="dialog"
                      aria-labelledby="exampleModalLabel"
-                     aria-hidden="true">
+                     aria-hidden="true" onClick={this.open}>
                     <div className="modal-dialog modal-dialog-centered"
-                         role="document">
+                         role="document"
+                         onClick={this.open}>
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h4>Список бан слов!</h4>
@@ -76,7 +81,9 @@ class BanForm extends Component {
                                     <div className="btn-group">
                                         <button className="btn btn-primary"
                                                 onClick={this.save}>{this.props.store.banForm.edit==-1 ? "Add word" : "Save word"}</button>
-                                        <button className="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button className="btn btn-secondary" 
+                                        data-dismiss="modal"
+                                        onClick={this.props.open}>Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -85,6 +92,7 @@ class BanForm extends Component {
                 </div>
                 <button className="btn btn-primary"
                         type="button"
+                        onClick={this.props.open}
                         data-toggle="modal"
                         data-target="#banModal"> BanForm </button>
             </div>
@@ -96,6 +104,7 @@ class BanForm extends Component {
 export default connect(state => ({
         store: state
     }), dispatch => ({
+        open: () => {dispatch({type: types.OPEN})},
         save: (list) => {dispatch({type: types.SAVE_INPUT,payload: list})},
         edit: (index) => {dispatch({type: types.SET_EDIT, payload: index})},
         input: (text)=> {dispatch({type: types.SET_INPUT, payload: text})},

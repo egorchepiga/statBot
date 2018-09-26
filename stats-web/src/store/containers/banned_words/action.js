@@ -7,8 +7,14 @@ export const updateBannedWords = ({token, chat_id, banned_words}) =>
             },
             method: "GET"
         }).then(async response => {
-            dispatch({type: chatTypes.SET_BANNED_WORDS, payload: await response.json()});
+            dispatch({type: chatTypes.SAVE_INPUT, payload: await response.json()}); 
         }).catch((er) => {
             console.log("Error: ",er)
         });
     };
+
+    /*
+        структура которую отправляешь в SAVE_INPUT 
+        {list: []}
+        т.е. в list пихаешь массив слов
+    */

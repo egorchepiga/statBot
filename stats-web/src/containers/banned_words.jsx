@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import * as types from '../store/containers/banned_words/actionType'
+import {updateBannedWords} from "../store/containers/banned_words/action";
+
+//Ломаеется при вводе двух * или \ подряд!!!!!!
 
 class BanForm extends Component {
 
@@ -18,37 +21,71 @@ class BanForm extends Component {
         </li>
     );
     save = () => {
-        let list = this.props.store.banForm.list;
-        let edit_index = this.props.store.banForm.edit;
-        edit_index>-1 ? list[edit_index]=this.props.store.banForm.input : list.push(this.props.store.banForm.input)
+        let list = this.props.store.banForm.list,
+            visibleList = this.props.store.banForm.visibleList,
+            edit_index = this.props.store.banForm.edit,
+            input = this.props.store.banForm.input;
+        if (input.length==0) return;    
+        if (edit_index>-1) {
+            list[edit_index]=input
+            visibleList[edit_index]=input
+        } else {
+            list[Object.keys(list).length++] = input;
+            this._search(this.props.store.banForm.search);
+        }
+        this.props.saveList(list);
+    }
 
-        this.props.save(list);}
     deleteWord = (event) => {
         let index = event.target.dataset.index;
         let list = this.props.store.banForm.list;
-        list.splice(index,1)
-        this.props.save(list);}
+        let visibleList = this.props.store.banForm.visibleList;
+        delete list[index];
+        delete visibleList[index];
+        this.props.saveList(list);
+        this.props.setVisibleList(visibleList);
+    }
+
     createWordsList = () =>{
-        let arr = [];
-        this.props.store.banForm.list.forEach((index,item)=>{
-            arr.push(this.createItem(item, index));
-        });
-        return arr;}
+        let arr = [],
+        list = this.props.store.banForm.visibleList;
+        for (let index in list)
+            arr.push(this.createItem(index,list[index]));
+        return arr;
+    }
+
     input = (event) => {
         let text = event.target.value;
-        this.props.input(text);}
+        this.props.setInput(text);
+    }
+
     edit = (event) => {
         let index = event.target.dataset.index;
-        this.props.edit(index);
+        this.props.setEdit(index);
     }
+    search = (event) => {this._search(event.target.value)}
+    _search = (text) =>{
+        text = text.replace(/[\]\[.,\/\\|#!$%\^&\*;:{}=\-_\+``~()]/g,"");
+        let list = this.props.store.banForm.list,
+            arr={},
+            reg = new RegExp(text);
+        for (let index in list)
+            list[index].match(reg) ? arr[index] = (list[index]): null;
+        this.props.setSearch(text); 
+        this.props.setVisibleList(arr);
+    }
+
     open = () =>{
+        //if (this.props.banForm.isOpen) updateBannedWords({token, chat_id, banned_words: this.props.store.banForm.list});
         this.props.open();
     }
+
     createUl = () =>(
         <ul className="list-group">
-            {this.props.store.banForm.list.length>0 && this.createWordsList()}
+            {this.createWordsList()}
         </ul>
     )
+
 
     render() {
         return (
@@ -66,10 +103,12 @@ class BanForm extends Component {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h4>Список бан слов!</h4>
+                                <input onChange={this.search}
+                                value={this.props.store.banForm.search}/>
                             </div>
                             <div className="modal-body">
                                 <div className="modal-wrapper-list">
-                                    {this.props.store.banForm.list.length>0 && this.createUl()}
+                                    {Object.keys(this.props.store.banForm.visibleList).length>0 && this.createUl()}
                                 </div>
                             </div>
                             <div className="modal-footer">
@@ -83,7 +122,7 @@ class BanForm extends Component {
                                                 onClick={this.save}>{this.props.store.banForm.edit==-1 ? "Add word" : "Save word"}</button>
                                         <button className="btn btn-secondary" 
                                         data-dismiss="modal"
-                                        onClick={this.props.open}>Close</button>
+                                        onClick={this.close}>Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -105,8 +144,10 @@ export default connect(state => ({
         store: state
     }), dispatch => ({
         open: () => {dispatch({type: types.OPEN})},
-        save: (list) => {dispatch({type: types.SAVE_INPUT,payload: list})},
-        edit: (index) => {dispatch({type: types.SET_EDIT, payload: index})},
-        input: (text)=> {dispatch({type: types.SET_INPUT, payload: text})},
+        saveList: (list) => {dispatch({type: types.SAVE_INPUT,payload: list})},
+        setEdit: (index) => {dispatch({type: types.SET_EDIT, payload: index})},
+        setInput: (text)=> {dispatch({type: types.SET_INPUT, payload: text})},
+        setSearch: (text)=> {dispatch({type: types.SET_SEARCH, payload: text})},
+        setVisibleList: (text)=> {dispatch({type: types.SET_VISIBLE_LIST, payload: text})},
     })
 )(BanForm)

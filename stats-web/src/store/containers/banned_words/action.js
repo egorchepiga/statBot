@@ -1,3 +1,4 @@
+import * as types from './actionType'
 export const updateBannedWords = ({token, chat_id, banned_words}) =>
     dispatch => {
         fetch(`https://egorchepiga.ru/tg-stats/banned/?token=${token}&chat_id=${chat_id}&banned=${banned_words}`, {
@@ -7,7 +8,7 @@ export const updateBannedWords = ({token, chat_id, banned_words}) =>
             },
             method: "GET"
         }).then(async response => {
-            dispatch({type: chatTypes.SAVE_INPUT, payload: await response.json()}); 
+            dispatch({type: types.SAVE_INPUT, payload: await response.json()}); 
         }).catch((er) => {
             console.log("Error: ",er)
         });

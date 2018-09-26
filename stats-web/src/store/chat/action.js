@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch'
 import * as types from './actionType';
 import * as chatTypes from '../chat/actionType'
+import * as banTypes from '../containers/banned_words/actionType'
 
 export const setColorTheme = (presetIndex) =>
     dispatch => {
@@ -97,7 +98,13 @@ export const loadChat = ({token, chat_id}) =>
             method: "GET"
         }).then(async response => {
             let chat = await response.json(),
-                times = [];
+                times = [],
+                list = JSON.parse(chat.bannedWords).reduce(function(acc, cur, i) {
+                          acc[i] = cur;
+                          return acc;
+                        }, {}),
+                banForm = { list: list, input:"", edit:"", visibleList: list}
+            dispatch({type: banTypes.SET_ALL, payload: banForm});    
             for (let i = 0; i < chat.time.length; i++)
                 times.push(new Date(chat.time[i].time));
             chat.timeReady = times;

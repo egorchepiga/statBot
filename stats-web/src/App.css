@@ -65,3 +65,7 @@
 .modal-backdrop2.show {
     opacity: .5;
 }
+
+.modal-body {
+  min-height: 282px;  
+} 

@@ -54,8 +54,6 @@ app.use(bodyParser.json());
 app.get(`/chats/`, (req, res) => {
     let token = req.param('token') ,
         admin_token = req.param('adm');
-    console.log(admin_token);
-    console.log(token);
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     bot.getChats(token,admin_token)
@@ -89,15 +87,17 @@ app.get(`/banned/`, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
     let token = req.param('token'),
+        admin_token = req.param('adm'),
         chat_id = req.param('chat_id'),
-        bannedWords = req.param('banned_words');
-    bot.updateBannedWords(token, chat_id, bannedWords)
+        bannedWords = JSON.parse(req.param('banned'));
+    console.log(bannedWords);
+    bot.updateBannedWords(token, admin_token, chat_id, bannedWords)
         .then(botRes => {
             if (botRes.error) {
                 console.log(botRes);
                 res.sendStatus(401);
             } else {
-                res.send(JSON.stringify(botRes));
+                res.sendStatus(200);
             }
         });
 });

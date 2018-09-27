@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import GraphicBar from '../components/bar';
-import Button from '../components/button';
 import {createTopWordsForChat} from "../store/graphics/top/action";
 import SwitchButton from "../components/switchbutton"
 class TopGraphic extends Component {
@@ -40,13 +39,13 @@ class TopGraphic extends Component {
         let visibility = this.props.store.topWordsForChat.data;
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
-
-                <div className="chartjs-size-monitor">
-                    {visibility && this.createHeader('Top words')}
-                    {visibility && !this.props.store.chosen && this.forChatSwitcher()}
+                {visibility && <div className="chartjs-size-monitor">
+                    {this.createHeader('Top words')}
+                    {!this.props.store.chosen && this.forChatSwitcher()}
                     <GraphicBar data={this.props.store.topWordsForChat.data}
                                  options={this.props.store.topWordsForChat.options}/>
-                </div>
+                </div>}
+
             </div>)
     }
 }

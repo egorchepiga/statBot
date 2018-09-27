@@ -27,14 +27,19 @@ class BanForm extends Component {
             input = this.props.store.banForm.input;
         if (input.length==0) return;    
         if (edit_index>-1) {
-            list[edit_index]=input
+            list[edit_index]=input;
             visibleList[edit_index]=input
         } else {
             list[Object.keys(list).length++] = input;
             this._search(this.props.store.banForm.search);
         }
-        this.props.saveList(list);
-    }
+        this.props.saveList({
+            token: this.props.store.token.token,
+            admToken: this.props.store.token.admin_token,
+            chat_id: this.props.store.chat.id,
+            banned_words: this.props.store.banForm.list
+        });
+    };
 
     deleteWord = (event) => {
         let index = event.target.dataset.index;
@@ -42,28 +47,35 @@ class BanForm extends Component {
         let visibleList = this.props.store.banForm.visibleList;
         delete list[index];
         delete visibleList[index];
-        this.props.saveList(list);
+        this.props.saveList({
+            token: this.props.store.token.token,
+            admToken: this.props.store.token.admin_token,
+            chat_id: this.props.store.chat.id,
+            banned_words: this.props.store.banForm.list
+        });
         this.props.setVisibleList(visibleList);
-    }
+    };
 
     createWordsList = () =>{
         let arr = [],
         list = this.props.store.banForm.visibleList;
         for (let index in list)
             arr.push(this.createItem(index,list[index]));
-        return arr;
-    }
+        return arr.reverse();
+    };
 
     input = (event) => {
         let text = event.target.value;
         this.props.setInput(text);
-    }
+    };
 
     edit = (event) => {
         let index = event.target.dataset.index;
         this.props.setEdit(index);
-    }
-    search = (event) => {this._search(event.target.value)}
+    };
+    search = (event) => {
+        console.log(event);
+        this._search(event.target.value)};
     _search = (text) =>{
         text = text.replace(/[\]\[.,\/\\|#!$%\^&\*;:{}=\-_\+``~()]/g,"");
         let list = this.props.store.banForm.list,
@@ -78,18 +90,18 @@ class BanForm extends Component {
     open = () =>{
         //if (this.props.banForm.isOpen) updateBannedWords({token, chat_id, banned_words: this.props.store.banForm.list});
         this.props.open();
-    }
+    };
 
     createUl = () =>(
         <ul className="list-group">
             {this.createWordsList()}
         </ul>
-    )
+    );
 
 
     render() {
         return (
-            <div>
+            <div className="banForm">
                 {this.props.store.banForm.isOpen ? <div class="modal-backdrop2 fade show" onClick={this.open}></div> : null}
                 <div className="modal fade"
                      id="banModal"
@@ -122,18 +134,18 @@ class BanForm extends Component {
                                                 onClick={this.save}>{this.props.store.banForm.edit==-1 ? "Add word" : "Save word"}</button>
                                         <button className="btn btn-secondary" 
                                         data-dismiss="modal"
-                                        onClick={this.close}>Close</button>
+                                        onClick={this.open}>Close</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button className="btn btn-primary"
+                <button className={"btn-fr "+ this.props.store.topWordsForChat.theme}
                         type="button"
                         onClick={this.props.open}
                         data-toggle="modal"
-                        data-target="#banModal"> BanForm </button>
+                        data-target="#banModal"> Banned words </button>
             </div>
         )
     }
@@ -144,7 +156,7 @@ export default connect(state => ({
         store: state
     }), dispatch => ({
         open: () => {dispatch({type: types.OPEN})},
-        saveList: (list) => {dispatch({type: types.SAVE_INPUT,payload: list})},
+        saveList: ({token, admToken, chat_id, banned_words}) => {dispatch(updateBannedWords({token, admToken, chat_id, banned_words}))},
         setEdit: (index) => {dispatch({type: types.SET_EDIT, payload: index})},
         setInput: (text)=> {dispatch({type: types.SET_INPUT, payload: text})},
         setSearch: (text)=> {dispatch({type: types.SET_SEARCH, payload: text})},

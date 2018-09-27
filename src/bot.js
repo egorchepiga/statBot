@@ -29,8 +29,8 @@ class Bot {
             });
     }
 
-    authorization(token, admin_token) {
-        return this.DB.authorize(token, admin_token)
+    authorization(token) {
+        return this.DB.authorize(token)
             .then(res => {
                 if (res.error || res.rows.length === 0) return {error: res.error, result: null};
                 return {error: null, result: res.rows }
@@ -144,10 +144,10 @@ class Bot {
         return this.DB.updateChatStats(chat_id, db)
     }
 
-    updateBannedWords(token, chat_id, bannedWords){
+    updateBannedWords(token, admin_token, chat_id, bannedWords){
         return this.authorization(token)
             .then(res => {
-                if (!res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;
                 return this.DB.updateBannedWords(user_id, chat_id, bannedWords)
             });
@@ -185,7 +185,7 @@ class Bot {
     }
 
     getChats(token, admin_token){
-        return this.authorization(token, admin_token)
+        return this.authorization(token)
             .then(res => {
                 if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;

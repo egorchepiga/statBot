@@ -33,7 +33,7 @@ class UserList extends Component {
         this.props.createTopWordsForUser(
             this.props.store.chat,
             index,
-            this.props.store.token,
+            this.props.store.token.token,
             this.props.store.chat.id,
             user.id,
             20,
@@ -61,7 +61,6 @@ class UserList extends Component {
 
 
     createUserProfile = (user, index) => {
-        console.log(user)
         let chosen = user.user === this.props.store.chosen ? ' chosen ' : "";
         return(
             <div key={index} onClick={this.chooseUser} id={user.user} className="user-block">

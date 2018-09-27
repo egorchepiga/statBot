@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import './App.css';
+import './styles/sass/App.sass';
 import {loadChats} from './store/all/action';
 import {setToken} from './store/getStats/token/action'
 import {changeActive, changeSettings} from "./store/containers/menu/action";
@@ -55,7 +55,7 @@ class App extends Component {
         let token ='a34820913835557dc7af';// url.searchParams.get("token");
         let admin_token = 'dc83136d3f5064f35cf3';//url.searchParams.get("adm");
         let chat = url.searchParams.get("chat");
-        this.props.setToken(token);
+        this.props.setToken({token, admin_token});
 
         if (admin_token) {
             this.props.getChats({token, admin_token})
@@ -114,7 +114,7 @@ class App extends Component {
 
     setChat = (event) => {
         let theme = this.props.store.chat.theme;
-        this.props.setChat({token : this.props.store.token, chat_id : event.target.id, theme});
+        this.props.setChat({token : this.props.store.token.token, chat_id : event.target.id, theme});
         this.props.changeActive();
     };
 
@@ -156,11 +156,11 @@ class App extends Component {
                         <div className="header-buttons">
                             {admMode && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
+                            {settings && <BanForm/>}
                             {settings && this.createButtonsForThemeSwitch(buttonLabels)}
                         </div>
                         <div className="wrapper container">
                             <div className="header__most-active">
-                                <BanForm/>
                                 {ready && <ChatProfile/>}
                                 {ready && <UserList/>}
                             </div>
@@ -188,8 +188,8 @@ export default connect(
         chooseUser :  (chosen) => {
             dispatch(setChosen(chosen))
         },
-        setToken: (token) => {
-            dispatch(setToken(token));
+        setToken: (tokens) => {
+            dispatch(setToken(tokens));
         },
         getChats: ({token, admin_token}) => {
             dispatch(loadChats({token, admin_token}))

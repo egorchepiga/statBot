@@ -18,7 +18,6 @@
 
 .all {
   display: flex;
-  border: 3px solid silver;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 800px; }
@@ -52,7 +51,6 @@
       display: block;
       margin-bottom: 0px; }
   .all {
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 520px; } }
@@ -72,7 +70,6 @@
       display: block;
       margin-bottom: 0px; }
   .all {
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 320px; } }
@@ -91,7 +88,6 @@
       display: block;
       margin-bottom: 0px; }
   .all {
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 320px; } }
@@ -112,7 +108,6 @@
       margin-bottom: 0px; }
   .all {
     display: flex;
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden; } }
 
@@ -133,7 +128,6 @@
       margin-bottom: 0px; }
   .all {
     display: flex;
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 320px; } }
@@ -158,7 +152,6 @@
       margin-bottom: 0px; }
   .all {
     display: flex;
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 320px; } }
@@ -182,7 +175,6 @@
       margin-bottom: 0px; }
   .all {
     display: flex;
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 300px; } }
@@ -202,7 +194,6 @@
     max-width: 185px; }
   .all {
     display: flex;
-    border: 3px solid silver;
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 260px; } }

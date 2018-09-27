@@ -12,6 +12,8 @@ import './styles/css/buttons.css';
 import './styles/css/userlist.css';
 import './styles/css/timegraphic.css';
 import './styles/css/chatprofile.css';
+import './styles/css/banned_words.css';
+import './styles/css/App.css';
 import App from './App';
 import combineReducers from './store/index'
 

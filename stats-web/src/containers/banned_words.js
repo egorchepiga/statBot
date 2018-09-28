@@ -66,6 +66,8 @@ class BanForm extends Component {
 
     input = (event) => {
         let text = event.target.value;
+        if(text.length === 0)
+            this.props.setEdit('-1');
         this.props.setInput(text);
     };
 
@@ -77,7 +79,7 @@ class BanForm extends Component {
         console.log(event);
         this._search(event.target.value)};
     _search = (text) =>{
-        text = text.replace(/[\]\[.,\/\\|#!$%\^&\*;:{}=\-_\+``~()]/g,"");
+        text = text ? text.replace(/[\]\[.,\/\\|#!$%\^&\*;:{}=\-_\+``~()]/g,"") : '';
         let list = this.props.store.banForm.list,
             arr={},
             reg = new RegExp(text);
@@ -132,12 +134,12 @@ class BanForm extends Component {
                             <div className="modal-footer">
                                 <div className="input-group">
                                     <input className="form-control"
-                                           placeholder="Введите новое слово"
+                                           placeholder="Type word here"
                                            onChange={this.input}
                                            value={this.props.store.banForm.input}/>
                                     <div className="btn-group">
-                                        <button className="btn btn-primary"
-                                                onClick={this.save}>{this.props.store.banForm.edit==-1 ? "Add word" : "Save word"}</button>
+                                        <button className={"btn btn-primary "+ (this.props.store.banForm.edit !== '-1' ? "btn-success" : "")}
+                                                onClick={this.save}>{this.props.store.banForm.edit === '-1' ? "Add word" : "Save word"}</button>
                                     </div>
                                 </div>
                             </div>

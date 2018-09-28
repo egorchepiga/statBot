@@ -2,7 +2,7 @@ import * as types from "./actionType";
 
 const initState = {list: {/*0: 'd', 1: '3'*/}, 
         input: "", 
-        edit: -1,
+        edit: "-1",
         search: "",
         visibleList: {/*0: 'd', 1: '3'*/},
         isOpen: false
@@ -27,7 +27,7 @@ export default function banForm(state = initState, action) {
             ...state,
                 list: action.payload,
                 input: "",
-                edit: -1
+                edit: '-1'
             
         }        
     } else if (action.type === types.OPEN) {

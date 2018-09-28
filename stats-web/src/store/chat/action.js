@@ -103,7 +103,7 @@ export const loadChat = ({token, chat_id}) =>
                           acc[i] = cur;
                           return acc;
                         }, {}),
-                banForm = { list: list, input:"", edit:"", visibleList: list}
+                banForm = { list: list, input:"", edit:"-1", visibleList: list}
             dispatch({type: banTypes.SET_ALL, payload: banForm});    
             for (let i = 0; i < chat.time.length; i++)
                 times.push(new Date(chat.time[i].time));

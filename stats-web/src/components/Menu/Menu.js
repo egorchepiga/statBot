@@ -58,7 +58,7 @@ const TRANSLATE = 230; // the translation amount
 
 let styles = StyleSheet.create({
   menu: {
-    position: 'relative',
+    position: 'absolute',
     height: '100%',
   },
   menuActive: {
@@ -74,7 +74,7 @@ let styles = StyleSheet.create({
     height: '100%',
     width: '230px',
     minHeight: '100vh',
-    position: 'fixed',
+    position: 'absolute',
     top: '0',
     left: '0',
     zIndex: '-1',

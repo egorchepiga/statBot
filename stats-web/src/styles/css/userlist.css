@@ -4,13 +4,16 @@
   display: flex;
   flex-direction: column; }
 
+.users-list-wrap {
+  justify-content: center;
+  display: flex; }
+
 .users-list {
+  max-width: 790px;
   display: flex;
   flex-wrap: wrap;
   margin-top: 10px;
-  border: 3px solid rgba(0, 0, 0, 0);
-  border-radius: 25px;
-  max-height: 400px;
+  max-height: 165px;
   overflow: hidden; }
   .users-list label {
     display: block;
@@ -20,180 +23,53 @@
   display: flex;
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 800px; }
+  max-height: 340px; }
 
 .user-block {
-  margin: 5px;
-  display: flex;
-  flex-direction: column; }
+  padding: 0px; }
 
 .user__name {
   text-align: center; }
 
-.users-search input {
-  max-width: 200px; }
+.users-search {
+  justify-content: center; }
+  .users-search input {
+    max-width: 250px; }
 
 .users-search button {
   margin: 0px; }
 
-@media (min-width: 1200px) {
-  .users {
-    margin-left: 8.5%; } }
-
-@media screen and (max-width: 990px) {
-  .users {
-    margin-left: 2.5%; }
-  .users-list {
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 180px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
-  .all {
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 520px; } }
-
-@media screen and (max-width: 767px) {
-  .users {
-    margin-left: 9%; }
+@media (max-width: 991px) {
   .user-block {
-    width: 20%; }
-    .user-block img {
-      width: 100%; }
-  .users-list {
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 160px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
-  .all {
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 320px; } }
+    margin-left: 10px;
+    margin-right: 10px; } }
 
-@media screen and (max-width: 570px) {
-  .user-block {
-    width: 20%; }
-    .user-block img {
-      width: 100%; }
-  .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 165px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
+@media (max-width: 767px) {
   .all {
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 320px; } }
-
-@media screen and (max-width: 535px) {
+    max-height: 335px; }
   .user-block {
-    font-size: 12px;
-    width: 20%; }
-    .user-block img {
-      width: 100%; }
+    margin-left: 0px;
+    margin-right: 0px; } }
+
+@media (max-width: 400px) {
   .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 140px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
+    max-height: 145px; }
   .all {
-    display: flex;
-    overflow-y: auto;
-    overflow-x: hidden; } }
-
-@media screen and (max-width: 480px) {
-  .users {
-    margin-left: 7%; }
+    max-height: 290px; }
   .user-block {
-    width: 20%; }
-    .user-block img {
-      width: 100%; }
+    margin-left: 0px;
+    margin-right: 0px; }
+    .user-block div img {
+      max-width: 100px; } }
+
+@media (max-width: 320px) {
   .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 130px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
+    max-height: 112px; }
   .all {
-    display: flex;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 320px; } }
-
-@media screen and (max-width: 420px) {
-  .users-search input {
-    max-width: 260px; }
-  .users {
-    margin-left: 3%; }
+    max-height: 230px; }
   .user-block {
-    font-size: 14px;
-    width: 29%; }
-    .user-block img {
-      width: 100%; }
-  .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 158px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
-  .all {
-    display: flex;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 320px; } }
-
-@media screen and (max-width: 380px) {
-  .users-search input {
-    max-width: 235px; }
-  .users {
-    margin-left: 1%; }
-  .user-block {
-    width: 29%; }
-    .user-block img {
-      width: 100%; }
-  .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 147px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
-  .all {
-    display: flex;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 300px; } }
-
-@media screen and (max-width: 320px) {
-  .user-block {
+    margin-left: 0px;
+    margin-right: 0px;
     font-size: 12px; }
-  .users-list {
-    display: flex;
-    border: 3px solid rgba(0, 0, 0, 0);
-    overflow: hidden;
-    max-height: 130px; }
-    .users-list label {
-      display: block;
-      margin-bottom: 0px; }
-  .users-search input {
-    max-width: 185px; }
-  .all {
-    display: flex;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 260px; } }
+    .user-block div img {
+      max-width: 80px; } }

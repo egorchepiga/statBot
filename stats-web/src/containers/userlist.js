@@ -63,7 +63,7 @@ class UserList extends Component {
     createUserProfile = (user, index) => {
         let chosen = user.user === this.props.store.chosen ? ' chosen ' : "";
         return(
-            <div key={index} onClick={this.chooseUser} id={user.user} className="user-block">
+            <div key={index} onClick={this.chooseUser} id={user.user} className="user-block col-4 col-sm-3 col-md-2 col-lg-2 col-xl-2 ">
                 <div id={user.user} className={"user__img" + chosen +  this.props.store.chat.theme+"Img" }>
                     <img  id={user.user}
                           src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
@@ -123,8 +123,10 @@ class UserList extends Component {
                             this.props.store.userList.showAll )}
                     </div>
                 </div>
-                <div className={"users-list " + (this.props.store.userList.showAll ? "all" : '')}>
-                    {this.userList(this.props.store.chat.users)}
+                <div className="users-list-wrap">
+                    <div className={"users-list row " + (this.props.store.userList.showAll ? "all" : '')}>
+                        {this.userList(this.props.store.chat.users)}
+                    </div>
                 </div>
             </div>
         )

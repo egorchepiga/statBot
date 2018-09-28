@@ -115,6 +115,15 @@ class TimeMessageGraphic extends Component {
     };
 
     changeTimeScale = (event) => {
+        if(!this.props.store.timeMessage.messageActivity) {
+            let obj = this.props.store.timeMessage;
+            obj.timeScale = event.target.id[0];
+            this.props.createTimeUsers(
+                this.props.store.chat,
+                obj,
+                this.props.store.timeMessage.messageActivity);
+        }
+        else
         this.props.setDataThirdGraphic(
             this.props.store.timeMessage.RAWTime,
             this.props.store.timeMessage.dayScale,

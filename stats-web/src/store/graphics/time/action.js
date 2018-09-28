@@ -222,6 +222,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             }
             break;
         case '2':                                                                                                       //неделя
+            if (timeScale === '0') scaleFoo = daysOfWeekHours;
             timeFromShow.weekAlignment();
             if (average) {
                 if (timeScale === '2') scaleFoo = daysOfWeek;
@@ -419,6 +420,12 @@ function daysOfWeekSixHours () {
     else if (hour <= 18) strHour = "15";
     else if (hour <= 24) strHour = "21";
     return dayOfWeek + " " + strHour + ":00"
+}
+
+function daysOfWeekHours () {
+    let hour = (this.getHours() < 10 ?  "0" : "") + this.getHours().toString();    // XXXX-XX/XX/XX XX:XX -> XX:00
+    let weekDays = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+    return weekDays[this.getDay()] + " " + hour + ":00";
 }
 
 function daysOfWeek () {

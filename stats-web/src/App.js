@@ -21,6 +21,8 @@ import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
 import {setChosen} from "./store/getStats/chosen/action";
 import {calculateInfo} from './store/containers/chat_profile/action'
+import * as chatTypes from "./store/chat/actionType";
+import fetch from "cross-fetch";
 
 
 const buttonLabels = [
@@ -136,11 +138,28 @@ class App extends Component {
         />
     );
 
+    refreshInfo = () => {
+        this.props.refreshInfo({
+            token: this.props.store.token.token,
+            admToken: this.props.store.token.admin_token,
+            chat_id:this.props.store.chat.id,
+            theme: this.props.store.chat.theme
+        });
+    };
 
+    createButtonRefresh = () => (
+        <Button className="btn-fr"
+                key="Refresh"
+                id="Refresh"
+                label="Refresh users"
+                onClick={this.refreshInfo}
+                theme={this.props.store.chat.theme}
+        />
+    );
 
     render() {
         let isEmpty = function(obj) {
-            for (let key in obj)
+            for(let key in obj)
                 return false;
             return true;
         };
@@ -156,7 +175,8 @@ class App extends Component {
                         <div className="header-buttons">
                             {admMode && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
-                            {settings && <BanForm/>}
+                            {settings && admMode && <BanForm/>}
+                            {settings && admMode && this.createButtonRefresh()}
                             {settings && this.createButtonsForThemeSwitch(buttonLabels)}
                         </div>
                         <div className="wrapper container">
@@ -195,26 +215,10 @@ export default connect(
             dispatch(loadChats({token, admin_token}))
         },
         changeActive: () => {
-            console.log('WHOS')
             dispatch(changeActive())
         },
         setChat: ({token, chat_id, theme}) => {
-            dispatch(loadChat({token, chat_id}))
-                .then(data => {
-                    data.theme = theme;
-                    dispatch(loadImages(data))
-                        .then(res => {
-                            res.name = data.name;
-                            res.theme = theme;
-                            dispatch(createTopStickers(res));
-                        });
-                    dispatch(createSummaryGraphic(data));
-                    dispatch(createTopWordsForChat(data));
-                    dispatch(createTopStickers(data));
-                    dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0]),
-                        false, 1, true, false, [], theme));
-                    dispatch(calculateInfo(data.time,'0'))
-                });
+            setChat(dispatch, {token, chat_id, theme})
         },
         setTheme: ({data, presetName}) => {
             if (data) {
@@ -229,6 +233,35 @@ export default connect(
         },
         setSettings: () => {
             dispatch(changeSettings())
-    }
+        },
+        refreshInfo: ({token, admToken, chat_id, theme}) => {
+            fetch(`https://egorchepiga.ru/tg-stats/refresh/?token=${token}&adm=${admToken}&chat_id=${chat_id}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                method: "GET"
+            }).then(res => setChat(dispatch, {token, chat_id, theme}))
+        }
     })
 )(App);
+
+
+function setChat(dispatch,{token, chat_id, theme}) {
+    dispatch(loadChat({token, chat_id}))
+        .then(data => {
+            data.theme = theme;
+            dispatch(loadImages(data))
+                .then(res => {
+                    res.name = data.name;
+                    res.theme = theme;
+                    dispatch(createTopStickers(res));
+                });
+            dispatch(createSummaryGraphic(data));
+            dispatch(createTopWordsForChat(data));
+            dispatch(createTopStickers(data));
+            dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0]),
+                false, 1, true, false, [], theme));
+            dispatch(calculateInfo(data.time,'0'))
+        });
+}

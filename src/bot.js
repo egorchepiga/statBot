@@ -70,11 +70,16 @@ class Bot {
             });
     }
 
-    refreshUsersInfo(chat_id, db) {
-        return this.getChatStats(chat_id, db)
+    refreshUsersInfo(token, admin_token, chat_id) {
+        return this.authorization(token)
             .then(res => {
-                return this.updateUsersInfo(res, chat_id, db)
-            })
+                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                let db = this.dbName(res.result[0].database_name);
+                return this.getChatStats(chat_id, db)
+                    .then(res => {
+                        return this.updateUsersInfo(res, chat_id, db)
+                    })
+            });
     }
 
     renewBase(base) {

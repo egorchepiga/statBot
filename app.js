@@ -121,6 +121,24 @@ app.get(`/more/`, (req, res) => {
         });
 });
 
+
+app.get(`/refresh/`, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let token = req.param('token'),
+        admin_token = req.param('admin_token'),
+        chat_id = req.param('chat_id');
+    bot.refreshUsersInfo(token, admin_token, chat_id)
+        .then(botRes => {
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.send(JSON.stringify(botRes));
+            }
+        });
+});
+
 app.get('/stickers/*', (req, res) => {
     let path = req.route.path;
     path = path.slice(0, path.length-1);

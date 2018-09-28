@@ -4,6 +4,22 @@
     padding-left: 5px
     padding-right: 5px
 
+.close-container
+  display: flex
+  justify-content: flex-end
+
+.close-btn
+  border-radius: 20%
+  background: #dc3545
+  border: #dc3545
+  height: 15px
+  width: 15px
+  label
+    color: rgb(255, 255, 255)
+    position: absolute
+    right: 0
+    top: -5px
+
 .modal
   position: absolute
   height: 100vh
@@ -11,7 +27,6 @@
 .modal-wrapper-list
   max-height: 250px
   overflow-y: auto
-  padding-right: 20px
 
 .modal-wrapper-list__item
   display: flex
@@ -22,6 +37,7 @@
   align-items: center
 
 .modal-header
+  padding-top: 0px
   justify-content: center
 
 .modal-backdrop

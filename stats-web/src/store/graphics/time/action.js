@@ -28,39 +28,35 @@ Date.prototype.weekAlignmentFront = function() {                                
 const  prepareTimeForUsers = (time, scale) => {
     let timeArray = [];
     let obj = {};
-    let hours;
     let date = new Date(time[0].time);
     date.setHours(0);
     date.setSeconds(0);
     date.setMinutes(0);
+    let day = new Date(date).setDate(date.getDate()+1);
     let n = scale === '0' ? 1 :
             scale === '1' ? 6 :
             scale === '2' ? 24 : '';
-    for(let i = 0; i < n; i++) {
-        hours = date.getHours() + 1;
-        date.setHours(hours);
-    }
+        date.setHours(date.getHours() + n);
     for (let i = 0; i < time.length; i++) {
         if (new Date(time[i].time) > date) {
             for (let user in obj)
                 timeArray.push(new Date(date));
-            for(let i = 0; i < n; i++) {
-                hours = date.getHours() + 1;
-                date.setHours(hours);
-            }
+            date.setHours(date.getHours() + n);
             obj = {};
         } else obj[time[i].user] = 0;
     }
     for (let user in obj)
         timeArray.push(new Date(date));
-    return timeArray;
+    console.log({timeArray})
+    return timeArray.slice();
 };
 
 
 export const createTimeUsers = (chat, store, messageActivity) =>
     dispatch => {
         let timeArray =  messageActivity ?
-            chat.timeReady : prepareTimeForUsers(chat.time, store.timeScale);
+            chat.timeReady
+            : prepareTimeForUsers(chat.time, store.timeScale);
         dispatch(createTimeMessage(
             timeArray,
             store.dayScale,

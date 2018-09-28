@@ -8,7 +8,7 @@ import {updateBannedWords} from "../store/containers/banned_words/action";
 class BanForm extends Component {
 
     createItem = (id, word) => (
-        <li className="list-group-item list-group-item-primary list-group-item-action modal-wrapper-list__item"
+        <li className="list-group-item list-group-item-action modal-wrapper-list__item"
             role="alert"
             key={id}>
             <div className="modal-list__item">
@@ -113,10 +113,16 @@ class BanForm extends Component {
                          role="document"
                          onClick={this.open}>
                         <div className="modal-content">
+                            <div className="close-container">
+                                <button className="close-btn"
+                                    data-dismiss="modal"
+                                    onClick={this.open}><label>&#10005;</label></button>
+                            </div>
                             <div className="modal-header">
-                                <h4>Список бан слов!</h4>
-                                <input onChange={this.search}
-                                value={this.props.store.banForm.search}/>
+                                <input className="form-control"
+                                       onChange={this.search}
+                                       placeholder="Search"
+                                       value={this.props.store.banForm.search}/>
                             </div>
                             <div className="modal-body">
                                 <div className="modal-wrapper-list">
@@ -132,9 +138,6 @@ class BanForm extends Component {
                                     <div className="btn-group">
                                         <button className="btn btn-primary"
                                                 onClick={this.save}>{this.props.store.banForm.edit==-1 ? "Add word" : "Save word"}</button>
-                                        <button className="btn btn-secondary" 
-                                        data-dismiss="modal"
-                                        onClick={this.open}>Close</button>
                                     </div>
                                 </div>
                             </div>

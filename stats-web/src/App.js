@@ -13,6 +13,7 @@ import Button from './components/button';
 import UserList from './containers/userlist';
 import ChatProfile from './containers/chat_profile'
 import BanForm from './containers/banned_words'
+import RadioButton from './components/radiobutton';
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
 import {loadChat, loadImages, setColorTheme} from "./store/chat/action";
@@ -21,7 +22,6 @@ import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
 import {setChosen} from "./store/getStats/chosen/action";
 import {calculateInfo} from './store/containers/chat_profile/action'
-import * as chatTypes from "./store/chat/actionType";
 import fetch from "cross-fetch";
 
 
@@ -69,6 +69,7 @@ class App extends Component {
     }
 
     changeTheme = (event) => {
+        console.log(event);
         document.cookie = `theme=${event.target.id}; path=/;`;
         let a = Object.create(this.props.store.chat);
         a.theme = event.target.id;
@@ -77,18 +78,21 @@ class App extends Component {
     };
 
     createButtonForTheme = (label, index) => (
-        <Button className={"btn-fr theme-button col-3 col-sm-3 col-md-2 col-lg-1 col-xl-1 bouncy " + label}
-                key={index}
-                id={label}
+        //col-5 col-sm-4 col-md-3 col-lg-2 col-xl-2
+        <div className="scale-radio">
+            <RadioButton
+                className={label +'TimeRadio TimeRadio '}
+                key={index+label}
+                data_id={label}
                 label={label}
-                onClick={this.changeTheme}
-                active={this.props.store.chat.theme === label}
-                style={{"animation-delay":"0."+(7*(index+2)).toString()+"s"}}
-        />
+                onChange={this.changeTheme}
+                checked={this.props.store.chat.theme === label}
+            />
+        </div>
     );
 
     createButtonsForThemeSwitch = (buttonLabels) => (
-        <div className="theme-switcher-holder">{
+        <div className="theme-switcher-holder row">{
             buttonLabels.map(this.createButtonForTheme)
         }</div>
 
@@ -175,8 +179,10 @@ class App extends Component {
                         <div className="header-buttons">
                             {admMode && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
-                            {settings && admMode && <BanForm/>}
-                            {settings && admMode && this.createButtonRefresh()}
+                            <div>
+                                {settings && admMode && <BanForm/>}
+                                {settings && admMode && this.createButtonRefresh()}
+                            </div>
                             {settings && this.createButtonsForThemeSwitch(buttonLabels)}
                         </div>
                         <div className="wrapper container">

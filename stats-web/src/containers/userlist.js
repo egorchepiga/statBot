@@ -124,7 +124,7 @@ class UserList extends Component {
                     </div>
                 </div>
                 <div className="users-list-wrap">
-                    <div className={"users-list row " + (this.props.store.userList.showAll ? "all" : '')}>
+                    <div className={"users-list row col-sm-12 col-12 col-md-12 col-lg-12 col-xl-12" + (this.props.store.userList.showAll ? "all" : '')}>
                         {this.userList(this.props.store.chat.users)}
                     </div>
                 </div>

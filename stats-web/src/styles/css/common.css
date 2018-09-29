@@ -44,7 +44,8 @@ b {
   justify-content: center; }
 
 .header-buttons {
-  text-align: left; }
+  text-align: left;
+  width: 98%; }
 
 @media (max-width: 400px) {
   .summary-radios {

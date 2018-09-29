@@ -8,6 +8,7 @@ class Bot {
         this.toTime = '';
         this.SECRET = OPTIONS.secret;
         this.TOKEN = TOKEN;
+        this.BOT_NAME = OPTIONS.botName;
         this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
         this.topSize = parseInt(OPTIONS.topSize) || 5;
     }
@@ -234,7 +235,7 @@ class Bot {
                     .then(res => {
                         console.log(res);
                         if (res.error) console.log(res.error);
-                        let link = 'Ссылка для администраторов:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
+                        let link = 'Link for admins:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
                         this.answerCallbackQuery(msg.id, link, true);
                         this.sendMessage( msg.message.chat.id, link);
                     });
@@ -251,8 +252,8 @@ class Bot {
                 }).then(res => {
                     if (res.error) return({error : res.error, result: null});
                     this.answerCallbackQuery(msg.id, 'success', false);
-                    this.sendMessage(  msg.message.chat.id, 'Отчёты удалены. \n' +
-                        'Используйте команду /start для перезагрузки бота.')
+                    this.sendMessage(  msg.message.chat.id, 'Logs was deleted. \n' +
+                        'Use /start to reboot bot.')
                 })
             }
         });
@@ -266,32 +267,28 @@ class Bot {
                             return this.createStatToken(msg.from.id)
                         }) .then(res =>{
                             if (res.error) console.log({error: res.error, result: null});
+                            let link = 'Link for admins:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
                             let options = {
                                 reply_markup: JSON.stringify({
                                     inline_keyboard: [
                                         [
-                                            {text: 'Отчёт', callback_data: 'отчёт'},
-                                            {text: 'Обнулить отчёт', callback_data: 'обнулить'}
+                                            {text: 'Recreate link', callback_data: 'отчёт'},
+                                            {text: 'Delete reports', callback_data: 'обнулить'}
                                         ]
                                     ]
                                 })
                             };
-                            this.telegramBot.sendMessage( msg.chat.id,
-                                'Добавьте бота в группу для учёта её статистики. \n')
-                                .then(res => {
-                                    this.telegramBot.sendMessage( msg.chat.id,
-                                        'Если бот уже находится в группе, вы можете получить ссылку на статистику командой /report. \n' +
-                                        'Администратор может отключить данную возможность командой /privacy.')
-                                        .then(res => {
-                                            this.telegramBot.sendMessage( msg.chat.id,
-                                                'Для получения ссылки на ваши отчёты или их обнуления, воспользуйтесь кнопками ниже. \n' +
-                                                'Приятного пользования!', options);
-                                        });
-                                });
+                        this.telegramBot.sendMessage( msg.chat.id,
+                            'Use buttons below to get link for editing your statistics or deleting it. ' +
+                            'Enjoy! \n', options)
+                            .then(res => {
+                                this.telegramBot.sendMessage( msg.chat.id,link);
+                            });
+
                         });
                 }
             } else if(msg.entities) {
-                if (msg.text.indexOf('/report@egorchepiga_bot') !== -1) {
+                if (msg.text.indexOf('/report@'+ this.BOT_NAME) !== -1) {
                     let chat = msg.chat.id;
                     this.DB.isChatPrivate(msg.chat.id)
                         .then(res => {
@@ -317,17 +314,17 @@ class Bot {
                                 }
                             );
                         });
-                } else if (msg.text.indexOf('/privacy@egorchepiga_bot') !== -1) {
+                } else if (msg.text.indexOf('/privacy@' + this.BOT_NAME) !== -1) {
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {
                             if ((data.status === "creator") || (data.status === "administrator")){
                                 self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
-                                        let str = (res) ? 'Защита деактивирована.':'Защита активирована.' ;
+                                        let str = (res) ? 'Privacy mode enabled .':'Privacy mode disabled.' ;
                                         self.DB.setChatPrivacy(msg.chat.id, !res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });
-                            } else self.telegramBot.sendMessage( msg.chat.id, 'Изменение настроек разрешено только для администрации.');
+                            } else self.telegramBot.sendMessage( msg.chat.id, 'Privacy settings are only for admins.');
                         });
                 }
             } else {
@@ -348,7 +345,7 @@ class Bot {
             try {
                 botName = msg.new_chat_participant.username;
             } catch (e) {}
-            if(botName === 'egorchepiga_bot') {
+            if(botName === this.BOT_NAME) {
                 this.createChat(msg)
                     .then(res => {
                         if (res.error) return {error : res.error, result: null};

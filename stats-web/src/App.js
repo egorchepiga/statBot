@@ -54,12 +54,12 @@ class App extends Component {
         let url = new URL(window.location);
         /*let index = url.match(reg).index;
         let token = url.slice(index);*/
-        let token ='a34820913835557dc7af';// url.searchParams.get("token");
-        let admin_token = 'dc83136d3f5064f35cf3';//url.searchParams.get("adm");
+        let token = url.searchParams.get("token");
+        let admin_token = url.searchParams.get("adm");
         let chat = url.searchParams.get("chat");
         this.props.setToken({token, admin_token});
 
-        if (admin_token) {
+        if (admin_token || token==='demo') {
             this.props.getChats({token, admin_token})
         }
         else if (chat) {

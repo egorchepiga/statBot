@@ -24,6 +24,7 @@ const BOT = require('./src/bot').Bot,
                 socksPassword: CONFIG.SOCKS5.socksPassword
             }
         },
+        botName: CONFIG.bot.NAME,
         secret : CONFIG.secret,
         mainBase: CONFIG.bot.mainBase,
         topSize : CONFIG.bot.topSize,
@@ -38,7 +39,12 @@ const BOT = require('./src/bot').Bot,
         ...SSL_CREDENTIALS,
         hostname : 'api.telegram.org',
         rejectUnauthorized : true
-    };
+    },
+    DEMO_CHATS = {
+        chats: fs.readFileSync('./DEMO_chats.txt'),
+    '-1001331385107' : fs.readFileSync('./DEMO-1001331385107.txt'),
+    '-1001106906533' : fs.readFileSync('./DEMO-1001106906533.txt')
+};
 
 let bot = new BOT(TOKEN,OPTIONS);
 bot.setWebHook('https://egorchepiga.ru/tg-hook/');
@@ -56,7 +62,8 @@ app.get(`/chats/`, (req, res) => {
         admin_token = req.param('adm');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    bot.getChats(token,admin_token)
+    if (token === "demo") res.send(DEMO_CHATS.chats);
+    else bot.getChats(token,admin_token)
         .then(botRes => {
             if (res.error) {
                 console.log(botRes);
@@ -64,7 +71,7 @@ app.get(`/chats/`, (req, res) => {
             } else {
                 res.send(JSON.stringify(botRes));
             }
-        })
+        });
 });
 
 app.get(`/load/`, (req, res) => {
@@ -72,7 +79,8 @@ app.get(`/load/`, (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     let token = req.param('token'),
         chat_id = req.param('chat_id');
-        bot.loadChat(token, chat_id)
+    if (token === "demo") res.send(DEMO_CHATS[chat_id]);
+    else bot.loadChat(token, chat_id)
         .then(botRes => {
             if (botRes.error) {
                 console.log(botRes);
@@ -90,7 +98,6 @@ app.get(`/banned/`, (req, res) => {
         admin_token = req.param('adm'),
         chat_id = req.param('chat_id'),
         bannedWords = JSON.parse(req.param('banned'));
-    console.log(bannedWords);
     bot.updateBannedWords(token, admin_token, chat_id, bannedWords)
         .then(botRes => {
             if (botRes.error) {
@@ -207,7 +214,6 @@ app.get('/file_id/*', (req, res) => {
     if(file_id !== 'null')
     bot.getFilePath(file_id)
         .then(botRes => {
-            console.log(botRes);
             if (res.error) {
                 console.log(botRes);
                 res.sendStatus(404);

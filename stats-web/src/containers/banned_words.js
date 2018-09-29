@@ -133,12 +133,12 @@ class BanForm extends Component {
                             </div>
                             <div className="modal-footer">
                                 <div className="input-group">
-                                    <input className="form-control"
+                                    <input className="form-control banned-input"
                                            placeholder="Type word here"
                                            onChange={this.input}
                                            value={this.props.store.banForm.input}/>
                                     <div className="btn-group">
-                                        <button className={"btn btn-primary "+ (this.props.store.banForm.edit !== '-1' ? "btn-success" : "")}
+                                        <button className={"btn-fr save-btn "+this.props.store.chat.theme +  (this.props.store.banForm.edit !== '-1' ? " btn-success" : "")}
                                                 onClick={this.save}>{this.props.store.banForm.edit === '-1' ? "Add word" : "Save word"}</button>
                                     </div>
                                 </div>

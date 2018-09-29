@@ -60,6 +60,7 @@ let styles = StyleSheet.create({
   menu: {
     position: 'absolute',
     height: '100%',
+    width: '100%'
   },
   menuActive: {
     overflow: 'hidden',

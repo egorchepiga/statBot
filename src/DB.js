@@ -102,7 +102,7 @@ function createChat(msg, db){
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
-                ' (word varchar(120) NOT NULL,' +
+                ' (word varchar(20) NOT NULL,' +
                 'summary int (10) DEFAULT 1 NOT NULL,' +
                 'PRIMARY KEY (word)); ';
             sql +=

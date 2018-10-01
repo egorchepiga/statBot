@@ -233,7 +233,6 @@ class Bot {
             if (msg.data === 'отчёт')
                 self.createStatToken(msg.from.id)
                     .then(res => {
-                        console.log(res);
                         if (res.error) console.log(res.error);
                         let link = 'Link for admins:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
                         this.answerCallbackQuery(msg.id, link, true);
@@ -243,7 +242,6 @@ class Bot {
                 self.getUserChats(self.dbName(msg.from.id))
                 .then(res => {
                     let arrPromises =[];
-                    console.log(res);
                     for(let i=0; i < res.length; i++)
                         arrPromises.push(self.telegramBot.leaveChat(res[i]))
                     return arrPromises;

@@ -117,6 +117,7 @@ app.get(`/more/`, (req, res) => {
         chat_id = req.param('chat_id'),
         n = req.param('count'),
         user_id = req.param('user_id');
+    if(token === 'demo') res.send({'Top' : 20, 'twenty' : 15, 'user\'s' : 10, 'words' : 7, 'here' : 2});
     bot.getTopWords(n, token, user_id, chat_id)
         .then(botRes => {
             if (botRes.error) {

@@ -13,9 +13,9 @@ class ChatProfile extends Component {
         this.props.chooseUser(false);
         this.props.createTopWords(
             this.props.store.chat,
-            this.props.store.topWordsForChat.forChat
+            !this.props.store.topWordsForChat.forChat
         );
-        this.props.createTopStickers(this.props.store.chat, this.props.store.stickers.forChat);
+        this.props.createTopStickers(this.props.store.chat, !this.props.store.stickers.forChat);
         this.props.createTimeMessage(
             this.props.store.chat.timeReady,
             this.props.store.timeMessage.dayScale,
@@ -51,15 +51,15 @@ class ChatProfile extends Component {
                     <div className="chat-info-more">
                         <div className="row">
                             <label className="title col-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">{'Messages today:'}</label>
-                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.chatProfile.count}</label>
+                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.token.token === 'demo' ? '254' :this.props.store.chatProfile.count}</label>
                         </div>
                         <div className="row">
                             <label className="title col-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">{'Active users today:'}</label>
-                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.chatProfile.users }</label>
+                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.token.token === 'demo' ? '5' :this.props.store.chatProfile.users }</label>
                         </div>
                         <div className="row">
                             <label className="title col-9 col-sm-9 col-md-9 col-lg-9 col-xl-9">{'Pick hour:'}</label>
-                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.chatProfile.pickHour }</label>
+                            <label className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">{this.props.store.token.token === 'demo' ? '12:00' : this.props.store.chatProfile.pickHour }</label>
                         </div>
                     </div>
                 </div>

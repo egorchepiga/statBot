@@ -179,11 +179,12 @@ class App extends Component {
                         <div className="header-buttons">
                             {admMode && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
-                            <div>
-                                {settings && admMode && <BanForm/>}
-                                {settings && admMode && this.createButtonRefresh()}
-                            </div>
-                            {settings && this.createButtonsForThemeSwitch(buttonLabels)}
+                            {ready &&
+                            <div className={"settings " + settings}>
+                                {admMode && <BanForm/>}
+                                {admMode && this.createButtonRefresh()}
+                                {this.createButtonsForThemeSwitch(buttonLabels)}
+                            </div>}
                         </div>
                         <div className="wrapper container">
                             <div className="header__most-active">

@@ -45,7 +45,7 @@ class Stickers extends Component {
     forChatSwitcher = () => (
         <SwitchButton
             className="stickers-switch"
-            labelLeft="Chat" labelRight="Users"
+            labelLeft="average" labelRight="users"
             key="stickersSwitcher"
             id="stickersSwitcher"
             action={this.changeForChat}

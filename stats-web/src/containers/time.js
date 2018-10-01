@@ -27,6 +27,7 @@ const timeScaleLabels = [
 class TimeMessageGraphic extends Component {
 
     setScale = (event) => {
+        let dayToShow = this.props.store.token.token === 'demo' ? new Date(2018, 8, 29, 0,0,0,0) : 0;
         let timeScale = this.props.store.timeMessage.timeScale,
             average = this.props.store.timeMessage.average;
         if(event.target.id[0] === '0') {
@@ -51,7 +52,7 @@ class TimeMessageGraphic extends Component {
                 this.props.store.timeMessage.RAWTime,
                 event.target.id[0],
                 this.props.store.timeMessage.imposition,
-                this.props.store.timeMessage.fromTime,
+                dayToShow,
                 this.props.store.timeMessage.toTime,
                 timeScale,
                 average,
@@ -106,7 +107,7 @@ class TimeMessageGraphic extends Component {
             this.props.store.timeMessage.toTime,
             this.props.store.timeMessage.timeScale,
             this.props.store.timeMessage.average,
-            event.target.value > 0 ? event.target.value : 1,
+            event.target.value > -1 ? event.target.value : 0,
             this.props.store.timeMessage.messageActivity,
             this.props.store.chosen,
             this.props.store.chat.time,
@@ -229,7 +230,7 @@ class TimeMessageGraphic extends Component {
     activitySwitcher = () => (
         <SwitchButton
             className="activity-switch"
-            labelLeft="Messages" labelRight="Users"
+            labelLeft="messages" labelRight="users"
             key="202"
             id="202"
             action={this.changeActivity}

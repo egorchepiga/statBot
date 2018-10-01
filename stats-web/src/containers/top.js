@@ -28,8 +28,8 @@ class TopGraphic extends Component {
             className="words-switch"
             id="topWordsSwitcher"
             isChecked={!this.props.store.topWordsForChat.forChat}
-            labelLeft="Chat"
-            labelRight="Users"
+            labelLeft="average"
+            labelRight="users"
             action={this.changeForchat}
             theme={this.props.store.topWordsForChat.theme}
         />

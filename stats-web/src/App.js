@@ -155,7 +155,7 @@ class App extends Component {
         <Button className="btn-fr"
                 key="Refresh"
                 id="Refresh"
-                label="Refresh users"
+                label="Refresh users images"
                 onClick={this.refreshInfo}
                 theme={this.props.store.chat.theme}
         />

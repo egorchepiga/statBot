@@ -181,3 +181,7 @@
 
 .PinkPeriods input, .PinkDatepicker input {
   border-color: #ecacc7; }
+
+.periods-input input[type=number]:hover::-webkit-inner-spin-button,
+.periods-input input[type=number]:hover::-webkit-outer-spin-button {
+  opacity: 1; }

@@ -29,4 +29,21 @@
   to
     transform: rotate(360deg)
 
+.settings
+  transition-property: height
+  transition-duration: 0.5s
+  height: 0px
+  overflow: hidden
 
+.settings.true
+  height: 80px
+  transition: height 0.5s ease
+
+@media screen and (max-width: 990px)
+  .settings.true
+    height: 120px
+
+
+@media screen and (max-width: 500px)
+  .settings.true
+    height: 165px

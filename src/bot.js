@@ -285,6 +285,14 @@ class Bot {
 
                         });
                 }
+                else if (msg.text.indexOf('/help') !== -1) {
+                    this.telegramBot.sendMessage( msg.chat.id,"Add this bot to your chat group and type /report there. You can also get link for "+
+                    "administrators, which let you to change banned words and refresh users's names and images. \n@egorchepiga for feedback")
+                }
+                else if (msg.text.indexOf('/privacy') !== -1) {
+                    this.telegramBot.sendMessage( msg.chat.id,"Nice to see, that you worry about privacy too :) \nWe don't store any meta-data or your messages. We store your words " +
+                        "separately and you can see all what we store, cause we don't have extra space for meta ); \nUse this command in your chat group to protect /report command from non-admins.")
+                }
             } else if(msg.entities) {
                 if (msg.text.indexOf('/report@'+ this.BOT_NAME) !== -1) {
                     let chat = msg.chat.id;

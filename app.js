@@ -41,9 +41,9 @@ const BOT = require('./src/bot').Bot,
         rejectUnauthorized : true
     },
     DEMO_CHATS = {
-        chats: fs.readFileSync('./DEMO_chats.txt'),
-    '-1001331385107' : fs.readFileSync('./DEMO-1001331385107.txt'),
-    '-1001106906533' : fs.readFileSync('./DEMO-1001106906533.txt')
+        chats: fs.readFileSync('./public/demo/DEMO_chats.txt'),
+    '-1001331385107' : fs.readFileSync('./public/demo/DEMO-1001331385107.txt'),
+    '-1001106906533' : fs.readFileSync('./public/demo/DEMO-1001106906533.txt')
 };
 
 let bot = new BOT(TOKEN,OPTIONS);

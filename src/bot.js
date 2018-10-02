@@ -232,6 +232,7 @@ class Bot {
 
         this.telegramBot.on('callback_query', function (msg) {
             if (msg.data === 'ru' || msg.data === 'en'){
+                if (msg.data !== 'en') self.telegramBot.sendMessage( msg.from.id, self.LOCALE[msg.data].about);
                 this.answerCallbackQuery(msg.id, "", true);
                 self.DB.updateLocale(msg.from.id, msg.data);
                 self.createStatToken(msg.from.id)
@@ -289,6 +290,7 @@ class Bot {
         });
 
         this.telegramBot.on('text', msg => {
+            console.log(msg);
             if (msg.from.id === msg.chat.id) {
                 if(msg.text === '/start') {
                     this.DB.createDB(msg.from.id)

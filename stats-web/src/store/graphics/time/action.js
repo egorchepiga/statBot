@@ -47,7 +47,6 @@ const  prepareTimeForUsers = (time, scale) => {
     }
     for (let user in obj)
         timeArray.push(new Date(date));
-    console.log({timeArray})
     return timeArray.slice();
 };
 

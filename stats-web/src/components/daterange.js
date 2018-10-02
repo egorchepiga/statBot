@@ -44,7 +44,7 @@ class DateRange extends Component {
         return (
             <div className={"datepicker row " + this.props.store.timeMessage.theme+"Datepicker"}>
                 <div className="datepicker-label-from col-1 col-sm-1 col-md-1 col-lg-3 col-xl-3">
-                    From:
+                    <label>{this.props.store.locale.time.buttons.datepicker.from}</label>
                 </div>
                 <div className="datepicker-item datepicker-from col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                     <DatePicker
@@ -56,7 +56,7 @@ class DateRange extends Component {
                     />
                 </div>
                 <div className="datepicker-item col-5 col-sm-5 col-md-5 col-lg-6 col-xl-6 datepicker-to">
-                    <label>To:</label>
+                    <label>{this.props.store.locale.time.buttons.datepicker.to}</label>
                     <DatePicker
                         selected={this.state.endDate}
                         selectsEnd

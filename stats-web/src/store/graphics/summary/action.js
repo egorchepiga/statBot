@@ -19,6 +19,7 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         today.setHours(0);
         today.setMinutes(0);
         today.setSeconds(0);
+        if(data.name === 'Group Name') today = new Date(2018, 8, 29, 0,0,0,0);
 
         for(let user in data.users) {
             users[data.users[user].user] = 0;

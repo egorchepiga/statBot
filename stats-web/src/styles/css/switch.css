@@ -4,8 +4,14 @@
 .words-switch {
   margin-left: -20px; }
 
+.words-switch.ru {
+  margin-left: 50px; }
+
 .stickers-switch {
   margin-left: -20px; }
+
+.stickers-switch.ru {
+  margin-left: 50px; }
 
 .activity-switch {
   margin-left: -32px; }

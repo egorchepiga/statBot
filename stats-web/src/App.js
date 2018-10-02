@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import './styles/sass/App.sass';
 import {loadChats} from './store/all/action';
 import {setToken} from './store/getStats/token/action'
+import {changeLocale} from './store/getStats/locale/action';
 import {changeActive, changeSettings} from "./store/containers/menu/action";
 import SummaryGraphic from './containers/summary';
 import TopGraphic from './containers/top';
@@ -24,16 +25,6 @@ import {setChosen} from "./store/getStats/chosen/action";
 import {calculateInfo} from './store/containers/chat_profile/action'
 import fetch from "cross-fetch";
 
-
-const buttonLabels = [
-    'Orange',
-    'Yellow-Gray',
-    'Green',
-    'Aqua',
-    'Purple-Gray',
-    'Pink',
-    'Random'
-];
 
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
@@ -57,7 +48,9 @@ class App extends Component {
         let token = url.searchParams.get("token");
         let admin_token = url.searchParams.get("adm");
         let chat = url.searchParams.get("chat");
+        let locale = url.searchParams.get("l");
         this.props.setToken({token, admin_token});
+        this.props.setLocale(locale);
 
         if (admin_token || token==='demo') {
             this.props.getChats({token, admin_token})
@@ -77,19 +70,20 @@ class App extends Component {
 
     };
 
-    createButtonForTheme = (label, index) => (
+    createButtonForTheme = (item, index) => {
+        for(let key in item)
         //col-5 col-sm-4 col-md-3 col-lg-2 col-xl-2
-        <div className="scale-radio">
+        return (<div className="scale-radio">
             <RadioButton
-                className={label +'TimeRadio TimeRadio '}
-                key={index+label}
-                data_id={label}
-                label={label}
+                className={key + 'TimeRadio TimeRadio '}
+                key={index + key}
+                data_id={key}
+                label={item[key]}
                 onChange={this.changeTheme}
-                checked={this.props.store.chat.theme === label}
+                checked={this.props.store.chat.theme === key}
             />
-        </div>
-    );
+        </div>)
+    };
 
     createButtonsForThemeSwitch = (buttonLabels) => (
         <div className="theme-switcher-holder row">{
@@ -103,7 +97,7 @@ class App extends Component {
         <button onClick={this.props.changeActive}
                 className={"btn-fr "+ (getCookie('theme') || 'Random')}>
             <div className="d-block d-sm-none">☰</div>
-            <div className="d-none d-sm-block select-chat-btn">Select chat</div>
+            <div className="d-none d-sm-block select-chat-btn">{this.props.store.locale.settings.select}</div>
         </button>
         </div>
     );
@@ -155,7 +149,7 @@ class App extends Component {
         <Button className="btn-fr"
                 key="Refresh"
                 id="Refresh"
-                label="Refresh users images"
+                label={this.props.store.locale.settings.refresh}
                 onClick={this.refreshInfo}
                 theme={this.props.store.chat.theme}
         />
@@ -183,7 +177,7 @@ class App extends Component {
                             <div className={"settings " + settings}>
                                 {admMode && <BanForm/>}
                                 {admMode && this.createButtonRefresh()}
-                                {this.createButtonsForThemeSwitch(buttonLabels)}
+                                {this.createButtonsForThemeSwitch(this.props.store.locale.settings.theme)}
                             </div>}
                         </div>
                         <div className="wrapper container">
@@ -249,6 +243,9 @@ export default connect(
                 },
                 method: "GET"
             }).then(res => setChat(dispatch, {token, chat_id, theme}))
+        },
+        setLocale: (locale) => {
+            dispatch(changeLocale(locale));
         }
     })
 )(App);

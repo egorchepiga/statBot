@@ -41,8 +41,9 @@ function transaction(sql, params) {
                             _params = params.slice(fromCount, fromCount + paramsCount);
                         } catch (e) {}
                         connection.query(queries[i], _params, (error, results, fields) => {
-                            if (error) resolve({error, results});
-                            resArray.push(results);
+                            if (error) connection.rollback(function() {
+                                throw error;
+                            });
                         });
                     }
                     connection.commit(function (error) {
@@ -78,8 +79,12 @@ function isChatPrivate(chat_id) {
 function findChat(chat_id) {
     return query('SELECT * FROM ' + MAIN_BASE +'.`ROOMS` WHERE chat_id = ?',[chat_id])
         .then(res => {
-            return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE database_name = ?',[res.rows[0].database_name]);
+            return getDBInfo(res.rows[0].database_name);
         })
+}
+
+function getDBInfo(database_name) {
+    return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE database_name = ?',[database_name]);
 }
 
 function createChat(msg, db){
@@ -171,6 +176,15 @@ function clearBannedWords(user_id, chat_id, db, bannedWords) {                //
 
 function authorize(token) {
     return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE token = ?',[token]);
+}
+
+
+function updateLocale(database_name, locale) {
+    let sql =
+        'UPDATE ' + MAIN_BASE + '.`DATABASES` ' +
+        'SET locale = ? ' +
+        'WHERE database_name = ? ;';
+    return query(sql, [locale, database_name])
 }
 
 function updateUserInfo(chat_id, user_id, file_id, username, up_to_date, db) {
@@ -468,8 +482,10 @@ module.exports = {
     getChatStats : getChatStats,
     getChatActivity : getChatActivity,
     getTopWords : getWords,
+    getDBInfo : getDBInfo,
     updateChatStats : updateChatStats,
     updateUserInfo : updateUserInfo,
+    updateLocale : updateLocale,
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
     isChatPrivate : isChatPrivate,

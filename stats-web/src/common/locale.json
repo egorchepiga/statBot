@@ -1,0 +1,180 @@
+{
+  "ru":{
+    "locale" : "ru",
+    "settings": {
+      "select": "Выберите чат",
+      "refresh": "Обновить аватарки",
+      "banned": {
+        "label" : "Забаненные слова",
+        "search": "Поиск",
+        "placeholder": "Введите слово",
+        "add": "Добавить",
+        "save": "Сохранить",
+        "edit": "изменить",
+        "delete": "удалить"
+      },
+      "theme" : [
+        {"Orange": "Оранжевый"},
+        {"Yellow-Gray": "Желто-серый"},
+        {"Green": "Зелёный"},
+        {"Aqua": "Аква"},
+        {"Purple-Gray": "Фиолетово-серый"},
+        {"Pink": "Розовый"},
+        {"Random": "Случайный"}
+      ]
+    },
+    "chat_profile": {
+      "msg" : "Сообщений сегодня: ",
+      "active": "Активных сегодня: ",
+      "pick": "Час активности: "
+    },
+    "users_list": {
+      "search": "Поиск",
+      "show_all": "Показать всех"
+    },
+    "summary": {
+      "header": "Активность",
+      "top": "топ",
+      "all": "все",
+      "checkBoxes": [
+        {"all": "все"},
+        {"today": "сегодня"},
+        {"week": "неделя"},
+        {"month": "месяц"}
+      ]
+    },
+    "top_words" : {
+      "header": "Топ слов",
+      "common": "общее",
+      "users": "пользователи"
+    },
+    "top_stickers": {
+      "header": "Топ стикеров",
+      "common": "общее",
+      "users": "пользователи"
+    },
+    "time": {
+      "header": "Активность по времени",
+      "messages": "сообщения",
+      "users": "пользователи",
+      "buttons": {
+        "scale_day": {
+          "label": "Масштабировать за:",
+          "radios": [
+            {"all": "всё время"},
+            {"today": "сегодня"},
+            {"week": "неделю"},
+            {"month": "месяц"},
+            {"custom": "свой промежуток"}
+          ]
+        },
+        "scale_time": {
+          "label": " Каждый:",
+          "radios": [
+            {"hour": "час"},
+            {"6hours": "6-й час"},
+            {"days": "день"}
+          ]
+        },
+        "datepicker": {
+          "from": "От:",
+          "to": "До:"
+        },
+        "average": {
+          "average": "среднее",
+          "periods": "периоды",
+          "imposition": "наложение"
+        }
+      }
+    }
+  },
+  "en": {
+    "locale" : "en",
+    "settings": {
+      "select": "Select chat",
+      "refresh": "Refresh users images",
+      "banned": {
+        "label" : "Banned words",
+        "search": "Search",
+        "placeholder": "Type word here",
+        "add": "Add word",
+        "save": "Save words",
+        "edit": "edit",
+        "delete": "delete"
+      },
+      "theme" : [
+        {"Orange": "Orange"},
+        {"Yellow-Gray": "Yellow-Gray"},
+        {"Green": "Green"},
+        {"Aqua": "Aqua"},
+        {"Purple-Gray": "Purple-Gray"},
+        {"Pink": "Pink"},
+        {"Random": "Random"}
+      ]
+    },
+    "chat_profile": {
+      "msg" : "Messages today: ",
+      "active": "Active users today: ",
+      "pick": "Pick hour: "
+    },
+    "users_list": {
+      "search": "Search",
+      "show_all": "Show all"
+    },
+    "summary": {
+      "header": "Most active",
+      "top": "top",
+      "all": "all",
+      "checkBoxes": [
+        {"all": "all"},
+        {"today": "today"},
+        {"week": "week"},
+        {"month": "month"}
+      ]
+    },
+    "top_words" : {
+      "header": "Top words",
+      "common": "common",
+      "users": "users"
+    },
+    "top_stickers": {
+      "header": "Top stickers",
+      "common": "common",
+      "users": "users"
+    },
+    "time": {
+      "header": "Time activity",
+      "messages": "messages",
+      "users": "users",
+      "buttons": {
+        "scale_day": {
+          "label": "Scale for:",
+          "radios": [
+            {"all": "all time"},
+            {"today": "today"},
+            {"week": "week"},
+            {"month": "month"},
+            {"custom": "custom"}
+          ]
+        },
+        "scale_time": {
+          "label": "Scale every:",
+          "radios":[
+            {"hour": "hour"},
+            {"hours": "6 hours"},
+            {"days": "days"}
+          ]
+        },
+        "datepicker": {
+          "from": "From:",
+          "to": "To:"
+        },
+        "average": {
+          "average": "average",
+          "periods": "periods",
+          "imposition": "imposition"
+        }
+      }
+    }
+  }
+}

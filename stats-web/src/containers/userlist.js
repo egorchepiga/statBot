@@ -115,10 +115,10 @@ class UserList extends Component {
         return (
             <div className="users">
                 <div className="users-search input-group">
-                    <input onChange={this.findUser} className="form-control" type="text" aria-describedby="button-addon" placeholder="Search" />
+                    <input onChange={this.findUser} className="form-control" type="text" aria-describedby="button-addon" placeholder={this.props.store.locale.users_list.search} />
                     <div className="input-group-append">
                         {this.createButton("button-addon",
-                            "Show all",
+                            this.props.store.locale.users_list.show_all,
                             this.showALlUsers,"search-btn btn-fr " + this.props.store.chat.theme,
                             this.props.store.userList.showAll )}
                     </div>

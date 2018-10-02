@@ -15,8 +15,8 @@ class BanForm extends Component {
                 <text>{word}</text>
             </div>
             <div className="btn-group">
-                <button className="btn btn-success" onClick={this.edit} data-index={id}>edit</button>
-                <button className="btn btn-danger"  onClick={this.deleteWord} data-index={id}>delete</button>
+                <button className="btn btn-success" onClick={this.edit} data-index={id}>{this.props.store.locale.settings.banned.edit}</button>
+                <button className="btn btn-danger"  onClick={this.deleteWord} data-index={id}>{this.props.store.locale.settings.banned.delete}</button>
             </div>
         </li>
     );
@@ -123,7 +123,7 @@ class BanForm extends Component {
                             <div className="modal-header">
                                 <input className="form-control"
                                        onChange={this.search}
-                                       placeholder="Search"
+                                       placeholder={this.props.store.locale.settings.banned.search}
                                        value={this.props.store.banForm.search}/>
                             </div>
                             <div className="modal-body">
@@ -134,12 +134,14 @@ class BanForm extends Component {
                             <div className="modal-footer">
                                 <div className="input-group">
                                     <input className="form-control banned-input"
-                                           placeholder="Type word here"
+                                           placeholder={this.props.store.locale.settings.banned.placeholder}
                                            onChange={this.input}
                                            value={this.props.store.banForm.input}/>
                                     <div className="btn-group">
                                         <button className={"btn-fr save-btn "+this.props.store.chat.theme +  (this.props.store.banForm.edit !== '-1' ? " btn-success" : "")}
-                                                onClick={this.save}>{this.props.store.banForm.edit === '-1' ? "Add word" : "Save word"}</button>
+                                                onClick={this.save}>{this.props.store.banForm.edit === '-1' ?
+                                            this.props.store.locale.settings.banned.add
+                                            : this.props.store.locale.settings.banned.save }</button>
                                     </div>
                                 </div>
                             </div>
@@ -150,7 +152,7 @@ class BanForm extends Component {
                         type="button"
                         onClick={this.props.open}
                         data-toggle="modal"
-                        data-target="#banModal"> Banned words </button>
+                        data-target="#banModal"> {this.props.store.locale.settings.banned.label} </button>
             </div>
         )
     }

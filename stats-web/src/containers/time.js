@@ -163,17 +163,19 @@ class TimeMessageGraphic extends Component {
         buttonLabels.map(this.createButton)
     );
 
-    createTimeScaleRadio = (label, index) => (
-        <div className="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 scale-radio">
-            <RadioButton className={this.props.store.timeMessage.theme + "TimeRadio TimeRadio"}
+    createTimeScaleRadio = (item, index) => {
+        for(let key in item)
+            return(
+                <div className="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 scale-radio">
+                    <RadioButton className={this.props.store.timeMessage.theme + "TimeRadio TimeRadio"}
                          key={index}
-                         data_id={index+'timeRadio'}
-                         label={label}
+                         data_id={index + 'timeRadio'}
+                         label={item[key]}
                          onChange={this.changeTimeScale}
                          checked={index.toString() === this.props.store.timeMessage.timeScale}
-            />
-        </div>
-    );
+                    />
+                </div>)
+    };
 
     createTimeScaleRadios = (radioLabels) => (
         <div className="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-9 row">
@@ -181,17 +183,18 @@ class TimeMessageGraphic extends Component {
         </div>
     );
 
-    createDayScaleRadio = (label, index) => (
-        <div className="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 scale-radio">
+    createDayScaleRadio = (item, index) => {
+        for(let key in item)
+            return (<div className="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 scale-radio">
             <RadioButton className={this.props.store.timeMessage.theme + "TimeRadio TimeRadio"}
-                         key={index+label}
-                         data_id={index+label}
-                         label={label}
+                         key={index + key}
+                         data_id={index + key}
+                         label={item[key]}
                          onChange={this.setScale}
                          checked={this.props.store.timeMessage.dayScale === index.toString()}
             />
-        </div>
-    );
+        </div>)
+    };
 
     createDayScaleRadios = (radioLabels) => (
         <div className="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-9 row">
@@ -229,8 +232,9 @@ class TimeMessageGraphic extends Component {
 
     activitySwitcher = () => (
         <SwitchButton
-            className="activity-switch"
-            labelLeft="messages" labelRight="users"
+            className={"activity-switch "+ this.props.store.locale.locale}
+            labelLeft={this.props.store.locale.time.messages}
+            labelRight={this.props.store.locale.time.users}
             key="202"
             id="202"
             action={this.changeActivity}
@@ -261,7 +265,7 @@ class TimeMessageGraphic extends Component {
         }
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-11">
-                {buttonsVisibility && this.createHeader("Time activity")}
+                {buttonsVisibility && this.createHeader(this.props.store.locale.time.header)}
                 {buttonsVisibility && !this.props.store.chosen && this.activitySwitcher()}
                 <div>
                     <LineChart data={this.props.store.timeMessage.data}
@@ -272,31 +276,31 @@ class TimeMessageGraphic extends Component {
                             {buttonsVisibility &&
                             <div className="time-scale-radios row">
                                 <div className="d-none d-lg-block col-lg-3 col-xl-3 scale-label">
-                                    <label>Scale for:</label>
+                                    <label>{this.props.store.locale.time.buttons.scale_day.label}</label>
                                 </div>
-                                {this.createDayScaleRadios(dayScaleLabels)}
+                                {this.createDayScaleRadios(this.props.store.locale.time.buttons.scale_day.radios)}
                             </div>
                             }
                             {dateRangeVisibility && this.createDateRange()}
                             {timeScaleVisibility &&
                             <div className="time-scale-radios row">
                                 <div className="d-none d-lg-block col-lg-3 col-xl-3 scale-label">
-                                    <label>Scale every:</label>
+                                    <label>{this.props.store.locale.time.buttons.scale_time.label}</label>
                                 </div>
-                                {this.createTimeScaleRadios(timeScaleLabels)}
+                                {this.createTimeScaleRadios(this.props.store.locale.time.buttons.scale_time.radios)}
                             </div>
                             }
                             <div className="average-wrapper row">
                                 <div className="d-none d-lg-block average-item col-lg-3 col-xl-3"></div>
                                 <div className="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-9 row">
                                     {<div className="average-item col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 CheckBox">
-                                        {averageVisibility && this.createCheckbox('average', this.changeAverage, this.props.store.timeMessage.average)}
+                                        {averageVisibility && this.createCheckbox(this.props.store.locale.time.buttons.average.average, this.changeAverage, this.props.store.timeMessage.average)}
                                     </div>}
                                     {<div className={"average-item col-4 col-sm-4 col-md-4 col-xl-4 periods " + this.props.store.timeMessage.theme+"Periods"}>
-                                        {periodsVisibility && this.createInput('periods', this.changePeriods, this.props.store.timeMessage.periods)}
+                                        {periodsVisibility && this.createInput(this.props.store.locale.time.buttons.average.periods, this.changePeriods, this.props.store.timeMessage.periods)}
                                     </div>}
                                     {<div className="average-item col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 imposition CheckBox">
-                                        {impositionVisibility && this.createCheckbox('imposition', this.changeImposition, this.props.store.timeMessage.imposition, "imposition-checkbox")}
+                                        {impositionVisibility && this.createCheckbox(this.props.store.locale.time.buttons.average.imposition, this.changeImposition, this.props.store.timeMessage.imposition, "imposition-checkbox")}
                                     </div>}
                                 </div>
                             </div>

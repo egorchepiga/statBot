@@ -1,6 +1,7 @@
 class Bot {
 
     constructor(TOKEN, OPTIONS) {
+        this.LOCALE = require('./locale');
         const TelegramBot = require('../telegram-bot/src/telegram');
         this.SHA512 = require('js-sha512');
         this.DB = require('./DB');
@@ -41,7 +42,7 @@ class Bot {
     getFilePath(file_id) {
         return this.telegramBot.getFile(file_id)
             .then(res => {
-               return res.file_path;
+                return res.file_path;
             });
     }
 
@@ -176,11 +177,11 @@ class Bot {
                         member = res;
                         return this.telegramBot.getUserProfilePhotos(item.id)
                     }).then(res => {
-                        return this.DB.updateUserInfo(chat_id, item.id, res.photos[0][0].file_id, member.user.username ? member.user.username : member.user.id, member.user.username === item.user, db)
-                    }).catch(err => {
-                        //console.log(item.id + item.chosen + ' without profile_image');                                  //logging
-                        return {error: err, res: null}
-                    })
+                    return this.DB.updateUserInfo(chat_id, item.id, res.photos[0][0].file_id, member.user.username ? member.user.username : member.user.id, member.user.username === item.user, db)
+                }).catch(err => {
+                    //console.log(item.id + item.chosen + ' without profile_image');                                  //logging
+                    return {error: err, res: null}
+                })
             );
         });
         return Promise.all(promises);
@@ -230,28 +231,59 @@ class Bot {
         let self = this;
 
         this.telegramBot.on('callback_query', function (msg) {
+            if (msg.data === 'ru' || msg.data === 'en'){
+                this.answerCallbackQuery(msg.id, "", true);
+                self.DB.updateLocale(msg.from.id, msg.data);
+                self.createStatToken(msg.from.id)
+                    .then(res => {
+                        if (res.error) console.log(res.error);
+                        let link = self.LOCALE[msg.data].link+'\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
+                        let options = {
+                            reply_markup: JSON.stringify({
+                                inline_keyboard: [
+                                    [
+                                        {text: self.LOCALE[msg.data].buttons.recreate, callback_data: 'отчёт'},
+                                        {text: self.LOCALE[msg.data].buttons.delete, callback_data: 'обнулить'}
+                                    ]
+                                ]
+                            })
+                        };
+                        self.telegramBot.sendMessage( msg.from.id,
+                            self.LOCALE[msg.data].welcome_message, options)
+                            .then(res => {
+                                self.telegramBot.sendMessage( msg.from.id,link);
+                            });
+                    });
+            }
             if (msg.data === 'отчёт')
                 self.createStatToken(msg.from.id)
                     .then(res => {
                         if (res.error) console.log(res.error);
-                        let link = 'Link for admins:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
-                        this.answerCallbackQuery(msg.id, link, true);
-                        this.sendMessage( msg.message.chat.id, link);
+                        self.DB.getDBInfo(msg.from.id)
+                            .then(localeRes=> {
+                                let locale = localeRes.rows[0].locale;
+                                let link = self.LOCALE[locale].link+'\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
+                                this.answerCallbackQuery(msg.id, "", true);
+                                this.sendMessage( msg.message.chat.id, link);
+                            })
                     });
             else if (msg.data === 'обнулить') {
                 self.getUserChats(self.dbName(msg.from.id))
-                .then(res => {
-                    let arrPromises =[];
-                    for(let i=0; i < res.length; i++)
-                        arrPromises.push(self.telegramBot.leaveChat(res[i]))
-                    return arrPromises;
-                }).then(res => {
+                    .then(res => {
+                        let arrPromises =[];
+                        for(let i=0; i < res.length; i++)
+                            arrPromises.push(self.telegramBot.leaveChat(res[i]))
+                        return arrPromises;
+                    }).then(res => {
                     return self.renewBase(msg.from.id)
                 }).then(res => {
                     if (res.error) return({error : res.error, result: null});
-                    this.answerCallbackQuery(msg.id, 'success', false);
-                    this.sendMessage(  msg.message.chat.id, 'Logs was deleted. \n' +
-                        'Use /start to reboot bot.')
+                    self.DB.getDBInfo(msg.from.id)
+                        .then(localeRes=> {
+                            let locale = localeRes.rows[0].locale;
+                            this.answerCallbackQuery(msg.id, 'success', false);
+                            this.sendMessage(  msg.message.chat.id, self.LOCALE[locale].deleted)
+                        })
                 })
             }
         });
@@ -263,74 +295,85 @@ class Bot {
                         .then(res => {
                             if (res.error) console.log({error: res.error, result: null});
                             return this.createStatToken(msg.from.id)
-                        }) .then(res =>{
-                            if (res.error) console.log({error: res.error, result: null});
-                            let link = 'Link for admins:\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
-                            let options = {
-                                reply_markup: JSON.stringify({
-                                    inline_keyboard: [
-                                        [
-                                            {text: 'Recreate link', callback_data: 'отчёт'},
-                                            {text: 'Delete reports', callback_data: 'обнулить'}
-                                        ]
+                        }).then(res => {
+                        if (res.error) console.log({error: res.error, result: null});
+                        let options = {
+                            reply_markup: JSON.stringify({
+                                inline_keyboard: [
+                                    [
+                                        {text: 'English', callback_data: 'en'},
+                                        {text: 'Русский', callback_data: 'ru'}
                                     ]
-                                })
-                            };
-                        this.telegramBot.sendMessage( msg.chat.id,
-                            'Use buttons below to get link for editing your statistics or deleting it. ' +
-                            'Enjoy! \n', options)
-                            .then(res => {
-                                this.telegramBot.sendMessage( msg.chat.id,link);
-                            });
-
-                        });
+                                ]
+                            })
+                        };
+                        this.telegramBot.sendMessage( msg.chat.id,'Choose your language. \nВыберите язык.', options)
+                    });
                 }
                 else if (msg.text.indexOf('/help') !== -1) {
-                    this.telegramBot.sendMessage( msg.chat.id,"Add this bot to your chat group and type /report there. You can also get link for "+
-                    "administrators, which let you to change banned words and refresh users's names and images. \n@egorchepiga for feedback")
+                    self.DB.getDBInfo(msg.from.id)
+                        .then(localeRes=> {
+                            let locale = localeRes.rows[0].locale;
+                            this.telegramBot.sendMessage( msg.chat.id,self.LOCALE[locale].help);
+                        })
                 }
                 else if (msg.text.indexOf('/privacy') !== -1) {
-                    this.telegramBot.sendMessage( msg.chat.id,"Nice to see, that you worry about privacy too :) \nWe don't store any meta-data or your messages. We store your words " +
-                        "separately and you can see all what we store, cause we don't have extra space for meta ); \nUse this command in your chat group to protect /report command from non-admins.")
+                    self.DB.getDBInfo(msg.from.id)
+                        .then(localeRes=> {
+                            let locale = localeRes.rows[0].locale;
+                            this.telegramBot.sendMessage(msg.chat.id, self.LOCALE[locale].privacy.info)
+                        });
                 }
             } else if(msg.entities) {
                 if (msg.text.indexOf('/report@'+ this.BOT_NAME) !== -1) {
                     let chat = msg.chat.id;
+                    let privacy;
                     this.DB.isChatPrivate(msg.chat.id)
                         .then(res => {
-                            if (res) {
+                            privacy = res;
+                            return self.DB.getDBInfo(msg.from.id);
+                        }).then(localeRes=> {
+                            let locale = localeRes.rows[0].locale;
+                            if (privacy) {
+                                let chatMember;
                                 return this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
-                                    .then(function(data) {
-                                        if ((data.status === "creator") || (data.status === "administrator"))
+                                    .then(data => {
+                                        chatMember = data;
+                                        if ((chatMember.status === "creator") || (chatMember.status === "administrator"))
                                             return self.DB.findChat(msg.chat.id).then(
                                                 res => {
                                                     if (res.rows.length > 0)
                                                         return self.telegramBot.sendMessage( msg.chat.id,
-                                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id);
+                                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
                                                 }
                                             );
-                                        else return self.telegramBot.sendMessage( msg.chat.id, "This chat is private. Only administration has access, sorry ;(");
+                                        else return self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.msg);
                                     });
                             }
                             else return self.DB.findChat(msg.chat.id).then(
                                 res => {
                                     if (res.rows.length > 0)
                                         return self.telegramBot.sendMessage( msg.chat.id,
-                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id);
+                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
                                 }
                             );
                         });
                 } else if (msg.text.indexOf('/privacy@' + this.BOT_NAME) !== -1) {
+                    let chatMember;
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {
-                            if ((data.status === "creator") || (data.status === "administrator")){
+                            chatMember = data;
+                            return self.DB.getDBInfo(msg.from.id);
+                        }).then(localeRes=> {
+                            let locale = localeRes.rows[0].locale;
+                            if ((chatMember.status === "creator") || (chatMember.status === "administrator")){
                                 self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
-                                        let str = (res) ? 'Privacy mode enabled .':'Privacy mode disabled.' ;
+                                        let str = (res) ? self.LOCALE[locale].privacy.mode.enabled : self.LOCALE[locale].privacy.mode.disabled ;
                                         self.DB.setChatPrivacy(msg.chat.id, !res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });
-                            } else self.telegramBot.sendMessage( msg.chat.id, 'Privacy settings are only for admins.');
+                            } else self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.settings);
                         });
                 }
             } else {
@@ -340,8 +383,8 @@ class Bot {
                     }).map(word => {
                         return word.toLowerCase();
                     });
-                this.updateUsersWords(msg, words).then(res => {
-                });
+                //this.updateUsersWords(msg, words).then(res => {
+                //});
             }
         });
 

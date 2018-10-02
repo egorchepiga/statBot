@@ -183,7 +183,7 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
 function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, average, periods) {
     let timeArray = [],
         scaleFoo,
-        timeFromShow = new Date(fromTime) || new Date();
+        timeFromShow = fromTime != 0 ? new Date(fromTime) : new Date();
         timeFromShow.setHours(0);
         timeFromShow.setMinutes(0);
         timeFromShow.setSeconds(0);

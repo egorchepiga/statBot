@@ -25,11 +25,11 @@ class TopGraphic extends Component {
 
     forChatSwitcher = () => (
         <SwitchButton
-            className="words-switch"
+            className={"words-switch "+this.props.store.locale.locale}
             id="topWordsSwitcher"
             isChecked={!this.props.store.topWordsForChat.forChat}
-            labelLeft="average"
-            labelRight="users"
+            labelLeft={this.props.store.locale.top_words.common}
+            labelRight={this.props.store.locale.top_words.users}
             action={this.changeForchat}
             theme={this.props.store.topWordsForChat.theme}
         />
@@ -40,7 +40,7 @@ class TopGraphic extends Component {
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
                 {visibility && <div className="chartjs-size-monitor">
-                    {this.createHeader('Top words')}
+                    {this.createHeader(this.props.store.locale.top_words.header)}
                     {!this.props.store.chosen && this.forChatSwitcher()}
                     <GraphicBar data={this.props.store.topWordsForChat.data}
                                  options={this.props.store.topWordsForChat.options}/>

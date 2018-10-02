@@ -18,17 +18,19 @@ const buttonLabels = [
 class SummaryGraphic extends Component {
 
 
-    createDayScaleRadio = (label, index) => (
-        <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 scale-radio">
+    createDayScaleRadio = (item, index) => {
+        for(let key in item)
+        return (
+            <div className="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 scale-radio">
             <RadioButton className={this.props.store.summaryGraphic.theme + "TimeRadio TimeRadio"}
-                         key={index+label+"sum"}
-                         data_id={index+label+"sum"}
-                         label={label}
+                         key={index+key+"sum"}
+                         data_id={index+key+"sum"}
+                         label={item[key]}
                          onChange={this.setScale}
                          checked={this.props.store.summaryGraphic.dayScale === index.toString()}
             />
-        </div>
-    );
+        </div>)
+    }
 
     createDayScaleRadios = (radioLabels) => (
         <div className="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 row">
@@ -86,8 +88,8 @@ class SummaryGraphic extends Component {
         <SwitchButton
             className="summary-switch"
             id="top-button"
-            labelLeft="top"
-            labelRight="all"
+            labelLeft={this.props.store.locale.summary.top}
+            labelRight={this.props.store.locale.summary.all}
             isChecked={!this.props.store.summaryGraphic.topSwitch}
             action={this.changeTopSwitch}
             theme={this.props.store.summaryGraphic.theme}
@@ -100,14 +102,14 @@ class SummaryGraphic extends Component {
         return (
             <div className="graphich__first graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
                 <div>
-                    {buttonsVisibility && this.createHeader("Most Active")}
+                    {buttonsVisibility && this.createHeader(this.props.store.locale.summary.header)}
                     {buttonsVisibility && !this.props.store.chosen && this.summarySwitcher()}
                     <GraphicDoughnut data={this.props.store.summaryGraphic.graphic.data}
                                      options={this.props.store.summaryGraphic.graphic.options}/>
                 </div>
                 <div className="wrapper container summary-radios">
                     <div className="row ">
-                        {buttonsVisibility && this.createDayScaleRadios(buttonLabels)}
+                        {buttonsVisibility && this.createDayScaleRadios(this.props.store.locale.summary.checkBoxes)}
                     </div>
                 </div>
             </div>

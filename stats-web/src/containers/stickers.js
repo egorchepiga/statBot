@@ -44,8 +44,9 @@ class Stickers extends Component {
 
     forChatSwitcher = () => (
         <SwitchButton
-            className="stickers-switch"
-            labelLeft="average" labelRight="users"
+            className={"stickers-switch  "+this.props.store.locale.locale}
+            labelLeft={this.props.store.locale.top_stickers.common}
+            labelRight={this.props.store.locale.top_stickers.users}
             key="stickersSwitcher"
             id="stickersSwitcher"
             action={this.changeForChat}
@@ -58,7 +59,7 @@ class Stickers extends Component {
         let visibility = this.props.store.stickers.data;
         return (
             <div className="graphich__second graphich__wrapper col-sm-12 col-md-10 col-lg-10 col-xl-9">
-                {visibility && this.createHeader('Top stickers')}
+                {visibility && this.createHeader(this.props.store.locale.top_stickers.header)}
                 {visibility && !this.props.store.chosen && this.forChatSwitcher()}
                 <div>
                     {visibility && this.topStickers()}

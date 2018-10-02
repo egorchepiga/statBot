@@ -1,5 +1,6 @@
 import {combineReducers} from 'redux';
 import token from './getStats/token/reducer';
+import locale from './getStats/locale/reducer';
 import chosen from './getStats/chosen/reducer';
 import chats from './all/reducer';
 import chat from './chat/reducer';
@@ -14,6 +15,7 @@ import banForm from "./containers/banned_words/reducer";
 
 export default combineReducers({
     token: token,
+    locale: locale,
     chosen: chosen,
     stats: chats,
     summaryGraphic: summaryGraphic,

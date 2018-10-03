@@ -41,9 +41,8 @@ function transaction(sql, params) {
                             _params = params.slice(fromCount, fromCount + paramsCount);
                         } catch (e) {}
                         connection.query(queries[i], _params, (error, results, fields) => {
-                            if (error) connection.rollback(function() {
-                                throw error;
-                            });
+                            if (error) resolve({error, results});
+                            resArray.push(results);
                         });
                     }
                     connection.commit(function (error) {
@@ -107,7 +106,7 @@ function createChat(msg, db){
                 'PRIMARY KEY (id));';
             sql +=
                 'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
-                ' (word varchar(20) NOT NULL,' +
+                ' (word varchar(50) NOT NULL,' +
                 'summary int (10) DEFAULT 1 NOT NULL,' +
                 'PRIMARY KEY (word)); ';
             sql +=
@@ -129,7 +128,7 @@ function createUser(msg, db){
     let table = db + '.`' + msg.from.id + '#' + msg.chat.id + '`';
     let sql =
         'CREATE TABLE ' + table +
-        ' (word varchar(120) NOT NULL,' +
+        ' (word varchar(50) NOT NULL,' +
         'summary int (10) DEFAULT 1 NOT NULL,' +
         'PRIMARY KEY (word)); ';
     sql +=
@@ -237,7 +236,7 @@ function updateChatWords(msg, words, db) {
 
     sql += 'INSERT INTO ' + db +'.`'+ msg.chat.id + '#log` ' + 'VALUE (?, ?, ?, NOW() );';
 
-    words_buff.push(msg.message_id, msg.from.id, msg.from.username);
+    words_buff.push(msg.message_id, msg.from.id, msg.from.username || msg.from.id);
     return transaction(sql, words_buff)
 }
 

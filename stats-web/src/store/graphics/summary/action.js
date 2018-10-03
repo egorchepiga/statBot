@@ -54,9 +54,10 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         if (topSwitch) {
             let topSummary = [],
                 topUserNames = [];
-            while (topSummary.length < 3 && userNames.length > 1) {
+            while (topSummary.length < 3 && userNames.length > 0) {
                 let tmp = summary[0],
                     index = 0;
+                console.log(summary[0]);
                 for (let i = 1; i < summary.length; i++) {
                     if (tmp < summary[i]) {
                         tmp = summary[i];

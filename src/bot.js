@@ -130,6 +130,7 @@ class Bot {
                     chatPromises.push(
                         this.updateChatWords(msg, words, db)
                             .then(res => {
+                                console.log(res.error);
                                 if(!res.error) return {error : null, result: true};
                                 return this.createUser(msg, db)
                                     .then(res => {
@@ -178,8 +179,7 @@ class Bot {
                         return this.telegramBot.getUserProfilePhotos(item.id)
                     }).then(res => {
                     return this.DB.updateUserInfo(chat_id, item.id, res.photos[0][0].file_id, member.user.username ? member.user.username : member.user.id, member.user.username === item.user, db)
-                }).catch(err => {
-                    //console.log(item.id + item.chosen + ' without profile_image');                                  //logging
+                }).catch(err => {                     //logging
                     return {error: err, res: null}
                 })
             );
@@ -290,7 +290,6 @@ class Bot {
         });
 
         this.telegramBot.on('text', msg => {
-            console.log(msg);
             if (msg.from.id === msg.chat.id) {
                 if(msg.text === '/start') {
                     this.DB.createDB(msg.from.id)
@@ -385,8 +384,7 @@ class Bot {
                     }).map(word => {
                         return word.toLowerCase();
                     });
-                //this.updateUsersWords(msg, words).then(res => {
-                //});
+                this.updateUsersWords(msg, words)
             }
         });
 

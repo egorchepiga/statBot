@@ -101,7 +101,6 @@ class Bot {
     }
 
     createUser(msg, db) {
-        console.log("trying to create user");
         return this.DB.createUser(msg, db)
             .then(res => {
                 if (res.error) return {error: res.error, result: null};
@@ -138,7 +137,6 @@ class Bot {
                     chatPromises.push(
                         this.updateChatWords(msg, words, db)
                             .then(res => {
-                                console.log(res)
                                 if(!res.error) return {error : null, result: true};
                                 return this.createUser(msg, db)
                             })
@@ -338,7 +336,6 @@ class Bot {
                             privacy = res;
                             return self.DB.getDBInfo(msg.chat.id);
                         }).then(localeRes=> {
-                            console.log(localeRes);
                             let locale = localeRes.rows[0].locale;
                             if (privacy) {
                                 let chatMember;
@@ -408,7 +405,6 @@ class Bot {
                     }).map(word => {
                         return word.toLowerCase();
                     });
-                console.log(words);
                 this.updateUsersWords(msg, words)
             }
         });

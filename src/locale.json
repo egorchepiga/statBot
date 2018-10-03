@@ -5,9 +5,9 @@
     "link" : "Ссылка для администрации: ",
     "buttons" : {
       "recreate" : "Пересоздать ссылку",
-      "delete" : "Удалить отчёты"
+      "delete" : "Удалить все отчёты"
     },
-    "welcome_message" : "Бот не может получить доступ к вашей истории переписки, так что он начнёт формировать статистику с момента его добавления в группу.\nИспользуйте кнопки ниже для получения ссылки на изменение настроек отчёта и его удаления. Enjoy!\n",
+    "welcome_message" : "Бот не может получить доступ к вашей истории переписки, так что он начнёт формировать статистику с момента его добавления в группу. \n\nИспользуйте кнопки ниже для получения ссылки на изменение настроек отчёта и его удаления. Enjoy!\n",
     "help" : "Добавьте этого бога в групповой чат и напишите в ней /report. Вы также можете получить ссылку для администраторов, которая позволит вам изменять забаненные слова и обновлять информацию о пользователях. \nобратная связь @egorchepiga",
     "privacy" : {
       "info" : "Приятно видеть, что не только я забочусь об приватности :) \nМы не храним никакой дополнительной мета информации или ваши сообщения, мы храним лишь разделённые слова. Всё что мы храним - полностью отражено в отчётах. Используйте эту команду в групповых чатах, что бы защитить команду /report от пользователей.",
@@ -30,9 +30,9 @@
     "link" : "Link for administrators: ",
     "buttons" : {
       "recreate" : "Recreate link",
-      "delete" : "Delete reports"
+      "delete" : "Delete all reports"
     },
-    "welcome_message" : "Bot don't have access to your chat history, so reports will start since bot was added to group. \nUse buttons below to get link for editing your statistics or deleting it. Enjoy!\n",
+    "welcome_message" : "Bot don't have access to your chat history, so reports will start since bot was added to group. \n\nUse buttons below to get link for editing your statistics or deleting it. Enjoy!\n",
     "help" : "Add this bot to your chat group and type /report there. You can also get link for administrators, which let you to change banned words and refresh users's names and images. \n@egorchepiga for feedback",
     "privacy" : {
       "info" : "Nice to see, that you worry about privacy too :) \nWe don't store any meta-data or your messages. We store your words separately and you can see all what we store, cause we don't have extra space for meta ); \nUse this command in your chat group to protect /report command from non-admins.",

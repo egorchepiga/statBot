@@ -18,7 +18,11 @@
       },
       "settings" : "Настройки приватности разрешены только для администрации."
     },
-    "deleted" : "Отчёты удалены. Используйте /start для перезагрузки бота."
+    "deleted" : "Отчёты удалены. Используйте /start для перезагрузки бота.",
+    "destroy" : {
+      "success" : "Отчёт удалён, всем пока!",
+      "fail" : "Только администраторы могут уничтожить отчёт."
+    }
 
   },
   "en" : {
@@ -39,6 +43,11 @@
       },
       "settings" : "Privacy settings are only for admins."
     },
-    "deleted" : "Logs was deleted. \nUse /start to reboot bot"
+    "deleted" : "Logs was deleted. \nUse /start to reboot bot",
+    "destroy" :  {
+      "success" : "Report was deleted. Bye!",
+      "fail" : "Only admins have access for destroying report."
+    }
   }
+
 }

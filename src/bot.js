@@ -101,6 +101,7 @@ class Bot {
     }
 
     createUser(msg, db) {
+        console.log("trying to create user");
         return this.DB.createUser(msg, db)
             .then(res => {
                 if (res.error) return {error: res.error, result: null};
@@ -120,6 +121,13 @@ class Bot {
             });
     }
 
+    destroyChat (chat_id) {
+        return this.DB.clearChat(chat_id)
+            .then(res => {
+                if (!res.error) this.telegramBot.leaveChat(chat_id);
+            });
+    }
+
     updateUsersWords(msg, words) {
         return this.getUsersWithChat(msg.chat.id)
             .then(res => {
@@ -130,13 +138,9 @@ class Bot {
                     chatPromises.push(
                         this.updateChatWords(msg, words, db)
                             .then(res => {
-                                console.log(res.error);
+                                console.log(res)
                                 if(!res.error) return {error : null, result: true};
                                 return this.createUser(msg, db)
-                                    .then(res => {
-                                        if(res.error) return {error : res.error, result: null};
-                                        return this.updateChatWords(msg, words, db)
-                                    })
                             })
                     );
                 }
@@ -207,7 +211,7 @@ class Bot {
     }
 
     getUsersWithChat(chat_id) {
-        return this.DB.getUsersWithChat(chat_id)
+        return this.DB.getUserWithChat(chat_id)
     }
 
     getChatStats(chat_id, db) {
@@ -332,8 +336,9 @@ class Bot {
                     this.DB.isChatPrivate(msg.chat.id)
                         .then(res => {
                             privacy = res;
-                            return self.DB.getDBInfo(msg.from.id);
+                            return self.DB.getDBInfo(msg.chat.id);
                         }).then(localeRes=> {
+                            console.log(localeRes);
                             let locale = localeRes.rows[0].locale;
                             if (privacy) {
                                 let chatMember;
@@ -351,20 +356,22 @@ class Bot {
                                         else return self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.msg);
                                     });
                             }
-                            else return self.DB.findChat(msg.chat.id).then(
+                        else {
+                            return self.DB.findChat(msg.chat.id).then(
                                 res => {
                                     if (res.rows.length > 0)
-                                        return self.telegramBot.sendMessage( msg.chat.id,
+                                        return self.telegramBot.sendMessage(msg.chat.id,
                                             "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
                                 }
                             );
+                        }
                         });
                 } else if (msg.text.indexOf('/privacy@' + this.BOT_NAME) !== -1) {
                     let chatMember;
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {
                             chatMember = data;
-                            return self.DB.getDBInfo(msg.from.id);
+                            return self.DB.getDBInfo(msg.chat.id);
                         }).then(localeRes=> {
                             let locale = localeRes.rows[0].locale;
                             if ((chatMember.status === "creator") || (chatMember.status === "administrator")){
@@ -377,13 +384,31 @@ class Bot {
                             } else self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.settings);
                         });
                 }
-            } else {
-                let words = msg.text.split(/[^a-zA-Zа-яА-Я]/)
+                else if (msg.text.indexOf('/destroy@'+ this.BOT_NAME) !== -1) {
+                    let chatMember;
+                    this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
+                        .then(function(data) {
+                            chatMember = data;
+                            return self.DB.getDBInfo(msg.chat.id);
+                        }).then(localeRes=> {
+                        let locale = localeRes.rows[0].locale;
+                        if ((chatMember.status === "creator") || (chatMember.status === "administrator")){
+                            self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].destroy.success)
+                                .then(res =>
+                                    this.destroyChat(msg.chat.id)
+                                );
+                        } else self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].destroy.fail);
+                    });
+                }
+            }
+            else {
+                let words = msg.text.split(/[^a-zA-Zа-яА-Яё]/)
                     .filter(word => {
                         return (word !== '' && word.length > 1)
                     }).map(word => {
                         return word.toLowerCase();
                     });
+                console.log(words);
                 this.updateUsersWords(msg, words)
             }
         });

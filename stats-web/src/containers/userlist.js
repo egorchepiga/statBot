@@ -81,7 +81,7 @@ class UserList extends Component {
         //let regExp = new RegExp('^[' + this.props.store.userList.find + ']*$');
         let users = usersStore.slice();
         let tmp = [];
-        while (users.length > 0 && (this.props.store.userList.showAll  || tmp.length < 6)) {
+        while (users.length > 0 && (this.props.store.userList.showAll  || tmp.length < 7)) {
             let user = users[0],
                 index = 0;
             for (let i = 1; i < users.length; i++) {

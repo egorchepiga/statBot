@@ -47,6 +47,7 @@ const  prepareTimeForUsers = (time, scale) => {
     }
     for (let user in obj)
         timeArray.push(new Date(date));
+    console.log({timeArray})
     return timeArray.slice();
 };
 
@@ -125,7 +126,6 @@ export const createTimeMessage = (timeArray, dayScale = '0', imposition = false,
 function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
                              dayScale, timeScale, fromTime, toTime,
                              imposition, average, periods, messageActivity, colorPresetIndex) {
-    let locale = new URL(window.location).searchParams.get("l") || 'en';
     let dataSets = [];
     let B = 20;
     let R = 235;
@@ -172,7 +172,7 @@ function createObjForReducer(timeArray, preparedTimeArray, timeGraphicData,
                 yAxes: [{
                     scaleLabel: {
                         display: true,
-                        labelString: messageActivity ? locale === 'ru' ? 'сообщения' : 'messages' : locale === 'ru' ? 'пользователи' : 'users'
+                        labelString: messageActivity ? 'сообщения' : 'пользователи'
                     }
                 }]
             }

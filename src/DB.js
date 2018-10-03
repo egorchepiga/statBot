@@ -78,12 +78,15 @@ function isChatPrivate(chat_id) {
 function findChat(chat_id) {
     return query('SELECT * FROM ' + MAIN_BASE +'.`ROOMS` WHERE chat_id = ?',[chat_id])
         .then(res => {
-            return getDBInfo(res.rows[0].database_name);
+            return getDBInfo(chat_id);
         })
 }
 
-function getDBInfo(database_name) {
-    return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE database_name = ?',[database_name]);
+function getDBInfo(chat_id) {
+    return getUserWithChat(chat_id)
+        .then(res => {
+            return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE database_name = ?',[res.rows[0].database_name]);
+        })
 }
 
 function createChat(msg, db){
@@ -155,12 +158,35 @@ function createDB(user_id) {
     );
 }
 
+function clearChat(chat_id) {
+    let dbName;
+    let db;
+    return getUserWithChat(chat_id)
+        .then(res => {
+            dbName = '`' +res.rows[0].database_name + '#telegram`';
+            db = res.rows[0].database_name;
+            return query('SHOW TABLES FROM ' + dbName );
+        }).then(res => {
+            if (res.error) return {error: res.error, result: null};
+            let tables = [];
+            for (let i = 0; i < res.rows.length; i++)
+                tables.push(Object.values(res.rows[i])[0]);
+            tables = tables.filter(tableName => {
+                return (tableName.indexOf(chat_id) !== -1)
+            });
+            let sql = 'DELETE FROM ' + MAIN_BASE + '.`ROOMS` ' +
+                'WHERE database_name = ? and chat_id = ?;';
+            tables.map((item, index) => {
+                sql += 'DROP TABLE ' + dbName +'.`'+ item +'`;'
+            });
+            return transaction(sql, [db, chat_id])
+        })
+}
+
 function clearBase(base) {
     let sql = 'DROP DATABASE `' + base +'#telegram`;';
     sql += 'DELETE FROM ' + MAIN_BASE + '.`ROOMS` ' +
         'WHERE database_name = ?;';
-    /*sql += 'DELETE FROM ' + mainBase + '.`DATABASES` ' +
-        'WHERE database_name = ?;';*/
     return transaction(sql, [ base, base ]);
 }
 
@@ -295,7 +321,7 @@ function updateBannedWords(user_id, chat_id, bannedWords) {
 }
 
 function getBannedWords(chat_id, user_id) {
-    return getUsersWithChat(chat_id, MAIN_BASE)
+    return getUserWithChat(chat_id, MAIN_BASE)
         .then(res => {
             for (let i = 0; i < res.rows.length; i++)
                 if (res.rows[i].database_name === user_id) {
@@ -340,7 +366,7 @@ function getChatsNames(arrChatId){
 }
 
 function getSummaryForUsers(arrUserID, chat_id, db) {
-    return getUsersWithChat(chat_id, MAIN_BASE)
+    return getUserWithChat(chat_id, MAIN_BASE)
         .then(res => {
             let bannedWords = JSON.parse(res.rows[0].banned_words),
                 arrPromises = [],
@@ -384,7 +410,7 @@ function getUserTables(baseName){
         });
 }
 
-function getUsersWithChat(chatId ) {
+function getUserWithChat(chatId) {
     let sql =
         'SELECT database_name, chat_name, banned_words ' +
         'FROM '+ MAIN_BASE +'.`ROOMS` ' +
@@ -470,6 +496,7 @@ function getUsersFromChat(chatId, db) {
 module.exports = {
     createChat : createChat,
     createUser : createUser,
+    clearChat : clearChat,
     authorize : authorize,
     updateChatWords : updateChatWords,
     updateBannedWords : updateBannedWords,
@@ -477,7 +504,7 @@ module.exports = {
     createDB : createDB,
     getChatsNames : getChatsNames,
     getUserTables : getUserTables,
-    getUsersWithChat : getUsersWithChat,
+    getUserWithChat : getUserWithChat,
     getChatStats : getChatStats,
     getChatActivity : getChatActivity,
     getTopWords : getWords,

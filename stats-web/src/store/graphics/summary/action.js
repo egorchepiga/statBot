@@ -55,7 +55,7 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         if (topSwitch) {
             let topSummary = [],
                 topUserNames = [];
-            while (topSummary.length < 3 && userNames.length > 1) {
+            while (topSummary.length < 5 && userNames.length > 1) {
                 let tmp = summary[0],
                     index = 0;
                 for (let i = 1; i < summary.length; i++) {
@@ -72,7 +72,7 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
             let sum = 0;
             if(userNames.length > 1) {
                 for (let i = 0; i < summary.length; i++)
-                    sum += summary[i];
+                    sum += isNaN(summary[i]) ? 0 : summary[i];
                 topSummary.push(sum);
                 topUserNames.push('other');
             }

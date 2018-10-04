@@ -268,7 +268,7 @@ function updateChatWords(msg, words, db) {
 
 function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
     let last = promisesAnswers.length-1;
-    if (promisesAnswers[last].error) return {error : promisesAnswers[last].error, res: null}
+    if (promisesAnswers[last].error) return {error : promisesAnswers[last].error, res: null};
     let sql = '',
         arrSQLPlaceholder = [],
         j = 0;

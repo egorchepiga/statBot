@@ -53,7 +53,7 @@ export const loadImages = ({users, chat}) =>
                     return json.path;
                 })
             );
-        if (chat.img)
+        if (chat.img) {
             arrPromise.push(
                 fetch(`https://egorchepiga.ru/tg-stats/file_id/` + chat.img, {
                     headers: {
@@ -66,6 +66,7 @@ export const loadImages = ({users, chat}) =>
                     return json.path;
                 })
             );
+        }
         return Promise.all(arrPromise)
             .then(arrRes => {
                 let resIndex = 0;
@@ -83,7 +84,8 @@ export const loadImages = ({users, chat}) =>
                     readyStickers[arrRes[resIndex++]] = chat.top_stickers[sticker] ;
 
                 chat.top_stickers = readyStickers;
-                if (chat.img) chat.img = arrRes[resIndex];
+                if (chat.img)
+                    chat.img = arrRes[resIndex];
                 dispatch({type: chatTypes.SET_USERS_IMAGE, payload: {users, images_ready : true, readyStickers }});
                 return {users, chat};
             });

@@ -45,7 +45,7 @@ class ChatProfile extends Component {
                 </div>
                 <div className="chat-info-container">
                 <div className={"chat-info__photo" + chosen}>
-                    <img src={img !== null && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}/>
+                    <img src={img !== null && img !== undefined && img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + img : TELEGRAM_ICON}/>
                 </div>
                 <div className="chat-info-label" >
                     <div className="chat-info-more">

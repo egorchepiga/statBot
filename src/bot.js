@@ -98,6 +98,11 @@ class Bot {
     createChat(msg) {
         let db = this.dbName(msg.from.id);
         return this.DB.createChat(msg, db )
+            .then( res => {
+                return this.getChatStats(msg.chat.id, db)
+            }).then(res => {
+                return this.updateUsersInfo(res, msg.chat.id, db)
+            });
     }
 
     createUser(msg, db) {

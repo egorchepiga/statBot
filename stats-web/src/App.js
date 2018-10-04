@@ -52,12 +52,18 @@ class App extends Component {
         this.props.setToken({token, admin_token});
         this.props.setLocale(locale);
 
-        if (admin_token || token==='demo') {
-            this.props.getChats({token, admin_token})
+        if (token) {
+            this.props.getChats({token, admin_token});
+            if(token === 'demo') {
+                this.props.setChat({token, chat_id: "-1001106906533", theme: theme});
+                this.props.changeActive();
+            }
         }
         else if (chat) {
             this.props.changeActive();
             this.props.setChat({token, chat_id: chat, theme: theme})
+        } else if (admin_token) {
+            this.props.getChats({token, admin_token});
         }
     }
 

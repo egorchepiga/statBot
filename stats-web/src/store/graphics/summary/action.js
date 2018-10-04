@@ -20,6 +20,8 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         today.setMinutes(0);
         today.setSeconds(0);
 
+        if(new URL(window.location).searchParams.get("token") === 'demo') today = new Date(2018, 8, 29, 0,0,0,0);
+
         for(let user in data.users) {
             users[data.users[user].user] = 0;
         }

@@ -1,0 +1,57 @@
+{
+  "bot" : {
+    "port" : "3001",
+    "privkey": "privkey.pem",
+    "cert" :   "fullchain.pem",
+    "TOKEN": "54123517:AAasd123zxczGyJYFUC00zLSmKq56mgvAQVZ",
+    "NAME": "name_bot",
+    "mainBase": "stats",
+    "topSize" : "5",
+    "bannedWords" : [
+      "и", "не", "ты", "на", "это", "что", "как", "то", "но",
+      "тебя", "тебе", "про", "по", "так", "за", "если", "все",
+      "уже", "мне", "ну", "для", "же", "мы", "меня", "они",
+      "еще", "бы", "от", "она", "вот", "тут" , "там", "он",
+      "их", "чо", "да", "нет", "из", "до", "им"
+    ]
+  },
+  "SOCKS5": {
+    "socksHost": "IP",
+    "socksPort": "PORT",
+    "socksUsername": "USERNAME",
+    "socksPassword": "PASSWORD"
+  },
+  "db": {
+    "clients": {
+      "name": "mysql",
+      "host": "localhost",
+      "port": "3306",
+      "user": "username",
+      "password": "password",
+      "database": "stats"
+    },
+  },
+  "secret": "234dsfsFASD134scvGSDF21q3zcASD",
+  "key": "auth",
+  "expires": "6",
+  "server": {
+    "global": "localhost",
+    "local": "localhost",
+    "port": "3000",
+    "SSLport": "3001"
+  },
+  "length": {
+    "max": {
+      "firstName":"20",
+      "lastName": "20",
+      "password": "20",
+      "login": "20"
+    },
+    "min": {
+      "firstName":"1",
+      "lastName": "1",
+      "password": "1",
+      "login": "1"
+    }
+  }
+}

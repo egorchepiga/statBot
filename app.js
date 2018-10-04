@@ -33,7 +33,7 @@ const BOT = require('./src/bot').Bot,
     KEY = fs.readFileSync(CONFIG.bot.privkey),
     CERT = fs.readFileSync(CONFIG.bot.cert),
     SSL_CREDENTIALS = {key: KEY, cert: CERT},
-    SSL_PORT = 3000,
+    SSL_PORT = CONFIG.server.port,
     GET_SOCKS_OPTIONS = {
         ...OPTIONS.request.agentOptions,
         ...SSL_CREDENTIALS,

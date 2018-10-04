@@ -48,8 +48,10 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         let summary = [],
             userNames = [];
         for (let user in users) {
-            userNames.push(user);
-            summary.push(users[user]);
+            if(users[user] > 0) {
+                userNames.push(user);
+                summary.push(users[user]);
+            }
         }
 
         if (topSwitch) {

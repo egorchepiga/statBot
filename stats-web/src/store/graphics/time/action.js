@@ -47,7 +47,6 @@ const  prepareTimeForUsers = (time, scale) => {
     }
     for (let user in obj)
         timeArray.push(new Date(date));
-    console.log({timeArray})
     return timeArray.slice();
 };
 
@@ -330,16 +329,16 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
 // func - функция шаблон
 
 function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
-    timeFromShow.setHours(0);
-    timeFromShow.setMinutes(0);
-    timeFromShow.setSeconds(0);
+    // timeFromShow.setHours(0);
+    // timeFromShow.setMinutes(0);
+    // timeFromShow.setSeconds(0);
     let tmpTimeFromShow = new Date(timeFromShow),
         hours = tmpTimeFromShow.getHours(),
         placeholder = {},
         date = timeToShow === 0 ? new Date(arr[arr.length-1]) : new Date(timeToShow);
     //date.setHours(23);                                                             //последнее учитываемое время за день
-    date.setMinutes(0);                                                            //или не изменяя время для грубого режима
-    date.setSeconds(0);
+    // date.setMinutes(0);                                                            //или не изменяя время для грубого режима
+    // date.setSeconds(0);
     while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < последнее учитываемое время за день
         tmpTimeFromShow.setHours(hours);
         hours = tmpTimeFromShow.getHours() + 1;                                    //Увеличиваем счётчик первой записи на 1 час вперёд

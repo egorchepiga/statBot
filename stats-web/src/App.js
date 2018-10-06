@@ -15,6 +15,7 @@ import UserList from './containers/userlist';
 import ChatProfile from './containers/chat_profile'
 import BanForm from './containers/banned_words'
 import RadioButton from './components/radiobutton';
+import UnauthorizedScreen from './containers/unauthorized';
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
 import {loadChat, loadImages, setColorTheme} from "./store/chat/action";
@@ -61,6 +62,9 @@ class App extends Component {
             this.props.setChat({token, chat_id: chat, theme: theme})
         } else if (admin_token) {
             this.props.getChats({token, admin_token});
+        } else {
+            this.props.changeActive();
+            this.props.setToken({token: "unauthorized"})
         }
     }
 
@@ -173,6 +177,7 @@ class App extends Component {
                 nav={this.createNavigationComponents(this.props.store.stats.chats)} >
                 <div className="App">
                     <main id="panel" className="slideout-panel slideout-panel-left">
+                        <UnauthorizedScreen/>
                         <div className="header-buttons">
                             {admMode && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
@@ -217,6 +222,9 @@ export default connect(
         },
         getChats: ({token, admin_token}) => {
             dispatch(loadChats({token, admin_token}))
+                .then(res =>{
+                    if(res['unauthorized']) dispatch(setToken({token: 'unauthorized'}))
+                });
         },
         changeActive: () => {
             dispatch(changeActive())
@@ -257,18 +265,21 @@ export default connect(
 function setChat(dispatch,{token, chat_id, theme}) {
     dispatch(loadChat({token, chat_id}))
         .then(data => {
-            data.theme = theme;
-            dispatch(loadImages(data))
-                .then(res => {
-                    res.name = data.name;
-                    res.theme = theme;
-                    dispatch(createTopStickers(res));
-                });
-            dispatch(createSummaryGraphic(data));
-            dispatch(createTopWordsForChat(data));
-            dispatch(createTopStickers(data));
-            dispatch(createTimeMessage(data.timeReady,'0',0,0,0, calculateTimeScale(data.timeReady[0]),
-                false, 1, true, false, [], theme));
-            dispatch(calculateInfo(data.time,'0'))
+            if(data['unauthorized']) dispatch(setToken({token: 'unauthorized'}))
+            else {
+                data.theme = theme;
+                dispatch(loadImages(data))
+                    .then(res => {
+                        res.name = data.name;
+                        res.theme = theme;
+                        dispatch(createTopStickers(res));
+                    });
+                dispatch(createSummaryGraphic(data));
+                dispatch(createTopWordsForChat(data));
+                dispatch(createTopStickers(data));
+                dispatch(createTimeMessage(data.timeReady, '0', 0, 0, 0, calculateTimeScale(data.timeReady[0]),
+                    false, 1, true, false, [], theme));
+                dispatch(calculateInfo(data.time, '0'))
+            }
         });
 }

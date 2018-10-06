@@ -1,0 +1,40 @@
+.unauthorized img {
+  position: relative;
+  max-width: 200px;
+  margin-top: 8%; }
+
+.unauthorized-header label {
+  margin-top: 5%;
+  font-size: 50px;
+  opacity: 0;
+  animation: unauthorized-header ease-in 1 forwards 1s;
+  animation-delay: 0.5s; }
+
+.security {
+  -webkit-animation: kick cubic-bezier(0.08, 0.96, 0, 0.5) 1 forwards 5.5s;
+  -moz-animation: kick cubic-bezier(0.08, 0.96, 0, 0) 1 forwards 6s;
+  animation: kick cubic-bezier(0.02, 0.69, 0.24, 0.94) 1 forwards 5.5s; }
+
+.navalny {
+  -webkit-animation: navalnyKicked cubic-bezier(0.13, -0.03, 0, 1.22) 1 forwards 6s;
+  -moz-animation: navalnyKicked cubic-bezier(0.55, 0.02, 0, 1) 1 forwards 6s;
+  animation: navalnyKicked cubic-bezier(0.21, 0.02, 0, 1) 1 forwards 6s; }
+
+/* make keyframes that tell the start state and the end state of our object */
+@-webkit-keyframes kick {
+  from {
+    right: -7%; }
+  to {
+    right: 28%; } }
+
+@-webkit-keyframes navalnyKicked {
+  from {
+    right: 0%; }
+  to {
+    right: 33%; } }
+
+@-webkit-keyframes unauthorized-header {
+  from {
+    opacity: 0; }
+  to {
+    opacity: 1; } }

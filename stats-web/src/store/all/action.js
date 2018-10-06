@@ -10,7 +10,8 @@ export const loadChats = ({token, admin_token}) => {
             },
             method: "GET"
         }).then(async response => {
-            let res = await response.json();
+            let res = await response;
+            if(res.status === 401) return {"unauthorized" : "unauthorized" };
             dispatch({type: types.SET_CHATS, payload: res});
             return res;
         }).catch((er) => {

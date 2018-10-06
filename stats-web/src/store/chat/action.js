@@ -113,7 +113,7 @@ export const loadChat = ({token, chat_id}) =>
             chat.timeReady = times;
             dispatch({type: chatTypes.SET_CHAT, payload: chat});
             return chat;
-        }).catch((er) => {
-            console.log("Error: ",er)
+        }).catch((err) => {
+            return {"unauthorized" : "unauthorized"}
         });
     };

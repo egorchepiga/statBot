@@ -82,6 +82,11 @@ function findChat(chat_id) {
         })
 }
 
+
+function getDBInfoByUserId(user_id) {
+    return query('SELECT * FROM ' + MAIN_BASE + '.`DATABASES` WHERE database_name = ?', [user_id]);
+}
+
 function getDBInfo(chat_id) {
     return getUserWithChat(chat_id)
         .then(res => {
@@ -90,41 +95,45 @@ function getDBInfo(chat_id) {
 }
 
 function createChat(msg, db){
-            let sql =
-                'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
-                '(id int (10) NOT NULL,' +
-                'user_id varchar(120) NOT NULL,' +
-                'username varchar(120) NOT NULL,' +
-                'time DATETIME (6),' +
-                'PRIMARY KEY (id));';
-            sql +=
-                'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
-                '(id varchar(120) NOT NULL,' +
-                'summary int (10) DEFAULT 0,' +
-                'username varchar(120),' +
-                'top_words varchar(350) NULL,' +
-                'top_stickers varchar(350) NULL,' +
-                'up_to_date BOOLEAN DEFAULT TRUE,' +
-                'img varchar(100) DEFAULT NULL,' +
-                'PRIMARY KEY (id));';
-            sql +=
-                'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
-                ' (word varchar(50) NOT NULL,' +
-                'summary int (10) DEFAULT 1 NOT NULL,' +
-                'PRIMARY KEY (word)); ';
-            sql +=
-                'INSERT INTO '+ MAIN_BASE + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
-            sql +=
-                'INSERT INTO '+ db + '.`' + msg.chat.id + '` ' +
-                '(`id`,`username`) VALUES (?, ?);';
-            return transaction(sql,[
-                msg.chat.id + msg.from.id,
-                msg.chat.id,
-                msg.from.id,
-                msg.chat.title,
-                msg.chat.id,
-                msg.chat.title
-            ]);
+    let sql =
+        'CREATE TABLE ' + db + '.`' + msg.chat.id + '#log` ' +
+        '(id int (10) NOT NULL,' +
+        'user_id varchar(120) NOT NULL,' +
+        'username varchar(120) NOT NULL,' +
+        'time DATETIME (6),' +
+        'PRIMARY KEY (id));';
+    sql +=
+        'CREATE TABLE ' + db + '.`' + msg.chat.id + '` ' +
+        '(id varchar(120) NOT NULL,' +
+        'summary int (10) DEFAULT 0,' +
+        'username varchar(120),' +
+        'top_words varchar(350) NULL,' +
+        'top_stickers varchar(350) NULL,' +
+        'up_to_date BOOLEAN DEFAULT TRUE,' +
+        'img varchar(100) DEFAULT NULL,' +
+        'PRIMARY KEY (id));';
+    sql +=
+        'CREATE TABLE ' + db + '.`' + msg.chat.id + '#' + msg.chat.id + '` ' +
+        ' (word varchar(50) NOT NULL,' +
+        'summary int (10) DEFAULT 1 NOT NULL,' +
+        'PRIMARY KEY (word)); ';
+    sql +=
+        'INSERT INTO '+ MAIN_BASE + '.`ROOMS` (`id`, `chat_id`, `database_name`, `chat_name`) VALUE (?, ?, ?, ?);';
+    sql +=
+        'INSERT INTO '+ db + '.`' + msg.chat.id + '` ' +
+        '(`id`,`username`) VALUES (?, ?);';
+    sql +=
+        'INSERT INTO '+ db + '.`' + msg.chat.id +'#' + msg.chat.id + '` ' +
+        '(`word`,`summary`) VALUES (\'Messages count\', 1);';
+
+    return transaction(sql,[
+        msg.chat.id + msg.from.id,
+        msg.chat.id,
+        msg.from.id,
+        msg.chat.title,
+        msg.chat.id,
+        msg.chat.title
+    ]).then(res=> console.log(res));
 }
 
 function createUser(msg, db){
@@ -240,6 +249,19 @@ function updateRoom(chat_id, username) {
         'SET chat_name = ? ' +
         'WHERE chat_id = ? ;';
     return query(sql, [username, chat_id])
+}
+
+function updateChatWordsIfFailed(msg, words, db) {
+    let words_buff = words.slice(0),
+        table = db +'.`'+ msg.from.id + '#' + msg.chat.id + '` ',
+        sql = 'INSERT INTO ' + table +
+            ' (`word`) VALUES (?)';
+    words_buff.unshift('Messages count');
+    for (let i = 0; i < words_buff.length-1; i++)
+        sql += ', (?)';
+    sql += ' ON DUPLICATE KEY UPDATE summary=summary+1;';
+    return query(sql, words_buff)
+
 }
 
 function updateChatWords(msg, words, db) {
@@ -499,6 +521,7 @@ module.exports = {
     clearChat : clearChat,
     authorize : authorize,
     updateChatWords : updateChatWords,
+    updateChatWordsIfFailed : updateChatWordsIfFailed,
     updateBannedWords : updateBannedWords,
     createStatToken : createStatToken,
     createDB : createDB,
@@ -509,6 +532,7 @@ module.exports = {
     getChatActivity : getChatActivity,
     getTopWords : getWords,
     getDBInfo : getDBInfo,
+    getDBInfoByUserId: getDBInfoByUserId,
     updateChatStats : updateChatStats,
     updateUserInfo : updateUserInfo,
     updateLocale : updateLocale,

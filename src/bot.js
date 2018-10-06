@@ -117,7 +117,7 @@ class Bot {
 
     createStatToken (user_id) {
         let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37),
-            adminToken = this.SHA512(this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
+            adminToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
         return this.DB.createStatToken(user_id, botToken, adminToken)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
@@ -144,11 +144,19 @@ class Bot {
                             .then(res => {
                                 if(!res.error) return {error : null, result: true};
                                 return this.createUser(msg, db)
+                                    .then(res => {
+                                        if(res.error) return {error : res.error, result: null};
+                                        return this.updateChatWordsIfFailed(msg, words, db)
+                                    })
                             })
                     );
                 }
                 return Promise.all(chatPromises)
             });
+    }
+
+    updateChatWordsIfFailed(msg, words, db) {
+        return this.DB.updateChatWordsIfFailed(msg, words, db);
     }
 
     updateChatWords(msg, words, db) {
@@ -201,10 +209,12 @@ class Bot {
     getChats(token, admin_token){
         return this.authorization(token)
             .then(res => {
-                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                if (!res.result || res.result[0].admin_token !== admin_token || token === 0)
+                    return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;
                 return this.getUserChats(this.dbName(user_id))
             }).then(res => {
+                if (res.error) return res;
                 return this.DB.getChatsNames(res)
             });
     }
@@ -239,7 +249,7 @@ class Bot {
 
         this.telegramBot.on('callback_query', function (msg) {
             if (msg.data === 'ru' || msg.data === 'en'){
-                if (msg.data !== 'en') self.telegramBot.sendMessage( msg.from.id, self.LOCALE[msg.data].about);
+                self.telegramBot.sendMessage( msg.from.id, self.LOCALE[msg.data].about);
                 this.answerCallbackQuery(msg.id, "", true);
                 self.DB.updateLocale(msg.from.id, msg.data);
                 self.createStatToken(msg.from.id)
@@ -267,7 +277,7 @@ class Bot {
                 self.createStatToken(msg.from.id)
                     .then(res => {
                         if (res.error) console.log(res.error);
-                        self.DB.getDBInfo(msg.from.id)
+                        self.DB.getDBInfoByUserId(msg.from.id)
                             .then(localeRes=> {
                                 let locale = localeRes.rows[0].locale;
                                 let link = self.LOCALE[locale].link+'\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
@@ -319,14 +329,14 @@ class Bot {
                     });
                 }
                 else if (msg.text.indexOf('/help') !== -1) {
-                    self.DB.getDBInfo(msg.from.id)
+                    self.DB.getDBInfoByUserId(msg.from.id)
                         .then(localeRes=> {
                             let locale = localeRes.rows[0].locale;
                             this.telegramBot.sendMessage( msg.chat.id,self.LOCALE[locale].help);
                         })
                 }
                 else if (msg.text.indexOf('/privacy') !== -1) {
-                    self.DB.getDBInfo(msg.from.id)
+                    self.DB.getDBInfoByUserId(msg.from.id)
                         .then(localeRes=> {
                             let locale = localeRes.rows[0].locale;
                             this.telegramBot.sendMessage(msg.chat.id, self.LOCALE[locale].privacy.info)
@@ -368,7 +378,7 @@ class Bot {
                             );
                         }
                         });
-                } else if (msg.text.indexOf('/privacy@' + this.BOT_NAME) !== -1) {
+                } else if (msg.text.indexOf('/private@' + this.BOT_NAME) !== -1) {
                     let chatMember;
                     this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                         .then(function(data) {

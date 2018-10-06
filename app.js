@@ -65,8 +65,7 @@ app.get(`/chats/`, (req, res) => {
     if (token === "demo") res.send(DEMO_CHATS.chats);
     else bot.getChats(token,admin_token)
         .then(botRes => {
-            if (res.error) {
-                console.log(botRes);
+            if (botRes.error) {
                 res.sendStatus(401);
             } else {
                 res.send(JSON.stringify(botRes));

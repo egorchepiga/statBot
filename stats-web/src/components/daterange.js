@@ -36,7 +36,11 @@ class DateRange extends Component {
             endDate.toDate(),
             timeScale,
             this.props.store.timeMessage.average,
-            this.props.store.timeMessage.periods
+            this.props.store.timeMessage.periods,
+            this.props.store.timeMessage.messageActivity,
+            this.props.store.chosen,
+            this.props.store.chat.time,
+            this.props.store.timeMessage.theme
         );
     };
 
@@ -75,8 +79,8 @@ export default connect(
         store: state
     }),
     dispatch => ({
-        setDataThirdGraphic: (time, dayScale, imposition, fromTime, toTime, timeScale, average, periods) => {
-            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, timeScale, average, periods))
+        setDataThirdGraphic: (time, dayScale, imposition, fromTime, toTime, timeScale, average, periods, messageActivity, chosen, RAWTime, colorPresetIndex) => {
+            dispatch(createTimeMessage(time, dayScale, imposition, fromTime, toTime, timeScale, average, periods, messageActivity, chosen, RAWTime, colorPresetIndex))
         }
     })
 )(DateRange)

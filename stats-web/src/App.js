@@ -16,9 +16,10 @@ import ChatProfile from './containers/chat_profile'
 import BanForm from './containers/banned_words'
 import RadioButton from './components/radiobutton';
 import UnauthorizedScreen from './containers/unauthorized';
+import EmptyList from './containers/empty';
 import {createTimeMessage} from "./store/graphics/time/action";
 import {createTopWordsForChat} from "./store/graphics/top/action";
-import {loadChat, loadImages, setColorTheme} from "./store/chat/action";
+import {loadChat, loadImages, setColorTheme, deleteChat} from "./store/chat/action";
 import {calculateTimeScale} from "./common/timeHelpers";
 import {createSummaryGraphic} from "./store/graphics/summary/action";
 import {createTopStickers} from "./store/graphics/stickers_top/action";
@@ -42,10 +43,7 @@ class App extends Component {
         let theme = getCookie('theme') || 'Random';
         this.props.setTheme({presetName: theme});
 
-        //let reg = /(?<=ru\/)/;
         let url = new URL(window.location);
-        /*let index = url.match(reg).index;
-        let token = url.slice(index);*/
         let token = url.searchParams.get("token");
         let admin_token = url.searchParams.get("adm");
         let chat = url.searchParams.get("chat");
@@ -69,7 +67,6 @@ class App extends Component {
     }
 
     changeTheme = (event) => {
-        console.log(event);
         document.cookie = `theme=${event.target.id}; path=/;`;
         let a = Object.create(this.props.store.chat);
         a.theme = event.target.id;
@@ -152,12 +149,30 @@ class App extends Component {
         });
     };
 
+    deleteChat = () => {
+        this.props.destroyChat({
+            token: this.props.store.token.token,
+            admin_token: this.props.store.token.admin_token,
+            chat_id:this.props.store.chat.id,
+        });
+    };
+
     createButtonRefresh = () => (
         <Button className="btn-fr"
                 key="Refresh"
                 id="Refresh"
                 label={this.props.store.locale.settings.refresh}
                 onClick={this.refreshInfo}
+                theme={this.props.store.chat.theme}
+        />
+    );
+
+    createButtonDelete = () => (
+        <Button className="btn-fr"
+                key="Delete"
+                id="Delete"
+                label={this.props.store.locale.settings.delete}
+                onClick={this.deleteChat}
                 theme={this.props.store.chat.theme}
         />
     );
@@ -171,20 +186,24 @@ class App extends Component {
         let admMode = !isEmpty(this.props.store.stats.chats);
         let ready = this.props.store.chat && this.props.store.chat.chat;
         let settings = this.props.store.menu.settings;
+        let unauthorized = this.props.store.token.token === 'unauthorized';
+        let deleted = this.props.store.token.token === 'deleted';
         return (
             <SlideMenu
                 active={this.props.store.menu.active}
                 nav={this.createNavigationComponents(this.props.store.stats.chats)} >
                 <div className="App">
                     <main id="panel" className="slideout-panel slideout-panel-left">
-                        <UnauthorizedScreen/>
+                        {(unauthorized || deleted) && <UnauthorizedScreen/>}
+                        {this.props.store.token.token === 'empty' && <EmptyList/>}
                         <div className="header-buttons">
-                            {admMode && this.selectChatButton()}
+                            {admMode && !unauthorized && !deleted && this.selectChatButton()}
                             {ready && this.createButtonSettings()}
                             {ready &&
                             <div className={"settings " + settings}>
                                 {admMode && <BanForm/>}
                                 {admMode && this.createButtonRefresh()}
+                                {admMode && this.createButtonDelete()}
                                 {this.createButtonsForThemeSwitch(this.props.store.locale.settings.theme)}
                             </div>}
                         </div>
@@ -195,10 +214,10 @@ class App extends Component {
                             </div>
                             <div className="graphich__wrapper_column">
                                 <div className="graphich__wrapper_row row justify-content-center">
-                                    {!this.props.store.chosen && <SummaryGraphic/>}
-                                    <TopGraphic/>
-                                    <Stickers/>
-                                    <TimeMessageGraphic/>
+                                    {!this.props.store.chosen && ready && <SummaryGraphic/>}
+                                    {ready && <TopGraphic/>}
+                                    {ready && <Stickers/>}
+                                    {ready && <TimeMessageGraphic/>}
                                 </div>
                             </div>
                         </div>
@@ -223,7 +242,8 @@ export default connect(
         getChats: ({token, admin_token}) => {
             dispatch(loadChats({token, admin_token}))
                 .then(res =>{
-                    if(res['unauthorized']) dispatch(setToken({token: 'unauthorized'}))
+                    if(res['unauthorized']) dispatch(setToken({token: 'unauthorized'}));
+                    if(res['empty']) dispatch(setToken({token: 'empty'}));
                 });
         },
         changeActive: () => {
@@ -231,6 +251,13 @@ export default connect(
         },
         setChat: ({token, chat_id, theme}) => {
             setChat(dispatch, {token, chat_id, theme})
+        },
+        destroyChat: ({token, admin_token, chat_id}) => {
+            dispatch(deleteChat({token, admin_token, chat_id}))
+                .then(res => {
+                    dispatch(setToken({token: res.result}));
+                    setChat(dispatch, {})
+                })
         },
         setTheme: ({data, presetName}) => {
             if (data) {
@@ -265,8 +292,7 @@ export default connect(
 function setChat(dispatch,{token, chat_id, theme}) {
     dispatch(loadChat({token, chat_id}))
         .then(data => {
-            if(data['unauthorized']) dispatch(setToken({token: 'unauthorized'}))
-            else {
+            if(!data['unauthorized']) {
                 data.theme = theme;
                 dispatch(loadImages(data))
                     .then(res => {
@@ -280,6 +306,7 @@ function setChat(dispatch,{token, chat_id, theme}) {
                 dispatch(createTimeMessage(data.timeReady, '0', 0, 0, 0, calculateTimeScale(data.timeReady[0]),
                     false, 1, true, false, [], theme));
                 dispatch(calculateInfo(data.time, '0'))
-            }
+            } else
+                dispatch(setToken({token: "unauthorized"}))
         });
 }

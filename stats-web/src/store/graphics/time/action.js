@@ -32,16 +32,22 @@ const  prepareTimeForUsers = (time, scale) => {
     date.setHours(0);
     date.setSeconds(0);
     date.setMinutes(0);
-    let day = new Date(date).setDate(date.getDate()+1);
     let n = scale === '0' ? 1 :
             scale === '1' ? 6 :
             scale === '2' ? 24 : '';
-        date.setHours(date.getHours() + n);
+    if(scale === '1') {
+        date.setDate(date.getDate() - 1);
+        date.setHours(21)
+    }
+    for(let i =0; i<n; i++)
+        date.setHours(date.getHours() + 1);
     for (let i = 0; i < time.length; i++) {
         if (new Date(time[i].time) > date) {
+            console.log(obj);
             for (let user in obj)
                 timeArray.push(new Date(date));
-            date.setHours(date.getHours() + n);
+            for(let i =0; i<n; i++)
+                date.setHours(date.getHours() + 1);
             obj = {};
         } else obj[time[i].user] = 0;
     }
@@ -329,16 +335,10 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
 // func - функция шаблон
 
 function scaleTimeGraphic(arr, func, timeFromShow, timeToShow = 0) {
-    // timeFromShow.setHours(0);
-    // timeFromShow.setMinutes(0);
-    // timeFromShow.setSeconds(0);
     let tmpTimeFromShow = new Date(timeFromShow),
         hours = tmpTimeFromShow.getHours(),
         placeholder = {},
-        date = timeToShow === 0 ? new Date(arr[arr.length-1]) : new Date(timeToShow);
-    //date.setHours(23);                                                             //последнее учитываемое время за день
-    // date.setMinutes(0);                                                            //или не изменяя время для грубого режима
-    // date.setSeconds(0);
+        date = timeToShow === 0 ? new Date(arr[arr.length-1]) : new Date(timeToShow);//последнее учитываемое время за день
     while (tmpTimeFromShow < date) {                                               //Первая запись массива времени < последнее учитываемое время за день
         tmpTimeFromShow.setHours(hours);
         hours = tmpTimeFromShow.getHours() + 1;                                    //Увеличиваем счётчик первой записи на 1 час вперёд

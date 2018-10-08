@@ -10,6 +10,7 @@ class Bot {
         this.SECRET = OPTIONS.secret;
         this.TOKEN = TOKEN;
         this.BOT_NAME = OPTIONS.botName;
+        this.BOT_NICKNAME = OPTIONS.botNick;
         this.telegramBot = new TelegramBot(this.TOKEN, OPTIONS);
         this.topSize = parseInt(OPTIONS.topSize) || 5;
     }
@@ -75,7 +76,7 @@ class Bot {
     refreshUsersInfo(token, admin_token, chat_id) {
         return this.authorization(token)
             .then(res => {
-                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                if (!res.result || res.result[0].admin_token !== admin_token || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let db = this.dbName(res.result[0].database_name);
                 return this.getChatStats(chat_id, db)
                     .then(res => {
@@ -117,7 +118,7 @@ class Bot {
 
     createStatToken (user_id) {
         let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37),
-            adminToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37);
+            adminToken = this.SHA512(this.SHA512(user_id.toString()) + this.SECRET + new Date()).substring(17, 37);
         return this.DB.createStatToken(user_id, botToken, adminToken)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
@@ -128,8 +129,19 @@ class Bot {
     destroyChat (chat_id) {
         return this.DB.clearChat(chat_id)
             .then(res => {
-                if (!res.error) this.telegramBot.leaveChat(chat_id);
+                if (res.error) return {error: error, result: false};
+                this.telegramBot.leaveChat(chat_id);
+                return {error: null, result: true}
             });
+    }
+
+    destroyChatManually(token, admin_token, chat_id) {
+        return this.authorization(token)
+            .then(res => {
+                    if (!res.result || res.result[0].admin_token !== admin_token || token === 0)
+                        return { error: `cant authorize with ${token}`, result: null };
+                    return this.destroyChat(chat_id);
+                });
     }
 
     updateUsersWords(msg, words) {
@@ -170,7 +182,7 @@ class Bot {
     updateBannedWords(token, admin_token, chat_id, bannedWords){
         return this.authorization(token)
             .then(res => {
-                if (res.result[0].admin_token === admin_token && !res.result || token === 0) return {error: `cant authorize with ${token}`, result: null};
+                if (!res.result || res.result[0].admin_token !== admin_token || token === 0) return {error: `cant authorize with ${token}`, result: null};
                 let user_id = res.result[0].database_name;
                 return this.DB.updateBannedWords(user_id, chat_id, bannedWords)
             });
@@ -249,8 +261,6 @@ class Bot {
 
         this.telegramBot.on('callback_query', function (msg) {
             if (msg.data === 'ru' || msg.data === 'en'){
-                self.telegramBot.sendMessage( msg.from.id, self.LOCALE[msg.data].about);
-                this.answerCallbackQuery(msg.id, "", true);
                 self.DB.updateLocale(msg.from.id, msg.data);
                 self.createStatToken(msg.from.id)
                     .then(res => {
@@ -259,6 +269,7 @@ class Bot {
                         let options = {
                             reply_markup: JSON.stringify({
                                 inline_keyboard: [
+                                    [{ text: self.LOCALE[msg.data].buttons.invite,  url: `https://telegram.me/${self.BOT_NAME}?startgroup=true` ,callback_data: 'invite'}],
                                     [
                                         {text: self.LOCALE[msg.data].buttons.recreate, callback_data: 'отчёт'},
                                         {text: self.LOCALE[msg.data].buttons.delete, callback_data: 'обнулить'}
@@ -266,8 +277,8 @@ class Bot {
                                 ]
                             })
                         };
-                        self.telegramBot.sendMessage( msg.from.id,
-                            self.LOCALE[msg.data].welcome_message, options)
+                        this.answerCallbackQuery(msg.id, "", true);
+                        self.telegramBot.sendMessage( msg.from.id, self.LOCALE[msg.data].about, options)
                             .then(res => {
                                 self.telegramBot.sendMessage( msg.from.id,link);
                             });

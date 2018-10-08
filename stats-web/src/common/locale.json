@@ -3,7 +3,8 @@
     "locale" : "ru",
     "settings": {
       "select": "Выберите чат",
-      "refresh": "Обновить аватарки",
+      "refresh": "Обновить ники/аватарки",
+      "delete" : "Удалить отчёт",
       "banned": {
         "label" : "Забаненные слова",
         "search": "Поиск",
@@ -86,13 +87,20 @@
           "imposition": "наложение"
         }
       }
-    }
+    },
+    "unauthorized" : {
+      "report" : "в групповом чате, что бы получить ссылку",
+      "help" : "в личные сообщения боту, что бы получить помощь"
+    },
+    "empty": "Ваш список чатов пока пуст. Добавьте бота в группу, и через несколько секунд отчёт появится здесь.",
+    "deleted" : "Отчёт был удалён"
   },
   "en": {
     "locale" : "en",
     "settings": {
       "select": "Select chat",
-      "refresh": "Refresh users images",
+      "refresh": "Refresh users info",
+      "delete" : "Delete report",
       "banned": {
         "label" : "Banned words",
         "search": "Search",
@@ -175,6 +183,12 @@
           "imposition": "imposition"
         }
       }
-    }
+    },
+    "unauthorized" : {
+      "report" : "in group chat to get link",
+      "help" : "in personal bot chat to get help"
+    },
+    "empty": "Your reports list is empty. Add bot to group chat and you will see your report here in a few seconds.",
+    "deleted" : "Report was deleted"
   }
 }

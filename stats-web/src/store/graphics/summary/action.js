@@ -22,10 +22,6 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
 
         if(new URL(window.location).searchParams.get("token") === 'demo') today = new Date(2018, 8, 29, 0,0,0,0);
 
-        for(let user in data.users) {
-            users[data.users[user].user] = 0;
-        }
-
         let targetDate = today;
         switch(dayScale){
             case '1':
@@ -40,10 +36,22 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
                 targetDate = data.timeReady[0];
         }
 
+        for(let user in data.users)
+            users[data.users[user].user] = 0;
+
         for(let i=data.time.length-1; i > -1; i--)
             if(new Date(data.time[i].time) > targetDate)
                 users[data.time[i].user] = users[data.time[i].user] + 1;
             else break;
+
+        if (topSwitch)
+            users = Object.keys(users)
+                .sort((a,b) => users[b] - users[a])
+                .reduce((val, next, index) => {
+                    if(index < 5) val[next] = users[next];
+                    return val;
+                },{});
+
 
         let summary = [],
             userNames = [];
@@ -53,35 +61,7 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
                 summary.push(users[user]);
             }
         }
-
-        if (topSwitch) {
-            let topSummary = [],
-                topUserNames = [];
-            while (topSummary.length < 5 && userNames.length > 1) {
-                let tmp = summary[0],
-                    index = 0;
-                for (let i = 1; i < summary.length; i++) {
-                    if (tmp < summary[i]) {
-                        tmp = summary[i];
-                        index = i;
-                    }
-                }
-                topSummary.push(tmp);
-                topUserNames.push(userNames[index]);
-                summary.splice(index, 1);
-                userNames.splice(index, 1);
-            }
-            let sum = 0;
-            if(userNames.length > 1) {
-                for (let i = 0; i < summary.length; i++)
-                    sum += isNaN(summary[i]) ? 0 : summary[i];
-                topSummary.push(sum);
-                topUserNames.push('other');
-            }
-            userNames = topUserNames;
-            summary = topSummary;
-
-        }
+        
         let graphColors = colors(data.theme);
         let tmp = {
             theme: graphColors.theme,

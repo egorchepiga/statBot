@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import '../styles/css/unauthorized.css';
 
 class UnauthorizedScreen extends Component {
 
@@ -10,15 +11,33 @@ class UnauthorizedScreen extends Component {
     );
 
     render() {
-        let visibility = this.props.store.token.token === 'unauthorized';
-        return visibility && (
-            <div className="unauthorized col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                <div className="unauthorized-header col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-                    <label>Unauthorized 401</label>
+        return  (
+            <div>
+                <div className="unauthorized-header-container">
+                    <label className="unauthorized-header">
+                        {this.props.store.token.token === "deleted" ?
+                            this.props.store.locale.deleted
+                            : "Unauthorized 401"
+                        }</label>
+                    <div><a href="https://t.me/stats_tgbot">/report@stats_tgbot</a>
+                        <label>
+                            {this.props.store.locale.unauthorized.report}
+                        </label>
+                    </div>
+                    <div><a href="https://t.me/stats_tgbot">/help</a>
+                        <label>
+                            {this.props.store.locale.unauthorized.help}
+                        </label>
+                    </div>
+                    <a href="https://t.me/stats_tgbot">@stats_tgbot</a>
                 </div>
-                <img className="navalny" src="https://egorchepiga.ru/navalny.png"/>
-                <img className="security" src="https://egorchepiga.ru/security.png"/>
-            </div>)
+                <div className="unauthorized ">
+                    <img className="navalny" src="https://egorchepiga.ru/navalny.png"/>
+                    <img className="security" src="https://egorchepiga.ru/security.png"/>
+                    <img className="kick" src="https://egorchepiga.ru/kick.png"/>
+                </div>
+            </div>
+        )
     }
 }
 

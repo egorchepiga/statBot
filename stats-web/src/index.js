@@ -14,7 +14,6 @@ import './styles/css/timegraphic.css';
 import './styles/css/chatprofile.css';
 import './styles/css/banned_words.css';
 import './styles/css/App.css';
-import './styles/css/unauthorized.css';
 import App from './App';
 import combineReducers from './store/index'
 

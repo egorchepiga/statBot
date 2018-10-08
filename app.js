@@ -25,6 +25,7 @@ const BOT = require('./src/bot').Bot,
             }
         },
         botName: CONFIG.bot.NAME,
+        botNick: CONFIG.bot.NICKNAME,
         secret : CONFIG.secret,
         mainBase: CONFIG.bot.mainBase,
         topSize : CONFIG.bot.topSize,
@@ -86,6 +87,23 @@ app.get(`/load/`, (req, res) => {
                 res.sendStatus(401);
             } else {
                 res.send(JSON.stringify(botRes));
+            }
+        });
+});
+
+app.get(`/delete/`, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let token = req.param('token'),
+        admin_token = req.param('adm'),
+        chat_id = req.param('chat_id');
+    bot.destroyChatManually(token, admin_token, chat_id)
+        .then(botRes => {
+            if (botRes.error) {
+                console.log(botRes);
+                res.sendStatus(401);
+            } else {
+                res.sendStatus(200);
             }
         });
 });
@@ -214,12 +232,15 @@ app.get('/file_id/*', (req, res) => {
     if(file_id !== 'null')
     bot.getFilePath(file_id)
         .then(botRes => {
-            if (res.error) {
+            if (botRes.error) {
                 console.log(botRes);
                 res.sendStatus(404);
             } else
                 res.send({path: botRes});
-        });
+        }).catch(error => {
+            //console.log(error)   photo or sticker was deleted
+            res.send({path: null})
+    });
     else res.sendStatus(404);
 });
 

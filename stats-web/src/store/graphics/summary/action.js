@@ -39,9 +39,9 @@ export const createSummaryGraphic = (data, dayScale = '0', topSwitch = true) =>
         for(let user in data.users)
             users[data.users[user].user] = 0;
 
-        for(let i=data.time.length-1; i > -1; i--)
+        for(let i=data.time.length-1; i >= 0; i--)
             if(new Date(data.time[i].time) > targetDate)
-                users[data.time[i].user] = users[data.time[i].user] + 1;
+                users[data.time[i].user] = users[data.time[i].user] + 1 || 0;
             else break;
 
         if (topSwitch)

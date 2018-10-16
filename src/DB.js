@@ -296,7 +296,7 @@ function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
         j = 0;
     let a = arrUserTables.length;
     for (let i = 0; i < a; i++) {
-        arrUserTables[i].summary = promisesAnswers[last].rows[i].summary;
+        arrUserTables[i].summary = promisesAnswers[last].rows[i] ? promisesAnswers[last].rows[i].summary : 0;
         sql +=
             'UPDATE ' + db + '.`'  + chat_id + '` ' +
             'SET summary = ? , top_words = ? , top_stickers = ? '  +

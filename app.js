@@ -59,10 +59,10 @@ httpsServer.listen(SSL_PORT, () => {
 app.use(bodyParser.json());
 
 app.get(`/chats/`, (req, res) => {
-    let token = req.param('token') ,
-        admin_token = req.param('adm');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    let token = req.param('token') ,
+        admin_token = req.param('adm');
     if (token === "demo") res.send(DEMO_CHATS.chats);
     else bot.getChats(token,admin_token)
         .then(botRes => {

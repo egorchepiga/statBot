@@ -79,7 +79,12 @@ app.get(`/load/`, (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     let token = req.param('token'),
         chat_id = req.param('chat_id');
+
     if (token === "demo") res.send(DEMO_CHATS[chat_id]);
+    else if (!chat_id) {
+        console.log("Empty chat_id");
+        res.sendStatus(401);
+    }
     else bot.loadChat(token, chat_id)
         .then(botRes => {
             if (botRes.error) {
@@ -135,15 +140,17 @@ app.get(`/more/`, (req, res) => {
         n = req.param('count'),
         user_id = req.param('user_id');
     if(token === 'demo') res.send({'Top' : 20, 'twenty' : 15, 'user\'s' : 10, 'words' : 7, 'here' : 2});
-    bot.getTopWords(n, token, user_id, chat_id)
-        .then(botRes => {
-            if (botRes.error) {
-                console.log(botRes);
-                res.sendStatus(401);
-            } else {
-                res.send(JSON.stringify(botRes));
-            }
-        });
+    else {
+        bot.getTopWords(n, token, user_id, chat_id)
+            .then(botRes => {
+                if (botRes.error) {
+                    console.log(botRes);
+                    res.sendStatus(401);
+                } else {
+                    res.send(JSON.stringify(botRes));
+                }
+            });
+    }
 });
 
 

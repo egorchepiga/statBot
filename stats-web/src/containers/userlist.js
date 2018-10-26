@@ -59,29 +59,46 @@ class UserList extends Component {
 
     };
 
+/*
+<div key={index} onClick={this.chooseUser} id={user.user} className="user-block col-4 col-sm-3 col-md-2 col-lg-2 col-xl-2 ">
+    <div id={user.user} className={"user__img" + chosen +  this.props.store.chat.theme+"Img" }>
+        <img  id={user.user} src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
+    </div>
+    <div id={user.user} className="user__name">
+        <label id={user.user}>{user.user}</label>
+        <label id={user.user}>{user.summary}</label>
+    </div>
+</div>
+*/
+
 
     createUserProfile = (user, index) => {
-        let chosen = user.user === this.props.store.chosen ? ' chosen ' : "";
+        let chosen = user.user === this.props.store.chosen ? ' chosenUser ' : "";
         return(
-            <div key={index} onClick={this.chooseUser} id={user.user} className="user-block col-4 col-sm-3 col-md-2 col-lg-2 col-xl-2 ">
-                <div id={user.user} className={"user__img" + chosen +  this.props.store.chat.theme+"Img" }>
-                    <img  id={user.user}
-                          src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
+            <div className={"user col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4" } key={index} id={user.user} onClick={this.chooseUser} >
+                <div className={chosen +  this.props.store.chat.theme+"User inside"} id={user.user} >
+                    <img id={user.user} className="avatar" src={user.img !== null  && user.img.indexOf('file') !== -1 ? 'https://egorchepiga.ru/tg-stats/' + user.img : TELEGRAM_ICON}/>
+                        <label id={user.user} className="user-name">{user.user}</label>
+                        <div id={user.user} className="msg-counter">
+                            <img id={user.user} className="msg-logo"
+                                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8iiSSRzWSVWNagMy3-29Jx8NsPwsXbUH4_C_KNVDXR5LUUouGXg"/>
+                                <label id={user.user}>{user.summary}</label>
+                        </div>
                 </div>
-                <div id={user.user} className="user__name">
-                    <label id={user.user}>{user.user}</label>
-                    <label id={user.user}>{"#" + (index+1)}</label>
-                </div>
-
             </div>
         )
     };
 
     userList = (usersStore) => {
-        //let regExp = new RegExp('^[' + this.props.store.userList.find + ']*$');
+
+        let userCount = 0;
+        if(window.innerWidth < 576) userCount = 3;
+        else if(window.innerWidth >= 768) userCount = 9;
+        else  userCount = 6;
+
         let users = usersStore.slice();
         let tmp = [];
-        while (users.length > 0 && (this.props.store.userList.showAll  || tmp.length < 7)) {
+        while (users.length > 0 && (this.props.store.userList.showAll  || tmp.length < userCount)) {
             let user = users[0],
                 index = 0;
             for (let i = 1; i < users.length; i++) {

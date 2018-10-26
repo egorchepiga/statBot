@@ -257,7 +257,7 @@ class TimeMessageGraphic extends Component {
         let impositionVisibility, dateRangeVisibility, timeScaleVisibility, averageVisibility, periodsVisibility,
             buttonsVisibility = dayScale;
         if (buttonsVisibility) {
-            averageVisibility = dayScale !== '0';
+            averageVisibility = dayScale !== '0' && dayScale !== '4';
             dateRangeVisibility = dayScale === '4';
             timeScaleVisibility = dayScale !== '1' && dayScale !== '0' && dayScale !== '0' && dayScale !== '3';
             periodsVisibility = this.props.store.timeMessage.average && averageVisibility;

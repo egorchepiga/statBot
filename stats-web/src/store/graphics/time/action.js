@@ -43,7 +43,6 @@ const  prepareTimeForUsers = (time, scale) => {
         date.setHours(date.getHours() + 1);
     for (let i = 0; i < time.length; i++) {
         if (new Date(time[i].time) > date) {
-            console.log(obj);
             for (let user in obj)
                 timeArray.push(new Date(date));
             for(let i =0; i<n; i++)
@@ -275,7 +274,7 @@ function prepareTime(arr, dayScale, imposition, fromTime, toTime, timeScale, ave
             }
             break;
         case '4':                                                                                                       //пользовательское время
-            if (fromTime < toTime || fromTime !== 0) {
+            if (fromTime <= toTime && fromTime !== 0) {
                 timeFromShow = new Date(fromTime);
                 timeToShow = new Date(toTime);
                 timeFromShow.setHours(0);

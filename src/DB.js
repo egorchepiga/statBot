@@ -90,6 +90,7 @@ function getDBInfoByUserId(user_id) {
 function getDBInfo(chat_id) {
     return getUserWithChat(chat_id)
         .then(res => {
+            if (res.error) return {error: res.error, result: null};
             return query('SELECT * FROM ' + MAIN_BASE +'.`DATABASES` WHERE database_name = ?',[res.rows[0].database_name]);
         })
 }
@@ -133,7 +134,7 @@ function createChat(msg, db){
         msg.chat.title,
         msg.chat.id,
         msg.chat.title
-    ]).then(res=> console.log(res));
+    ])
 }
 
 function createUser(msg, db){
@@ -221,14 +222,13 @@ function updateLocale(database_name, locale) {
     return query(sql, [locale, database_name])
 }
 
-function updateUserInfo(chat_id, user_id, file_id, username, up_to_date, db) {
+function updateUserInfo(chat_id, user_id, file_id, username, db) {
     let sql =
         'UPDATE ' + db + '.`'  + chat_id + '` ' +
         'SET img = ? , username = ?' +
         'WHERE id = ? ;';
     return query(sql, [file_id, username, user_id])
         .then(res => {
-            if (up_to_date) return res;
             return chat_id === user_id ?
                 updateRoom(chat_id, username)
                 : updateTimeLogs(chat_id, username, user_id, db)
@@ -312,6 +312,7 @@ function updateChatTable(promisesAnswers, arrUserTables, chat_id, db) {
 }
 
 function updateChatStats(chat_id, db) {
+    let dRes;
     let arrUserTables = [];
     return getUsersFromChat(chat_id, db)
         .then(res => {
@@ -320,9 +321,24 @@ function updateChatStats(chat_id, db) {
                 arrUserTables.push({ id : res.rows[i].id });
             return getSummaryForUsers(arrUserTables, chat_id, db, MAIN_BASE )
         }).then(res => {
-            let last = res.length-1;
-            if (res[last].error) return {error : res[last].error, res: null}
-            return updateChatTable(res, arrUserTables, chat_id, db)
+            if (res.length !== arrUserTables.length){
+                return repairMessagesCount(arrUserTables, chat_id, db)
+                    .then(res => {
+                        return getSummaryForUsers(arrUserTables, chat_id, db, MAIN_BASE )
+                    }).then(res => {
+                        dRes = res;
+                        let last = res.length-1;
+                        if (res[last].error) return {error : res[last].error, res: null};
+                        return updateChatTable(res, arrUserTables, chat_id, db)
+                    })
+            } else {
+                dRes = res;
+                let last = res.length - 1;
+                if (res.error || res[last].error) return {error: res[last].error, res: null};
+                return updateChatTable(res, arrUserTables, chat_id, db)
+            }
+        }).catch(e => {
+            console.log(dRes)
         });
 }
 
@@ -385,6 +401,14 @@ function getChatsNames(arrChatId){
             }
             return obj;
         })
+}
+
+function repairMessagesCount(arrUserID, chat_id, db) {
+    let arrPromises = []
+    for (let i = 0; i<arrUserID.length; i++) {
+        arrPromises.push(query("INSERT INTO " + db + '.`' + arrUserID[i].id + '#' + chat_id + '` ' + "(`word`, `summary`) VALUES ('Messages count', 1)"))
+    }
+    return Promise.all(arrPromises)
 }
 
 function getSummaryForUsers(arrUserID, chat_id, db) {

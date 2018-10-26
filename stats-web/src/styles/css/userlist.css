@@ -1,25 +1,16 @@
 .users {
-  margin-bottom: 50px;
-  margin-left: 0.5%;
-  display: flex;
-  flex-direction: column; }
-
-.users-list-wrap {
-  justify-content: center;
-  display: flex; }
+  margin-bottom: 50px; }
 
 .users-list {
-  max-width: 790px;
-  display: flex;
-  flex-wrap: wrap;
+  padding: 0px;
+  margin-right: 0px;
+  margin-left: 0px;
   margin-top: 10px;
-  max-height: 165px;
+  max-height: 240px;
   overflow: hidden; }
-  .users-list label {
-    display: block;
-    margin-bottom: 0px; }
 
 .all {
+  padding-right: 0px;
   display: flex;
   overflow-y: auto;
   overflow-x: hidden;
@@ -40,37 +31,66 @@
 .users-search button {
   margin: 0px; }
 
-@media (max-width: 991px) {
-  .user-block {
-    margin-left: 10px;
-    margin-right: 10px; } }
+.user {
+  height: 80px;
+  padding: 5px; }
 
-@media (max-width: 767px) {
-  .all {
-    max-height: 335px; }
-  .user-block {
-    margin-left: 0px;
-    margin-right: 0px; } }
+.inside {
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+  padding: 15px;
+  height: 100%;
+  border: solid 2px #b1b1b1;
+  border-radius: 3%;
+  color: #6c757d; }
 
-@media (max-width: 400px) {
+.user-name {
+  font-size: 16px; }
+
+.avatar {
+  width: 60px;
+  border-radius: 50%; }
+
+.msg-counter {
+  padding: 5px;
+  padding-bottom: 0px;
+  border: solid 2px #b1b1b1;
+  border-radius: 15%;
+  width: 80px; }
+  .msg-counter label {
+    padding-left: 5px; }
+
+.msg-logo {
+  margin-bottom: 3px;
+  width: 20px;
+  border-radius: 20% !important; }
+
+@media (min-width: 1200px) {
   .users-list {
-    max-height: 145px; }
-  .all {
-    max-height: 290px; }
-  .user-block {
-    margin-left: 0px;
-    margin-right: 0px; }
-    .user-block div img {
-      max-width: 100px; } }
+    padding: 5px; } }
 
-@media (max-width: 320px) {
-  .users-list {
-    max-height: 112px; }
+@media (min-width: 320px) {
   .all {
-    max-height: 230px; }
-  .user-block {
-    margin-left: 0px;
-    margin-right: 0px;
-    font-size: 12px; }
-    .user-block div img {
-      max-width: 80px; } }
+    max-height: 400px; } }
+
+.chosenUser.OrangeUser {
+  border: 3px solid #fe8c5a; }
+
+.chosenUser.Yellow-GrayUser {
+  border: 3px solid #e8ce2e; }
+
+.chosenUser.GreenUser {
+  border: 3px solid #299d1a; }
+
+.chosenUser.AquaUser {
+  border: 3px solid #4571ca; }
+
+.chosenUser.Purple-GrayUser {
+  border: 3px solid #54457f; }
+
+.chosenUser.PinkUser {
+  border: 3px solid #ecacc7; }
+
+.chosenUser.RandomUser {
+  border: 3px solid #00a0df; }

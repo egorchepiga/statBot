@@ -112,7 +112,9 @@ class Bot {
                 if (res.error) return {error: res.error, result: null};
                 return this.telegramBot.getUserProfilePhotos(msg.from.id)
             }).then(res => {
-                return this.DB.updateUserInfo(msg.chat.id, msg.from.id, res.photos[0][0].file_id, msg.from.username, true, db)
+                let photo = ""
+                if (res.photos[0]) photo = res.photos[0][0].file_id
+                return this.DB.updateUserInfo(msg.chat.id, msg.from.id, photo, msg.from.username, true, db)
             });
     }
 
@@ -193,7 +195,9 @@ class Bot {
         promises.push(
             this.telegramBot.getChat(chat_id)
                 .then(res => {
-                    return this.DB.updateUserInfo(chat_id, chat_id, res.photo.small_file_id, res.title, users[0].username === res.title, db)    //!!!!!
+                    let photo = "";
+                    if (res.photo) photo = res.photo.small_file_id;
+                    return this.DB.updateUserInfo(chat_id, chat_id, photo, res.title, db)    //!!!!!
                 })
         );
         users.splice(1,0);
@@ -322,7 +326,6 @@ class Bot {
                 if(msg.text === '/start') {
                     this.DB.createDB(msg.from.id)
                         .then(res => {
-                            if (res.error) console.log({error: res.error, result: null});
                             return this.createStatToken(msg.from.id)
                         }).then(res => {
                         if (res.error) console.log({error: res.error, result: null});
@@ -396,11 +399,12 @@ class Bot {
                             chatMember = data;
                             return self.DB.getDBInfo(msg.chat.id);
                         }).then(localeRes=> {
+                            if (!localeRes.rows) console.log(msg.chat.id, localeRes);
                             let locale = localeRes.rows[0].locale;
                             if ((chatMember.status === "creator") || (chatMember.status === "administrator")){
                                 self.DB.isChatPrivate(msg.chat.id)
                                     .then(res => {
-                                        let str = (res) ? self.LOCALE[locale].privacy.mode.enabled : self.LOCALE[locale].privacy.mode.disabled ;
+                                        let str = (res) ? self.LOCALE[locale].privacy.mode.disabled : self.LOCALE[locale].privacy.mode.enabled ;
                                         self.DB.setChatPrivacy(msg.chat.id, !res);
                                         self.telegramBot.sendMessage( msg.chat.id, str);
                                     });

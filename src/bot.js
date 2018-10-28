@@ -113,7 +113,7 @@ class Bot {
                 return this.telegramBot.getUserProfilePhotos(msg.from.id)
             }).then(res => {
                 let photo = ""
-                if (res.photos[0]) photo = res.photos[0][0].file_id
+                if (res.photos && res.photos[0] && res.photos[0][0]) photo = res.photos[0][0].file_id
                 return this.DB.updateUserInfo(msg.chat.id, msg.from.id, photo, msg.from.username, true, db)
             });
     }
@@ -269,7 +269,7 @@ class Bot {
                 self.createStatToken(msg.from.id)
                     .then(res => {
                         if (res.error) console.log(res.error);
-                        let link = self.LOCALE[msg.data].link+'\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
+                        let link = self.LOCALE[msg.data].link+'\n' + 'https://egorchepiga.ru/stats/?token=' + res.token + '&adm=' + res.admin_token;
                         let options = {
                             reply_markup: JSON.stringify({
                                 inline_keyboard: [
@@ -295,7 +295,7 @@ class Bot {
                         self.DB.getDBInfoByUserId(msg.from.id)
                             .then(localeRes=> {
                                 let locale = localeRes.rows[0].locale;
-                                let link = self.LOCALE[locale].link+'\n' + 'https://egorchepiga.ru/?token=' + res.token + '&adm=' + res.admin_token;
+                                let link = self.LOCALE[locale].link+'\n' + 'https://egorchepiga.ru/stats/?token=' + res.token + '&adm=' + res.admin_token;
                                 this.answerCallbackQuery(msg.id, "", true);
                                 this.sendMessage( msg.message.chat.id, link);
                             })
@@ -376,7 +376,7 @@ class Bot {
                                                 res => {
                                                     if (res.rows.length > 0)
                                                         return self.telegramBot.sendMessage( msg.chat.id,
-                                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
+                                                            "https://egorchepiga.ru/stats/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
                                                 }
                                             );
                                         else return self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.msg);
@@ -387,7 +387,7 @@ class Bot {
                                 res => {
                                     if (res.rows.length > 0)
                                         return self.telegramBot.sendMessage(msg.chat.id,
-                                            "https://egorchepiga.ru/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
+                                            "https://egorchepiga.ru/stats/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
                                 }
                             );
                         }

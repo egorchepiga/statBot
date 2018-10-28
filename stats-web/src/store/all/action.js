@@ -13,7 +13,7 @@ export const loadChats = ({token, admin_token}) =>
             let res = await response;
             if(await res.status === 401) return {"unauthorized" : "unauthorized" };
             res = await res.json();
-            if(await Object.keys(res).length < 0) return {"empty": "empty"};
+            if(await Object.keys(res).length < 1) return {"empty": "empty"};
             dispatch({type: types.SET_CHATS, payload: res});
             return res;
         }).catch((er) => {

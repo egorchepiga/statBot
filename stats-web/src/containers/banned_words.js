@@ -76,7 +76,6 @@ class BanForm extends Component {
         this.props.setEdit(index);
     };
     search = (event) => {
-        console.log(event);
         this._search(event.target.value)};
     _search = (text) =>{
         text = text ? text.replace(/[\]\[.,\/\\|#!$%\^&\*;:{}=\-_\+``~()]/g,"") : '';

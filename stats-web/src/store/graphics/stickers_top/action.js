@@ -19,7 +19,6 @@ export const createTopStickers = (data, forChat = true, chosen = false) =>
         else {
             for (let user in users)
                 for (let sticker in users[user].top_stickers) {
-                    console.log({user: users[user].user, sticker: sticker, count: users[user].top_stickers[sticker]});
                     tmp.push({user: users[user].user, sticker: sticker, count: users[user].top_stickers[sticker]})
                 }
             tmp.sort((a,b) => {

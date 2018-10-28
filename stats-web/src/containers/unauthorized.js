@@ -32,9 +32,9 @@ class UnauthorizedScreen extends Component {
                     <a href="https://t.me/stats_tgbot">@stats_tgbot</a>
                 </div>
                 <div className="unauthorized ">
-                    <img className="navalny" src="https://egorchepiga.ru/navalny.png"/>
-                    <img className="security" src="https://egorchepiga.ru/security.png"/>
-                    <img className="kick" src="https://egorchepiga.ru/kick.png"/>
+                    <img className="navalny" src="https://egorchepiga.ru/stats/navalny.png"/>
+                    <img className="security" src="https://egorchepiga.ru/stats/security.png"/>
+                    <img className="kick" src="https://egorchepiga.ru/stats/kick.png"/>
                 </div>
             </div>
         )

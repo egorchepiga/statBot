@@ -8,7 +8,7 @@ import {loadUserWords} from "../store/graphics/top/action";
 import {findUser, showAll} from "../store/containers/userlist/action";
 import Button from '../components/button';
 
-const TELEGRAM_ICON = 'https://egorchepiga.ru/tg.gif';
+const TELEGRAM_ICON = 'https://egorchepiga.ru/stats/tg.gif';
 class UserList extends Component {
 
     constructor(props) {

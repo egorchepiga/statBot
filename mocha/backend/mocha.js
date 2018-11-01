@@ -1,1 +1,2 @@
-const db = require('./DB_module.js');
+const db = require('./DB_module'),
+    bot = require('./BOT_module');

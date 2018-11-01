@@ -1,10 +1,8 @@
 const DB = require('../../src/DB'),
     assert = require('chai').assert;
 
-
-
-
 describe('Тестирование модуля базы данных', function() {
+
     let id = 0;
     const USER_ID = 0o0,
         NEW_USER_ID = 1,
@@ -36,8 +34,6 @@ describe('Тестирование модуля базы данных', function
             id : CHAT_ID
         },
     };
-
-    this.timeout(20000);
 
 
     describe('Регистрация пользователя', () => {
@@ -85,6 +81,46 @@ describe('Тестирование модуля базы данных', function
             });
         });
 
+
+    });
+
+    describe('Исправление', () => {
+        before((done) => {
+            let sql = "DROP TABLE " + USER_DB +".`"+ MSG.chat.id +"`";
+            DB.query(sql)
+                .then(res => {
+                    assert.equal(res.error, null);
+                    done()
+                }).catch((e) => {
+                    done(e)
+                })
+        });
+
+        it('Комната без таблицы', (done) => {
+            DB.repairBase()
+                .then(res => {
+                    let test = res.some((v) => {
+                        return v.result === "broken"       //неверный ответ из функции
+                    });
+                    assert.equal(test, true);
+                    done()
+                }).catch((e) => {
+                    done(e)
+            });
+        });
+
+        it('Всё в порядке', (done) => {
+            DB.repairBase()
+                .then(res => {
+                    let test = res.some((v) => {
+                        return v.result === "broken" || v.result === "fixed"
+                    });
+                    assert.equal(test, false);
+                    done()
+                }).catch((e) => {
+                    done(e)
+            });
+        });
 
     });
 
@@ -177,7 +213,6 @@ describe('Тестирование модуля базы данных', function
         });
 
     });
-
 
     describe('Верификация данных', () => {
 

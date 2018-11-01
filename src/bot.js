@@ -369,32 +369,47 @@ class Bot {
                             privacy = res;
                             return self.DB.getDBInfo(msg.chat.id);
                         }).then(localeRes=> {
-                            let locale = localeRes.rows[0].locale;
+                            let locale = localeRes.rows[0].locale,
+                                token = localeRes.rows[0].token;
                             if (privacy) {
                                 let chatMember;
                                 return this.telegramBot.getChatMember(msg.chat.id, msg.from.id)
                                     .then(data => {
                                         chatMember = data;
-                                        if ((chatMember.status === "creator") || (chatMember.status === "administrator"))
-                                            return self.DB.getDBInfo(msg.chat.id).then(
-                                                res => {
-                                                    if (res.rows.length > 0)
-                                                        return self.telegramBot.sendMessage( msg.chat.id,
-                                                            "https://egorchepiga.ru/stats/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
-                                                }
-                                            );
+                                        if ((chatMember.status === "creator") || (chatMember.status === "administrator")) {
+                                            let url =
+                                                "https://egorchepiga.ru/stats/?token=" + token + '&chat=' + msg.chat.id + '&l=' + locale;
+                                            let options = {
+                                                reply_markup: JSON.stringify({
+                                                    inline_keyboard: [
+                                                        [{ text: self.LOCALE[locale].buttons.report,  url: url ,callback_data: 'watch_report'}],
+                                                    ]
+                                                })
+                                            };
+                                            return self.telegramBot.sendMessage(msg.chat.id, self.LOCALE[locale].buttons.share, options);
+                                        }
                                         else return self.telegramBot.sendMessage( msg.chat.id, self.LOCALE[locale].privacy.msg);
                                     });
                             }
-                        else {
-                            return self.DB.getDBInfo(msg.chat.id).then(
-                                res => {
-                                    if (res.rows.length > 0)
-                                        return self.telegramBot.sendMessage(msg.chat.id,
-                                            "https://egorchepiga.ru/stats/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale);
-                                }
-                            );
-                        }
+                            else {
+                                return self.DB.getDBInfo(msg.chat.id).then(
+                                    res => {
+                                        console.log(res);
+                                        if (res.rows.length > 0){
+                                            let url =
+                                                "https://egorchepiga.ru/stats/?token=" + res.rows[0].token + '&chat=' + msg.chat.id + '&l=' + locale;
+                                            let options = {
+                                                reply_markup: JSON.stringify({
+                                                    inline_keyboard: [
+                                                        [{ text: self.LOCALE[locale].buttons.report,  url: url ,callback_data: 'watch_report'}],
+                                                    ]
+                                                })
+                                            };
+                                            return self.telegramBot.sendMessage(msg.chat.id, self.LOCALE[locale].buttons.share, options);
+                                        }
+                                    }
+                                );
+                            }
                         });
                 } else if (msg.text.indexOf('/private@' + this.BOT_NAME) !== -1) {
                     let chatMember;

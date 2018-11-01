@@ -1,7 +1,4 @@
-let id = 0;
-const fs = require('fs'),
-    DB = require('../../src/DB'),
-    assert = require('chai').assert,
+const assert = require('chai').assert,
     BOT = require('../../src/bot').Bot,
     AGENT = require('socks5-https-client/lib/Agent'),
     CONFIG = require('../../../tconfig'),
@@ -23,16 +20,13 @@ const fs = require('fs'),
         bannedWords : CONFIG.bot.bannedWords
     },
     USER_ID = "162182640",
-    NEW_USER_ID = 1,
     CHAT_ID = "-319895645",
     CHAT_TITLE = "WRONG TITLE TEST",
     USER_DB = ' `' + USER_ID + '#telegram`',
     WORDS = ["TEST","TEST1","TEST2","TEST3","TEST4"],
     BANNED_WORDS = ["TEST5","TEST6","TEST7","TEST8","TEST9"],
-    LOCALE = "ru",
-    PRIVACY = true,
     MSG_INIT = {
-        message_id : ++id,
+        message_id : 0,
         from : {
             username : "TEST1",
             id : USER_ID
@@ -42,17 +36,6 @@ const fs = require('fs'),
             id : CHAT_ID
         },
     };
-let MSG = {
-    message_id : ++id,
-    from : {
-        username : "TEST2",
-        id : NEW_USER_ID
-    },
-    chat : {
-        title : CHAT_TITLE,
-        id : CHAT_ID
-    },
-};
 let bot = new BOT(CONFIG.bot.TOKEN,OPTIONS);
 
 describe('Тестирование модуля Бота', function() {

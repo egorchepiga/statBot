@@ -6,7 +6,9 @@
     "buttons" : {
       "recreate" : "Перевыпустить ссылку",
       "delete" : "Удалить все отчёты",
-      "invite" : "Добавить в чат"
+      "invite" : "Добавить в чат",
+      "report" : "Отчёт",
+      "share" : "Делитесь с друзьями:"
     },
     "welcome_message" : "Используйте кнопки ниже для получения ссылки на изменение настроек отчёта и его удаления. Enjoy!\n",
     "help" : "Добавьте этого бога в групповой чат и используйте в ней /report@stats_tgbot. Вы также можете получить ссылку для администраторов, которая позволит вам изменять забаненные слова и обновлять информацию о пользователях. \nпри поломках писать @egorchepiga",
@@ -33,7 +35,9 @@
     "buttons" : {
       "recreate" : "Remake link",
       "delete" : "Delete all reports",
-      "invite" : "Add to chat"
+      "invite" : "Add to chat",
+      "report" : "Report",
+      "share" : "Share with friends:"
     },
     "welcome_message" : "Use buttons below to get link for editing your statistics or deleting it. Enjoy!\n",
     "help" : "Add this bot to your group chat and type /report@stats_tgbot there. You can also get link for administrators, which let you to change banned words and refresh users's names and images. \n@egorchepiga for feedback",

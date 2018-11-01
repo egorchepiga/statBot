@@ -29,7 +29,7 @@
       "user": "username",
       "password": "password",
       "database": "stats"
-    },
+    }
   },
   "secret": "234dsfsFASD134scvGSDF21q3zcASD",
   "key": "auth",
@@ -39,19 +39,5 @@
     "local": "localhost",
     "port": "3000",
     "SSLport": "3001"
-  },
-  "length": {
-    "max": {
-      "firstName":"20",
-      "lastName": "20",
-      "password": "20",
-      "login": "20"
-    },
-    "min": {
-      "firstName":"1",
-      "lastName": "1",
-      "password": "1",
-      "login": "1"
-    }
   }
 }

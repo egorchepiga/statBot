@@ -15,6 +15,10 @@ class Bot {
         this.topSize = parseInt(OPTIONS.topSize) || 5;
     }
 
+    repairBase(){
+
+    }
+
     dbName(user_id) {
         return ' `' + user_id + '#telegram`';
     }
@@ -119,12 +123,12 @@ class Bot {
     }
 
     createStatToken (user_id) {
-        let botToken = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37),
+        let token = this.SHA512(new Date() + this.SHA512(user_id.toString()) + this.SECRET).substring(17, 37),
             adminToken = this.SHA512(this.SHA512(user_id.toString()) + this.SECRET + new Date()).substring(17, 37);
-        return this.DB.createStatToken(user_id, botToken, adminToken)
+        return this.DB.createStatToken(user_id, token, adminToken)
             .then(res => {
                 if (res.error) return {error : res.error, result: null}
-                return {token: botToken, admin_token: adminToken };
+                return {token: token, admin_token: adminToken };
             });
     }
 
@@ -372,7 +376,7 @@ class Bot {
                                     .then(data => {
                                         chatMember = data;
                                         if ((chatMember.status === "creator") || (chatMember.status === "administrator"))
-                                            return self.DB.findChat(msg.chat.id).then(
+                                            return self.DB.getDBInfo(msg.chat.id).then(
                                                 res => {
                                                     if (res.rows.length > 0)
                                                         return self.telegramBot.sendMessage( msg.chat.id,
@@ -383,7 +387,7 @@ class Bot {
                                     });
                             }
                         else {
-                            return self.DB.findChat(msg.chat.id).then(
+                            return self.DB.getDBInfo(msg.chat.id).then(
                                 res => {
                                     if (res.rows.length > 0)
                                         return self.telegramBot.sendMessage(msg.chat.id,

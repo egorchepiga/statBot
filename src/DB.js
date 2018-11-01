@@ -75,14 +75,6 @@ function isChatPrivate(chat_id) {
 
 }
 
-function findChat(chat_id) {
-    return query('SELECT * FROM ' + MAIN_BASE +'.`ROOMS` WHERE chat_id = ?',[chat_id])
-        .then(res => {
-            return getDBInfo(chat_id);
-        })
-}
-
-
 function getDBInfoByUserId(user_id) {
     return query('SELECT * FROM ' + MAIN_BASE + '.`DATABASES` WHERE database_name = ?', [user_id]);
 }
@@ -152,13 +144,13 @@ function createUser(msg, db){
     return transaction(sql, [ msg.from.id, username ]);
 }
 
-function createStatToken(user_id, botToken, adminToken) {
+function createStatToken(user_id, token, adminToken) {
     let sql =
         'INSERT INTO '+ MAIN_BASE +'.`DATABASES` ' +
         '(`database_name`,`token`, `admin_token`) ' +
         'VALUES (?, ?, ?)' +
         'ON DUPLICATE KEY UPDATE token = ?, admin_token = ?; '
-    return query(sql, [user_id, botToken, adminToken, botToken, adminToken])
+    return query(sql, [user_id, token, adminToken, token, adminToken])
 }
 
 function createDB(user_id) {
@@ -563,6 +555,5 @@ module.exports = {
     clearBase: clearBase,
     setChatPrivacy: setChatPrivacy,
     isChatPrivate : isChatPrivate,
-    getBannedWords : getBannedWords,
-    findChat : findChat
+    getBannedWords : getBannedWords
 };

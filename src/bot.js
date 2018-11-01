@@ -116,9 +116,9 @@ class Bot {
                 if (res.error) return {error: res.error, result: null};
                 return this.telegramBot.getUserProfilePhotos(msg.from.id)
             }).then(res => {
-                let photo = ""
-                if (res.photos && res.photos[0] && res.photos[0][0]) photo = res.photos[0][0].file_id
-                return this.DB.updateUserInfo(msg.chat.id, msg.from.id, photo, msg.from.username, true, db)
+                let photo = "";
+                if (res.photos && res.photos[0] && res.photos[0][0]) photo = res.photos[0][0].file_id;
+                return this.DB.updateUserInfo(msg.chat.id, msg.from.id, photo, msg.from.username, db)
             });
     }
 
@@ -445,11 +445,7 @@ class Bot {
 
         //Ивент, при добавлении бота в группу
         this.telegramBot.on('message', msg => {
-            let botName = '';
-            try {
-                botName = msg.new_chat_participant.username;
-            } catch (e) {}
-            if(botName === this.BOT_NAME) {
+            if( msg.new_chat_participant &&  msg.new_chat_participant.username === this.BOT_NAME || msg.group_chat_created === true)  {
                 this.createChat(msg)
                     .then(res => {
                         if (res.error) return {error : res.error, result: null};

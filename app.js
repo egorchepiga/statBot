@@ -6,7 +6,7 @@ let express = require('express'),
     fs = require('fs');
 const BOT = require('./src/bot').Bot,
     AGENT = require('socks5-https-client/lib/Agent'),
-    CONFIG = require('./config'),
+    CONFIG = require('../config'),
     TOKEN = CONFIG.bot.TOKEN,
     OPTIONS = {
         webHook: {

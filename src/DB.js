@@ -1,5 +1,5 @@
 const MYSQL = require('mysql'),
-    CONFIG = require('../config'),
+    CONFIG = require('../../config'),
     MAIN_BASE =  '`' + CONFIG.bot.mainBase + '`',
     EXPIRES = CONFIG.expires,
     OPTIONS = {
@@ -313,6 +313,7 @@ function updateChatStats(chat_id, db) {
                 arrUserTables.push({ id : res.rows[i].id });
             return getSummaryForUsers(arrUserTables, chat_id, db, MAIN_BASE )
         }).then(res => {
+            if (res.error) return {error : res.error, res: null };
             if (res.length !== arrUserTables.length){
                 return repairMessagesCount(arrUserTables, chat_id, db)
                     .then(res => {
@@ -330,7 +331,7 @@ function updateChatStats(chat_id, db) {
                 return updateChatTable(res, arrUserTables, chat_id, db)
             }
         }).catch(e => {
-            console.log(dRes)
+            return {error : e, res: null };
         });
 }
 
